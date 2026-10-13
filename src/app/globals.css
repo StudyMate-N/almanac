@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/*
+  Bright Bento — Almanac design tokens.
+  Every colour, font and radius used in the app comes from here,
+  so a dark mode or a logo change is a token edit, not a rebuild.
+*/
+@theme {
+  --font-display: "Outfit Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Ground, surfaces, ink */
+  --color-ground: #f3f1fb;
+  --color-surface: #ffffff;
+  --color-mist: #f6f4fb;
+  --color-track: #efedf5;
+  --color-hairline: #e4dff5;
+  --color-ink: #1b1530;
+  --color-ink-body: #3d3654;
+  --color-ink-muted: #5e5775;
+  --color-ink-faint: #a39db5;
+
+  /* Violet — primary actions, the cards-due tile, progress */
+  --color-violet: #5b3df5;
+  --color-violet-600: #4b2fe0;
+  --color-violet-700: #3e25c9;
+  --color-violet-deep: #2a1b78;
+  --color-violet-chip: #7058f8;
+  --color-violet-decor: #6a4ff7;
+  --color-violet-300: #b9adfc;
+  --color-violet-200: #d6ccff;
+  --color-violet-on: #e4deff;
+
+  /* Tangerine — the one hot spot per screen, always with ink text */
+  --color-tangerine: #ff7a2f;
+  --color-tangerine-700: #e0601a;
+
+  /* Tints and their inks */
+  --color-lilac: #ece7ff;
+  --color-peach: #ffe9dc;
+  --color-peach-ink: #7a3410;
+  --color-mint: #dff5ea;
+  --color-mint-ink: #155c3a;
+  --color-sky: #ddebff;
+  --color-sky-ink: #1d4a99;
+  --color-sky-strong: #2459b8;
+  --color-rose: #fdebef;
+  --color-rose-ink: #a3173a;
+
+  /* Answer states — always paired with an icon and a word */
+  --color-correct: #1e7a4f;
+  --color-incorrect: #c2264b;
+
+  --radius-tile: 28px;
+  --radius-card: 20px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-violet);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  button {
+    cursor: pointer;
+  }
+}
