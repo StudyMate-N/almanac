@@ -10,22 +10,25 @@ import { EXAMS, REVIEWER } from "@/lib/config";
 
 const steps = [
   ["Add your dates", "Enter your midterm and final. Almanac lays out every week between now and then."],
-  ["Learn the mechanism", "One short whiteboard lesson per topic, with a one-page summary."],
+  ["Learn the mechanism", "Short lesson pages built around one idea each, with patient cases, tables and video clips."],
   ["Practice until it sticks", "Questions with a rationale for every option, and flashcards that come back on the day you'd forget them."],
   ["Rehearse the exam", "Timed midterm and final simulations, then a list of your weak spots."],
 ];
 
 const inside = [
-  ["Short video lessons", "Each lesson covers one topic in 10 minutes or less.", "bg-lilac"],
+  ["A course player, not a pile of PDFs", "Seven competencies, each in the same pattern: lesson pages, learning checks, a quiz and a section test.", "bg-lilac"],
   ["Questions that teach", "Every option has a rationale, so even a wrong answer teaches you something.", "bg-peach"],
   ["NGN case studies", "Unfolding cases that move from cues to action, the way clinical judgment is tested.", "bg-sky"],
-  ["Flashcards that schedule themselves", "Cards return right before you'd forget them. Five minutes a day keeps old modules fresh.", "bg-mint"],
+  ["Flashcards that schedule themselves", "Cards return right before you'd forget them. Five minutes a day keeps earlier sections fresh.", "bg-mint"],
   ["Midterm and final simulations", `${EXAMS.midterm.questions} questions for the midterm and ${EXAMS.final.questions} for the final, timed and mixed-topic, with answers at the end.`, "bg-lilac"],
-  ["Study guides", "One page per module: the mechanisms, the key labs, and what students mix up.", "bg-peach"],
+  ["Study guides", "One printable page per section: the mechanisms, the key labs, and what students mix up.", "bg-peach"],
 ];
 
 const faq = [
-  ["Is this for my school's course?", "It follows the textbook order most Advanced Pathophysiology courses use, including those built on McCance & Huether. If your course runs in a different order, your plan follows your dates."],
+  [
+    "Is this for my school's course?",
+    "It is built around the seven competencies a pathophysiology course assesses, from homeostasis to each body system, and points you to the matching pages in McCance & Huether. Your plan follows your own dates.",
+  ],
   ["Does it replace my textbook?", "No. It follows it, and shows you which parts matter most each week."],
   ["I'm already behind. Can I still start?", "Yes. Enter your exam dates and the plan reorders around what's left."],
   ["Can I use it for graded assignments?", "No. Almanac is for learning. Its questions are original practice, not real exam items, and tutor help won't complete graded work."],
@@ -44,13 +47,17 @@ export function PathoPage() {
         <section aria-labelledby="hero-h" className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-10 px-4 pt-8 pb-16 sm:px-6">
           <div className="flex min-w-0 flex-[1_1_480px] flex-col gap-5">
             <p className="text-sm font-bold text-violet-700">
-              <Link href="/" className="hover:underline">Almanac courses</Link> · Advanced Pathophysiology, for graduate nursing students
+              <Link href="/" className="hover:underline">
+                Almanac courses
+              </Link>{" "}
+              · Advanced Pathophysiology, for graduate nursing students
             </p>
             <h1 id="hero-h" className="font-display text-[40px] leading-[1.05] font-semibold sm:text-[56px]">
               Patho has a reputation. Walk in with a plan.
             </h1>
             <p className="max-w-xl text-lg text-ink-body">
-              Almanac breaks your course into weekly steps: a short lesson, questions that explain every option, and flashcards that come back right before you&apos;d forget. Then a practice midterm and final, so exam day feels familiar.
+              Almanac breaks your course into weekly steps: a short lesson, questions that explain every option, and flashcards that come back right before you&apos;d forget. Then a practice midterm and final, so exam
+              day feels familiar.
             </p>
             <div className="flex flex-wrap items-center gap-4">
               <a href="#access" className={`${btn} bg-violet text-white hover:bg-violet-600`}>
@@ -67,7 +74,7 @@ export function PathoPage() {
               <p className="text-xs font-bold text-violet-700">Today · week 3 of 8</p>
               <p className="mt-1 font-display text-xl font-semibold">Heart failure: two sides, two sets of signs</p>
               <ul className="mt-4 flex flex-col gap-2 text-sm">
-                {["Watch: 6-minute lesson", "Answer: 8 questions", "Review: 12 cards due"].map((t, i) => (
+                {["Read: Lesson 6.3, 12 min", "Answer: 5 quiz questions", "Review: 12 cards due"].map((t, i) => (
                   <li key={t} className="flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5">
                     <span className={`grid h-6 w-6 place-items-center rounded-full ${i === 0 ? "bg-correct text-white" : "bg-mist"}`}>{i === 0 && <CheckIcon size={12} />}</span>
                     {t}
@@ -125,11 +132,14 @@ export function PathoPage() {
         <section aria-label="Tutor help, readiness and standards" className="mx-auto grid max-w-[1200px] gap-4 px-4 pb-16 sm:px-6 lg:grid-cols-3">
           <article className="rounded-tile bg-white p-6">
             <h2 className="font-display text-[22px] font-semibold">Stuck at 11 p.m.? Ask.</h2>
-            <p className="mt-2 text-ink-body">Tutor help answers from Almanac&apos;s own lessons and points you to the clip that explains it. If it can&apos;t help, tap &ldquo;Ask a coach&rdquo; and a person replies within 3 hours, day or night. It helps you understand. It won&apos;t do graded work for you.</p>
+            <p className="mt-2 text-ink-body">
+              Tutor help answers from Almanac&apos;s own lessons and points you to the clip that explains it. If it can&apos;t help, tap &ldquo;Ask a coach&rdquo; and a person replies within 3 hours, day or night. It
+              helps you understand. It won&apos;t do graded work for you.
+            </p>
           </article>
           <article className="rounded-tile bg-white p-6">
             <h2 className="font-display text-[22px] font-semibold">Know where you stand.</h2>
-            <p className="mt-2 text-ink-body">Readiness by module, your weakest topics and the questions you missed, all on one screen. When a module turns green, move on.</p>
+            <p className="mt-2 text-ink-body">Readiness by section, your weakest topics and the questions you missed, all on one screen. When a section turns green, move on.</p>
           </article>
           <article className="rounded-tile bg-mint p-6 text-mint-ink">
             <h2 className="font-display text-[22px] font-semibold">Checked before you see it.</h2>
@@ -145,14 +155,17 @@ export function PathoPage() {
               Works alongside your course.
             </h2>
             <p className="mt-2 max-w-3xl text-ink-body">
-              Almanac follows the standard Advanced Pathophysiology textbook order, so it fits most graduate patho courses, including those that use McCance &amp; Huether. Keep your school&apos;s readings. Almanac shows you what to focus on and checks that it stuck.
+              Almanac is organized around the seven competencies a pathophysiology course assesses, and every page points to the matching reading in McCance &amp; Huether. Keep your school&apos;s readings. Almanac shows
+              you what to focus on and checks that it stuck.
             </p>
             <ol className="mt-5 flex flex-wrap gap-2 text-sm font-semibold">
-              {modulesInCourse(COURSE_ID).map((m) => (
-                <li key={m.id} className="rounded-full bg-mist px-3 py-1.5">
-                  {m.title}
-                </li>
-              ))}
+              {modulesInCourse(COURSE_ID)
+                .filter((m) => m.kind === "section")
+                .map((m) => (
+                  <li key={m.id} className="rounded-full bg-mist px-3 py-1.5">
+                    {m.number}. {m.title}
+                  </li>
+                ))}
             </ol>
             <p className="mt-4 text-sm text-ink-muted">Almanac is independent and is not affiliated with any school or publisher.</p>
           </div>

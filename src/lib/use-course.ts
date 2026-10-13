@@ -14,14 +14,14 @@ export function useCourse(courseId?: string) {
   return useMemo(() => {
     const mods = courseId ? modules.filter((m) => m.courseId === courseId) : modules;
     const inScope = (moduleId: string) => !courseId || mods.some((m) => m.id === moduleId);
-    const vLessons = lessons.filter((l) => inScope(l.moduleId) && (!l.summary || isVisible(l.id, l)));
+    const vLessons = lessons.filter((l) => inScope(l.moduleId) && isVisible(l.id, l));
     const vQuestions = questions.filter((q) => inScope(q.moduleId) && isVisible(q.id, q));
     const vCards = cards.filter((c) => inScope(c.moduleId) && isVisible(c.id, c));
     const vCases = cases.filter((c) => inScope(c.moduleId) && isVisible(c.id, c));
     const latest = latestByQuestion(answers);
     const lessonOpen = (id: string) => {
       const l = lessons.find((x) => x.id === id);
-      return Boolean(l && l.summary && isVisible(l.id, l));
+      return Boolean(l && isVisible(l.id, l));
     };
     return { course: courseId ? courseById(courseId) : undefined, modules: mods, lessons: vLessons, questions: vQuestions, cards: vCards, cases: vCases, latest, lessonOpen, isApproved, preview };
   }, [courseId, isVisible, isApproved, answers, preview]);

@@ -49,9 +49,9 @@ function CourseToday({ course, showTitle }: { course: Course; showTitle: boolean
       )}
       {openLessons.length === 0 && (
         <div className="mb-5 rounded-tile bg-white p-6">
-          <h3 className="font-display text-[22px] font-semibold">Lessons are in review</h3>
+          <h3 className="font-display text-[22px] font-semibold">Pages are in review</h3>
           <p className="mt-1 text-ink-body">
-            Every lesson and question is checked {course.reviewer === "nurse" ? `by ${REVIEWER.name}, ${REVIEWER.credentials},` : "by a subject expert"} before it opens. They appear here as soon as they&apos;re approved.
+            Every page and question is checked {course.reviewer === "nurse" ? `by ${REVIEWER.name}, ${REVIEWER.credentials},` : "by a subject expert"} before it opens. They appear here as soon as they&apos;re approved.
           </p>
         </div>
       )}
@@ -59,10 +59,10 @@ function CourseToday({ course, showTitle }: { course: Course; showTitle: boolean
         <div className="flex flex-col gap-5">
           {nextLesson && (
             <Link href={`/app/learn/${nextLesson.id}`} className="flex flex-col gap-2 rounded-tile bg-lilac p-6 hover:bg-violet-200">
-              <p className="text-sm font-bold text-violet-700">Next lesson{nextLesson.duration ? ` · ${nextLesson.duration}` : ""}</p>
+              <p className="text-sm font-bold text-violet-700">Continue · {modulesInCourse(course.id).find((m) => m.id === nextLesson.moduleId)?.title}</p>
               <p className="font-display text-[24px] leading-tight font-semibold">{nextLesson.title}</p>
               <span className="mt-1 inline-flex items-center gap-2 font-bold text-violet-700">
-                Watch and practice <ArrowRightIcon size={16} />
+                Open in the course player <ArrowRightIcon size={16} />
               </span>
             </Link>
           )}
@@ -96,7 +96,7 @@ function CourseToday({ course, showTitle }: { course: Course; showTitle: boolean
         <div className="rounded-tile bg-white p-6">
           <h3 className="mb-3 font-display text-[19px] font-semibold">{plan ? `This week (week ${week} of ${plan.courseWeeks})` : "Readiness"}</h3>
           <ul className="flex flex-col gap-3">
-            {(thisWeek.length ? thisWeek : modules.slice(0, 3)).map((m) => {
+            {(thisWeek.length ? thisWeek : modules).filter((m) => m.kind !== "start" && m.kind !== "final").slice(0, thisWeek.length ? undefined : 3).map((m) => {
               const r = readiness(questions.filter((x) => x.moduleId === m.id), latest);
               return (
                 <li key={m.id} className="flex flex-col gap-1">

@@ -28,7 +28,7 @@ export default function Progress() {
         {[
           ["Questions answered", seen.length],
           ["Correct last time", seen.length ? `${Math.round((right / seen.length) * 100)}%` : "–"],
-          ["Lessons watched", Object.keys(state.lessons).length],
+          ["Pages done", Object.keys(state.lessons).length],
           ["Cards reviewed", reviewed],
         ].map(([l, v]) => (
           <div key={l} className={stat}>
@@ -40,7 +40,7 @@ export default function Progress() {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <section className={stat}>
-          <h2 className="mb-3 font-display text-[19px] font-semibold">Readiness by module</h2>
+          <h2 className="mb-3 font-display text-[19px] font-semibold">Readiness by section</h2>
           <ul className="flex flex-col gap-3">
             {modules.map((m) => {
               const r = readiness(questions.filter((q) => q.moduleId === m.id), latest);

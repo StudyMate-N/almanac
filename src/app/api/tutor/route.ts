@@ -1,13 +1,14 @@
 import { getVercelOidcToken } from "@vercel/oidc";
 import { courseOfModule, lessonById, questionById } from "@/content/course";
 import { rpc } from "@/lib/api";
+import { pageText } from "@/lib/page-text";
 
 const MODEL = "anthropic/claude-haiku-5.5";
 type Msg = { role: "user" | "assistant"; content: string };
 
 const system = (course: string, nursing: boolean) => `You are the Almanac tutor for students taking ${course}. Explain clearly and briefly (under 180 words), in plain language${nursing ? ", tying mechanisms to nursing assessment and priorities" : ""}.
 Rules:
-- Ground answers in the lesson notes and question below. If the notes don't cover it and you aren't sure, say so and suggest asking a coach. Never invent lab values, doses or guidelines.
+- Ground answers in the course page and question below. If the notes don't cover it and you aren't sure, say so and suggest asking a coach. Never invent lab values, doses or guidelines.
 - Help the student reason; don't just hand over an answer letter. If they picked a wrong option, explain why it's tempting and why the keyed answer is better.
 - Do not complete graded assignments, quizzes or exams from their school. If asked, decline kindly and offer to explain the concept.
 - This is study help, not ${nursing ? "medical" : "professional"} advice.`;
@@ -15,13 +16,7 @@ Rules:
 function context(lessonId?: string, questionId?: string, selected?: string[]) {
   const parts: string[] = [];
   const l = lessonId ? lessonById(lessonId) : undefined;
-  if (l) {
-    parts.push(`LESSON: ${l.title}\nObjective: ${l.objective}`);
-    if (l.summary) parts.push("Mechanism:\n" + l.summary.map((s, i) => `${i + 1}. ${s.title}: ${s.body}`).join("\n"));
-    if (l.priorities) parts.push("Nursing priorities:\n- " + l.priorities.join("\n- "));
-    if (l.traps) parts.push("Common traps:\n- " + l.traps.join("\n- "));
-    if (l.corrections?.length) parts.push("Corrections to the lecture video (the video is wrong here):\n- " + l.corrections.map((c) => `Video said "${c.said}" -> correct: ${c.correct}`).join("\n- "));
-  }
+  if (l) parts.push(pageText(l));
   const q = questionId ? questionById(questionId) : undefined;
   if (q) {
     parts.push(

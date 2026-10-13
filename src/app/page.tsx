@@ -5,18 +5,18 @@ import { courses } from "@/content/course";
 import { REVIEWER } from "@/lib/config";
 
 const steps = [
-  ["Pick your course", "Choose the course you're taking now. Almanac follows the standard textbook order for it."],
+  ["Pick your course", "Choose the course you're taking now. Almanac follows the competencies it assesses."],
   ["Add your dates", "Enter your exam dates. Almanac lays out every week between now and the final."],
   ["Learn, then practice", "A short lesson per topic, questions that explain every option, and flashcards that come back before you forget."],
   ["Rehearse the exam", "Timed practice exams at the real length, then a list of your weak spots."],
 ];
 
 const included = [
-  ["Short video lessons", "One topic per lesson, 10 minutes or less, with a one-page summary."],
+  ["A real course player", "Short lesson pages with cases, video clips and checks, in the same pattern every time."],
   ["Questions that teach", "Every option has a rationale, so a wrong answer still teaches you something."],
-  ["Flashcards that schedule themselves", "Five minutes a day keeps earlier modules fresh."],
+  ["Flashcards that schedule themselves", "Five minutes a day keeps earlier sections fresh."],
   ["Practice exams", "Timed, mixed-topic, at the length of the real thing, with answers at the end."],
-  ["Study guides", "One printable page per module: the core ideas and what students mix up."],
+  ["Study guides", "One printable page per section: the core ideas and what students mix up."],
   ["Tutor and coach", "Ask the tutor any time. If it can't help, a person replies within 3 hours."],
 ];
 

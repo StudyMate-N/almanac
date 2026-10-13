@@ -29,34 +29,62 @@ export type Module = {
   /** Unique across all courses. New courses prefix their ids, e.g. "pharm-m1". */
   id: string;
   courseId: string;
-  /** 0 for Foundations, then textbook order. */
+  /** 0 for "Start here", then section order. */
   number: number;
   title: string;
   /** Short line shown on the course outline. */
   blurb: string;
+  kind?: "start" | "section" | "final";
+  /** The competency statement this section is built to. */
+  competency?: string;
 };
 
+/* Course player content: sections → lessons → pages → blocks. */
+
+export type PageKind = "reading" | "activity" | "summary" | "quiz" | "test" | "video";
+
+export type LabRow = [name: string, unit: string, ...rest: (string | number)[]];
+
+export type Block =
+  | { t: "h2"; text: string }
+  | { t: "p"; html: string }
+  | { t: "ul" | "ol"; items: string[] }
+  | { t: "table"; head: string[]; rows: string[][]; caption?: string }
+  | { t: "callout"; title: string; html: string }
+  | { t: "case"; title: string; html: string }
+  /** Lab panel: rows are [name, unit, ...values per column, range, abnormal flag (1/0)]. */
+  | { t: "labs"; caption?: string; cols: string[]; rows: LabRow[] }
+  /** Essential question for the page. */
+  | { t: "eq"; text: string }
+  /** One of the course's own video clips, by clip id. */
+  | { t: "video"; clip: string; note?: string }
+  /** A learning check: one question, answered in place. */
+  | { t: "check"; id: string }
+  /** A write-then-compare prompt with an expert answer. */
+  | { t: "open"; id: string; stem: string; expert: string }
+  /** Practice quiz (feedback after each item) or section test (feedback after submitting). */
+  | { t: "quiz"; mode: "practice" | "test"; ids: string[] }
+  | { t: "cards"; title: string; ids: string[] }
+  /** Textbook reading: page ranges in the course text. */
+  | { t: "read"; items: { ref: string; note?: string }[] };
+
+/**
+ * A page of the course player. Pages are grouped into lessons ("group") and
+ * sections (the module). Each page is reviewed and approved as one item.
+ */
 export type Lesson = {
   id: string;
   moduleId: string;
+  /** Order within the section. */
   index: number;
   title: string;
   shortTitle?: string;
-  /** Display length, e.g. "4:48". */
-  duration?: string;
-  /** Clip file in the media store, without extension (mp4, jpg and vtt share the name). */
-  video?: string;
+  kind: PageKind;
+  groupId: string;
+  groupTitle: string;
+  /** The essential question or one-line aim of the page. */
   objective: string;
-  /** Why and how this is tested; the trap it hides. */
-  hook?: string;
-  /** The mechanism in steps. */
-  summary?: { title: string; body: string }[];
-  /** What the nurse assesses, does first, reports or teaches. */
-  priorities?: string[];
-  /** What wrong answers look like; the confusable concept nearby. */
-  traps?: string[];
-  /** Where the video says something inaccurate, and the correct version. */
-  corrections?: { at: string; said: string; correct: string }[];
+  blocks: Block[];
   source?: string;
 };
 
@@ -75,6 +103,8 @@ export type Question = {
   options: Option[];
   correct: string[];
   source: string;
+  /** The one idea to take away, shown after the answer. */
+  takeaway?: string;
   /** Seconds into the lesson clip where this is taught. */
   clip?: number;
   /** Options with a natural order (numbers, sequences) are never shuffled. */

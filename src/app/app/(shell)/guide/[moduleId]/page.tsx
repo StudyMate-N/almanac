@@ -31,41 +31,28 @@ export default function Guide() {
           Print or save PDF
         </button>
       </div>
-      {ls.map((l) => (
-        <section key={l.id} className="mb-7 break-inside-avoid-page">
-          <h2 className="mb-1 font-display text-[21px] font-semibold">
-            {l.index}. {l.title}
-          </h2>
-          {l.hook && <p className="mb-2 text-[15px] italic text-ink-body">{l.hook}</p>}
-          {l.summary && (
-            <ol className="mb-2 list-decimal space-y-1 pl-5 text-[15px]">
-              {l.summary.map((s) => (
-                <li key={s.title}>
-                  <b>{s.title}.</b> {s.body}
-                </li>
-              ))}
-            </ol>
-          )}
-          {l.priorities && (
-            <>
-              <h3 className="mt-2 text-sm font-bold">Nursing priorities</h3>
-              <ul className="list-disc pl-5 text-[15px]">{l.priorities.map((p) => <li key={p}>{p}</li>)}</ul>
-            </>
-          )}
-          {l.traps && (
-            <>
-              <h3 className="mt-2 text-sm font-bold">Traps</h3>
-              <ul className="list-disc pl-5 text-[15px]">{l.traps.map((p) => <li key={p}>{p}</li>)}</ul>
-            </>
-          )}
-          {l.corrections?.length ? (
-            <>
-              <h3 className="mt-2 text-sm font-bold">Corrections to the video</h3>
-              <ul className="list-disc pl-5 text-[15px]">{l.corrections.map((c) => <li key={c.at}>{c.correct}</li>)}</ul>
-            </>
-          ) : null}
-        </section>
-      ))}
+      {ls
+        .filter((l) => l.kind === "summary")
+        .map((l) => (
+          <section key={l.id} className="mb-7 break-inside-avoid-page">
+            <h2 className="mb-2 font-display text-[21px] font-semibold">{l.groupTitle.replace(/:\s*Summary$/, "")}</h2>
+            {l.blocks.map((b, i) =>
+              b.t === "ul" || b.t === "ol" ? (
+                <ul key={i} className="mb-2 list-disc space-y-1 pl-5 text-[15px]">
+                  {b.items.map((it) => (
+                    <li key={it} dangerouslySetInnerHTML={{ __html: it }} />
+                  ))}
+                </ul>
+              ) : b.t === "p" ? (
+                <p key={i} className="mb-2 text-[15px]" dangerouslySetInnerHTML={{ __html: b.html }} />
+              ) : b.t === "h2" && b.text !== "Take a moment to review" ? (
+                <h3 key={i} className="mt-3 mb-1 text-sm font-bold">
+                  {b.text}
+                </h3>
+              ) : null,
+            )}
+          </section>
+        ))}
       {cs.length > 0 && (
         <section>
           <h2 className="mb-2 font-display text-[21px] font-semibold">Self-test</h2>

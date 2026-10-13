@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Logo } from "@/components/brand";
-import { courseOfModule, lessonById, moduleById, reviewables } from "@/content/course";
+import { cardById, courseOfModule, lessonById, moduleById, questionById, reviewables } from "@/content/course";
+import { pageText } from "@/lib/page-text";
 import { ApiError, friendlyError, rpc } from "@/lib/api";
 import { contentHash } from "@/lib/hash";
 import { COACH_KEY } from "@/lib/store";
@@ -53,12 +54,60 @@ function SignIn({ onDone }: { onDone: (a: Admin) => void }) {
   );
 }
 
+/** A readable view of an item for the reviewer. */
+function ItemView({ kind, id, item }: { kind: string; id: string; item: unknown }) {
+  if (kind === "page") {
+    const p = lessonById(id);
+    return p ? <div className="max-h-[60vh] overflow-auto rounded-xl bg-mist p-4 text-sm whitespace-pre-wrap">{pageText(p, 40000)}</div> : null;
+  }
+  if (kind === "question") {
+    const q = questionById(id);
+    if (!q) return null;
+    return (
+      <div className="rounded-xl bg-mist p-4 text-sm">
+        <p className="mb-1 text-xs font-bold text-ink-muted uppercase">
+          {q.type === "multiple" ? "Select all that apply" : "One best answer"} · {q.level} · {q.topic}
+        </p>
+        {q.stem && <p className="mb-1">{q.stem}</p>}
+        <p className="mb-2 font-bold">{q.ask}</p>
+        <ul className="flex flex-col gap-2">
+          {q.options.map((o) => (
+            <li key={o.id}>
+              <span className={`font-semibold ${q.correct.includes(o.id) ? "text-mint-ink" : ""}`}>
+                {q.correct.includes(o.id) ? "✓ " : "○ "}
+                {o.text}
+              </span>
+              <span className="block pl-4 text-ink-body">{o.rationale}</span>
+            </li>
+          ))}
+        </ul>
+        {q.takeaway && <p className="mt-2"><span className="font-bold">Takeaway:</span> {q.takeaway}</p>}
+        <p className="mt-2 text-xs text-ink-muted">Source: {q.source}</p>
+      </div>
+    );
+  }
+  if (kind === "card") {
+    const c = cardById(id);
+    if (!c) return null;
+    return (
+      <div className="rounded-xl bg-mist p-4 text-sm">
+        <p className="font-bold">{c.front}</p>
+        <p>{c.back}</p>
+        {c.detail && <p className="text-ink-muted">{c.detail}</p>}
+        <p className="mt-2 text-xs text-ink-muted">Source: {c.source}</p>
+      </div>
+    );
+  }
+  return <pre className="max-h-[60vh] overflow-auto rounded-xl bg-mist p-3 text-xs whitespace-pre-wrap">{JSON.stringify(item, null, 2)}</pre>;
+}
+
 function ReviewTab({ admin }: { admin: Admin }) {
   const [reviews, setReviews] = useState<Record<string, Review>>({});
   const [filter, setFilter] = useState<"pending" | "changes" | "approved">("pending");
   const [open, setOpen] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [bulk, setBulk] = useState("");
+  const [section, setSection] = useState("all");
   const items = useMemo(() => reviewables.map((r) => ({ ...r, hash: contentHash(r.item) })), []);
   const refresh = useCallback(() => rpc<Record<string, Review>>("review_list", { p_token: admin.token }).then(setReviews), [admin.token]);
   useEffect(() => void refresh(), [refresh]);
@@ -67,7 +116,8 @@ function ReviewTab({ admin }: { admin: Admin }) {
     if (!r || r.hash !== hash) return r?.status === "approved" ? "pending" : (r?.status ?? "pending");
     return r.status;
   };
-  const shown = items.filter((i) => statusOf(i.id, i.hash) === filter);
+  const sections = [...new Map(items.map((i) => [i.moduleId, moduleById(i.moduleId)?.title ?? i.moduleId])).entries()];
+  const shown = items.filter((i) => statusOf(i.id, i.hash) === filter && (section === "all" || i.moduleId === section));
   const counts = { pending: 0, changes: 0, approved: 0 } as Record<string, number>;
   items.forEach((i) => counts[statusOf(i.id, i.hash)]++);
   const canReview = admin.role === "reviewer";
@@ -109,6 +159,18 @@ function ReviewTab({ admin }: { admin: Admin }) {
           </button>
         ))}
       </div>
+      <label className="mb-4 flex flex-wrap items-center gap-2 text-sm font-semibold">
+        Section
+        <select value={section} onChange={(e) => setSection(e.target.value)} className="min-h-10 rounded-full border-2 border-hairline bg-white px-3">
+          <option value="all">All sections</option>
+          {sections.map(([id, title]) => (
+            <option key={id} value={id}>
+              {title}
+            </option>
+          ))}
+        </select>
+        <span className="text-ink-muted">{shown.length} items</span>
+      </label>
       {!canReview && <p className="mb-3 text-sm text-ink-muted">Only the nurse reviewer can approve. You can read the queue.</p>}
       <ul className="flex flex-col gap-2">
         {shown.map((i) => (
@@ -122,9 +184,9 @@ function ReviewTab({ admin }: { admin: Admin }) {
             </button>
             {open === i.id && (
               <div className="mt-3 flex flex-col gap-3">
-                <pre className="max-h-[60vh] overflow-auto rounded-xl bg-mist p-3 text-xs whitespace-pre-wrap">{JSON.stringify(i.item, null, 2)}</pre>
-                {(i.kind === "lesson" || i.kind === "question") && (
-                  <a className="text-sm font-bold text-violet-600" href={i.kind === "lesson" ? `/app/learn/${i.id}` : `/app/practice/${i.lessonId}`} target="_blank">
+                <ItemView kind={i.kind} id={i.id} item={i.item} />
+                {(i.kind === "page" || i.kind === "question") && i.lessonId && (
+                  <a className="text-sm font-bold text-violet-600" href={`/app/learn/${i.lessonId}`} target="_blank">
                     Open as a student sees it (preview)
                   </a>
                 )}

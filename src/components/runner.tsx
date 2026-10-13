@@ -20,7 +20,6 @@ type Props = {
 };
 
 const fmtClock = (s: number) => `${Math.floor(s / 60)}:${String(Math.max(0, s % 60)).padStart(2, "0")}`;
-const fmtClip = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
 /** Runs a question set. Tutor mode shows every rationale after each answer; exam mode holds them to the end. */
 export function Runner({ title, questions: initial, mode, kind, minutes, backHref = "/app/practice" }: Props) {
@@ -277,6 +276,12 @@ export function Runner({ title, questions: initial, mode, kind, minutes, backHre
             );
           })}
         </fieldset>
+        {isChecked && q.takeaway && (
+          <p className="rounded-2xl bg-lilac px-4 py-3 text-[15px] text-ink-body" role="status">
+            <span className="font-bold text-violet-700">Takeaway. </span>
+            {q.takeaway}
+          </p>
+        )}
 
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" onClick={toggleFlag} aria-pressed={flagged} className={`min-h-10 rounded-full px-4 text-sm font-bold ${flagged ? "bg-tangerine text-ink" : "bg-white text-ink-muted"}`}>
@@ -286,9 +291,9 @@ export function Runner({ title, questions: initial, mode, kind, minutes, backHre
             {state.notes[q.id] ? "Your note" : "Add note"}
           </button>
           {isChecked && <TutorButton lessonId={q.lessonId} questionId={q.id} selected={sel} />}
-          {isChecked && lesson?.video && q.clip !== undefined && (
-            <Link href={`/app/learn/${lesson.id}?t=${q.clip}`} className="min-h-10 rounded-full bg-white px-4 py-2.5 text-sm font-bold text-violet-600">
-              Watch at {fmtClip(q.clip)}
+          {isChecked && lesson && (
+            <Link href={`/app/learn/${lesson.id}`} className="min-h-10 rounded-full bg-white px-4 py-2.5 text-sm font-bold text-violet-600">
+              Open the lesson page
             </Link>
           )}
         </div>
