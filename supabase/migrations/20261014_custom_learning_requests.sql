@@ -97,6 +97,69 @@ begin
     else 0 end),0)::int
     into v_extra from unnest(v_addons) as a(x);
   v_total := round((v_base + v_extra) * v_factor)::integer;
+  if v_kind = 'course' and v_speed = 'express' and 'video' = any(v_addons) then
+    raise exception 'express_unavailable' using errcode='22023';
+  end if;
+  if coalesce(p_data->>'expectedTotalUsd','') !~ '^[0-9]+
+
+  if (select count(*) from app.learning_requests
+      where created_at > now() - interval '1 hour') >= 100
+      or (select count(*) from app.learning_requests
+          where email = v_email and created_at > now() - interval '1 hour') >= 3 then
+      raise exception 'request_limit' using errcode='53400';
+  end if;
+
+  insert into app.learning_requests
+    (name,email,course_id,subject,goal,kind,delivery_method,speed,
+     addons,unit_count,base_usd,addon_usd,quote_usd,turnaround_days)
+  values
+    (v_name,v_email,v_course,v_subject,v_goal,v_kind,v_method,v_speed,
+     v_addons,v_units,v_base,v_extra,v_total,v_days)
+  returning id into v_id;
+
+  return jsonb_build_object(
+    'id',v_id,
+    'quoteUsd',v_total,
+    'turnaroundDays',v_days,
+    'status','received'
+  );
+end
+$function$;
+
+revoke all on function public.learning_request_create(jsonb) from public;
+grant execute on function public.learning_request_create(jsonb) to anon, authenticated;
+
+-- Existing coach/owner sessions can read incoming requests without broad table grants.
+create or replace function public.learning_requests_list(p_token text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  v_role text;
+begin
+  select a.role into v_role
+  from app.admin_sessions s
+  join app.admins a on a.id = s.admin_id
+  where s.token_hash = app.hash(p_token)
+    and s.expires_at > now();
+  if v_role not in ('owner','coach') or v_role is null then
+    raise exception 'not_authorized' using errcode='28000';
+  end if;
+  return coalesce((
+    select jsonb_agg(to_jsonb(r) order by r.created_at desc)
+    from (select * from app.learning_requests order by created_at desc limit 200) r
+  ), '[]'::jsonb);
+end
+$function$;
+
+revoke all on function public.learning_requests_list(text) from public;
+grant execute on function public.learning_requests_list(text) to anon, authenticated;
+
+    or (p_data->>'expectedTotalUsd')::integer <> v_total then
+    raise exception 'price_changed' using errcode='22023';
+  end if;
 
   if (select count(*) from app.learning_requests
       where created_at > now() - interval '1 hour') >= 100
