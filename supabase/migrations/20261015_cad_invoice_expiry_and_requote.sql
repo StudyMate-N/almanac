@@ -30,7 +30,7 @@ begin
  where id=v_id;
  return v_result||jsonb_build_object(
    'payableCadCents',v_cents,'rateCadPerUsd',v_rate,'rateDate',p_rate_date,'quoteValidUntil',(select quote_valid_until from app.learning_requests where id=v_id));
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.learning_invoice_get(p_id uuid, p_token text)
  RETURNS jsonb
@@ -56,7 +56,7 @@ begin
   'learningPlanObjectives',r.learning_plan_objectives,
   'learningPlanDates',r.learning_plan_dates,'learningPlanFeedback',r.learning_plan_feedback
  );
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.learning_payment_report(p_id uuid, p_token text, p_reference text, p_paid_on date)
  RETURNS jsonb
@@ -82,7 +82,7 @@ begin
   payment_date=p_paid_on,payment_reported_at=now(),
   payment_status='reported',updated_at=now() where id=p_id;
  return jsonb_build_object('paymentStatus','reported');
-end $function$
+end $function$;
 
 create or replace function public.learning_staff_invoice_requote(
  p_staff_token text,p_order uuid,p_rate numeric,p_rate_date date
