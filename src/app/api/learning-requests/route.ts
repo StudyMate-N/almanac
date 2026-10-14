@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/config";
 import { calculateQuote, OfferValidationError, parseLearningRequest } from "@/lib/learning-offers";
+import { orderEmail } from "@/lib/learning-mail";
 
 export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
@@ -45,7 +46,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "We couldn't save your request. Please try again shortly." }, { status: 503 });
     }
     const received: { id: string; quoteUsd: number; payableCadCents: number; turnaroundDays: number; status: string } = await result.json();
-    return NextResponse.json(received, { status: 201, headers: { "Cache-Control": "no-store" } });
+    const privateUrl = new URL("/invoice", request.url);
+    privateUrl.searchParams.set("id", received.id);
+    // A private invoice token is returned once, not persisted in readable form.
+    const invoiceToken=(received as { invoiceToken?: string }).invoiceToken;
+    let emailNotice={customerSent:false,staffSent:false,configured:false};
+    if(invoiceToken){
+      privateUrl.searchParams.set("token",invoiceToken);
+      emailNotice=await orderEmail({email:input.email,name:input.name,
+        ref:(received as {invoiceRef?:string}).invoiceRef||"",url:privateUrl.toString(),
+        cadCents:received.payableCadCents});
+    }
+    return NextResponse.json({ ...received, notification:emailNotice }, {
+      status: 201, headers: { "Cache-Control": "no-store" }
+    });
   } catch {
     return NextResponse.json({ error: "The request service is temporarily unavailable. Please try again." }, { status: 503 });
   }
