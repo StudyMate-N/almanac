@@ -71,7 +71,7 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
             <p className="mt-2 font-semibold">{invoice.name}</p><p className="text-sm text-ink-body">{invoice.email}</p></div>
           <div><p className="text-xs font-bold uppercase text-ink-muted">Order summary</p>
             <p className="mt-2 font-semibold">{invoice.subject}</p>
-            <p className="text-sm text-ink-body">{packageName} · Up to {invoice.units} learning units</p>
+            <p className="text-sm text-ink-body">{packageName} · Up to {invoice.units} learning modules</p>
           </div>
         </div>
         <dl className="mt-7 space-y-3 border-t border-hairline pt-5 text-sm">
