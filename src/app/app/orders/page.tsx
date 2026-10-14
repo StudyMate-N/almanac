@@ -9,7 +9,7 @@ type Order={
  id:string;invoiceRef:string;subject:string;kind:string;moduleCount:number;
  status:string;paymentStatus:string;planStatus:string|null;planTitle:string|null;
  productionStartedAt:string|null;deliveryDueAt:string|null;deliveredAt:string|null;
- releasedCount:number;
+ releasedCount:number;packPublished:boolean;
 };
 type Resource={id:string;name:string;kind:string;moduleNumber:number|null;size:number;releasedAt:string};
 const endpoint=`${SUPABASE_URL}/functions/v1/learning-deliverables`;
@@ -143,6 +143,15 @@ export default function LearningOrdersPage(){
     {current.deliveredAt&&<p className="mt-4 rounded-xl bg-mist p-4 text-sm font-semibold">
      Released on {date(current.deliveredAt)}. Your materials remain available below.
     </p>}
+    {current.packPublished?
+      <div className="mt-5 rounded-xl bg-lilac p-5">
+       <p className="font-semibold">Your interactive lessons are ready</p>
+       <p className="mt-1 text-sm text-ink-body">Open structured modules, complete explained practice questions, review flashcards and take exam simulations. Your latest answers are saved to this account.</p>
+       <Link href={`/app/orders/${encodeURIComponent(current.id)}/learn`}
+        className="mt-3 inline-flex min-h-11 items-center rounded-full bg-violet px-5 text-sm font-semibold text-white">
+        Start learning →</Link>
+      </div>:
+      <p className="mt-5 rounded-xl bg-mist p-4 text-sm text-ink-body">Interactive lessons and practice will appear here after staff quality review. Any completed downloadable files remain available below.</p>}
     <h3 className="mt-7 font-display text-xl font-semibold">Your released materials</h3>
     {busy?<p className="mt-3 text-sm text-ink-muted">Loading…</p>:
      files.length===0?<div className="mt-3 rounded-xl border border-hairline p-5 text-sm text-ink-body">
