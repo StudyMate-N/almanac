@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Logo } from "@/components/brand";
-import { cardById, courseOfModule, lessonById, moduleById, questionById, reviewables } from "@/content/course";
+import { cardById, courseOfModule, type ImageItem, lessonById, moduleById, questionById, reviewables } from "@/content/course";
 import { pageText } from "@/lib/page-text";
 import { ApiError, friendlyError, rpc } from "@/lib/api";
 import { contentHash } from "@/lib/hash";
@@ -98,6 +98,29 @@ function ItemView({ kind, id, item }: { kind: string; id: string; item: unknown 
       </div>
     );
   }
+  if (kind === "image") {
+    const im = item as ImageItem;
+    return (
+      <div className="rounded-xl bg-mist p-4 text-sm">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`/images/patho/${im.id}.png`} alt={im.alt} className="w-full rounded-lg bg-white" />
+        <div className="mt-2 grid gap-2 text-center" style={{ gridTemplateColumns: `repeat(${im.panels.length}, minmax(0, 1fr))` }}>
+          {im.panels.map((p) => (
+            <span key={p.label}>
+              <span className="block font-bold">{p.label}</span>
+              {p.sub && <span className="block text-ink-muted">{p.sub}</span>}
+            </span>
+          ))}
+        </div>
+        <p className="mt-3">
+          <span className="font-bold">Alt text:</span> {im.alt}
+        </p>
+        <p className="mt-1 text-xs text-ink-muted">
+          File {im.id}.png · {im.bytes === null ? "missing" : `${Math.round(im.bytes / 1024)} KB`}. Labels are page text, so check them against the picture. Students see wide (3:1) images with the empty strip at the bottom cropped off.
+        </p>
+      </div>
+    );
+  }
   return <pre className="max-h-[60vh] overflow-auto rounded-xl bg-mist p-3 text-xs whitespace-pre-wrap">{JSON.stringify(item, null, 2)}</pre>;
 }
 
@@ -185,7 +208,7 @@ function ReviewTab({ admin }: { admin: Admin }) {
             {open === i.id && (
               <div className="mt-3 flex flex-col gap-3">
                 <ItemView kind={i.kind} id={i.id} item={i.item} />
-                {(i.kind === "page" || i.kind === "question") && i.lessonId && (
+                {(i.kind === "page" || i.kind === "question" || i.kind === "image") && i.lessonId && (
                   <a className="text-sm font-bold text-violet-600" href={`/app/learn/${i.lessonId}`} target="_blank">
                     Open as a student sees it (preview)
                   </a>

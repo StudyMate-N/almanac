@@ -99,6 +99,7 @@ export type Built = { modules: Module[]; pages: Lesson[]; questions: Question[];
 export function build(sections: ASection[]): Built {
   const out: Built = { modules: [], pages: [], questions: [], cards: [] };
   const seen = new Set<string>();
+  const imgs = new Map<string, string>();
   const unique = (id: string) => {
     if (seen.has(id)) throw new Error(`Duplicate content id: ${id}`);
     seen.add(id);
@@ -145,6 +146,11 @@ export function build(sections: ASection[]): Built {
           if (b.t === "img") {
             if (pageImgs.has(b.id)) throw new Error(`Duplicate image on page ${p.id}: ${b.id}`);
             pageImgs.add(b.id);
+            if (!b.alt.trim() || !b.panels.length || b.panels.some((x) => !x.label.trim())) throw new Error(`Image ${b.id} on ${p.id} needs alt text and a label for every panel`);
+            // One image is reviewed once, so every page that shows it must caption it the same way.
+            const sig = JSON.stringify([b.alt, b.panels, b.aspect]);
+            if (imgs.has(b.id) && imgs.get(b.id) !== sig) throw new Error(`Image ${b.id} has different alt text or captions on ${p.id}`);
+            imgs.set(b.id, sig);
           }
           return b;
         });

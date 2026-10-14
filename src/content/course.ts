@@ -4,6 +4,7 @@
  * course; its course player content lives in ./patho.
  */
 import { patho } from "./patho";
+import { IMAGE_BYTES } from "./patho/image-sizes";
 import type { Card, CaseStudy, Course, Lesson, Module, Question } from "./types";
 
 const PATHO = "advanced-pathophysiology";
@@ -81,11 +82,27 @@ export const questionById = (id: string) => questions.find((q) => q.id === id);
 export const caseById = (id: string) => cases.find((c) => c.id === id);
 export const caseForLesson = (lessonId: string) => cases.find((c) => c.lessonId === lessonId);
 
+/**
+ * Course images, one per image id (an image can sit on more than one page).
+ * The reviewer approves the picture itself: the item hashes its id, alt text,
+ * caption panels and the file's byte length, so a new file or a changed label
+ * sends it back for review. Students see an image only once it's approved.
+ */
+export type ImageItem = { id: string; alt: string; panels: { label: string; sub?: string }[]; bytes: number | null };
+export const imageReviewId = (id: string) => `image:${id}`;
+export const images: { reviewId: string; moduleId: string; lessonId: string; item: ImageItem }[] = [];
+for (const l of lessons)
+  for (const b of l.blocks)
+    if (b.t === "img" && !images.some((i) => i.item.id === b.id))
+      images.push({ reviewId: imageReviewId(b.id), moduleId: l.moduleId, lessonId: l.id, item: { id: b.id, alt: b.alt, panels: b.panels, bytes: IMAGE_BYTES[b.id] ?? null } });
+export const imageById = (id: string) => images.find((i) => i.item.id === id);
+
 /** Every reviewable item, keyed by id, for the review screen and approval checks. */
-export type ReviewableKind = "page" | "question" | "card" | "case";
+export type ReviewableKind = "page" | "question" | "card" | "case" | "image";
 export const reviewables: { id: string; kind: ReviewableKind; moduleId: string; lessonId?: string; item: unknown }[] = [
   ...lessons.map((l) => ({ id: l.id, kind: "page" as const, moduleId: l.moduleId, lessonId: l.id, item: l })),
   ...questions.map((q) => ({ id: q.id, kind: "question" as const, moduleId: q.moduleId, lessonId: q.lessonId, item: q })),
   ...cards.map((c) => ({ id: c.id, kind: "card" as const, moduleId: c.moduleId, lessonId: c.lessonId, item: c })),
   ...cases.map((c) => ({ id: c.id, kind: "case" as const, moduleId: c.moduleId, lessonId: c.lessonId, item: c })),
+  ...images.map((i) => ({ id: i.reviewId, kind: "image" as const, moduleId: i.moduleId, lessonId: i.lessonId, item: i.item })),
 ];

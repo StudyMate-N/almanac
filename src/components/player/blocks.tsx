@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { ArrowRightIcon, BookIcon, CardsIcon } from "@/components/icons";
 import { VideoPlayer } from "@/components/video-player";
-import { cardById, questionById } from "@/content/course";
+import { cardById, imageById, questionById } from "@/content/course";
 import { clipById } from "@/content/patho";
 import type { Block, Card, Question } from "@/content/types";
 import { useStudent } from "@/lib/store";
@@ -126,10 +127,18 @@ function Predict({ id, stem, options, correct, reveal }: { id: string; stem: str
 }
 
 function Figure({ id, alt, panels, aspect }: { id: string; alt: string; panels: { label: string; sub?: string }[]; aspect?: "3:1" | "3:2" }) {
+  const { isVisible, isApproved, preview } = useStudent();
+  const img = imageById(id);
+  // Images open to students only once the reviewer has approved this exact file and caption set.
+  if (!img || !isVisible(img.reviewId, img.item)) return null;
+  const pending = preview && !isApproved(img.reviewId, img.item);
   return (
     <figure className="flex flex-col gap-3 rounded-card bg-mist p-3">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/images/patho/${id}.png`} alt={alt} loading="lazy" className="w-full rounded-xl object-cover object-top" style={{ aspectRatio: aspect === "3:2" ? "2.4 / 1" : "3.6 / 1" }} />
+      {/* 3:1 sources are cropped to 3.6:1 from the top: the generator leaves an empty strip below the panels. */}
+      <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: aspect === "3:2" ? "2.4 / 1" : "3.6 / 1" }}>
+        <Image src={`/images/patho/${id}.png`} alt={alt} fill sizes="(max-width: 800px) 100vw, 736px" className="object-cover object-top" />
+        {pending && <span className="absolute top-2 left-2 rounded-full bg-peach px-3 py-1 text-xs font-bold text-peach-ink">Image awaiting review (preview)</span>}
+      </div>
       <figcaption className="grid gap-2 pb-1 text-center" style={{ gridTemplateColumns: `repeat(${panels.length}, minmax(0, 1fr))` }}>
         {panels.map((p) => (
           <span key={p.label} className="flex flex-col">
