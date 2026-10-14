@@ -36,7 +36,18 @@ Deno.serve(async req=>{
   let rate:{value:number;date:string};
   try { rate=await bankRate(); }
   catch { return respond({error:"fx_rate_unavailable"},503); }
-  const result=await fetch(`${SUPABASE_URL}/rest/v1/rpc/learning_request_create_cad`,{
+  if(data.action==="requote"){
+    if(typeof data.staffToken!=="string"||data.staffToken.length>500||
+      typeof data.orderId!=="string"||!/^[a-f0-9-]{36}$/i.test(data.orderId))
+      return respond({error:"staff_authorization_required"},403);
+    const refreshed=await fetch(`${SUPABASE_URL}/rest/v1/rpc/learning_staff_invoice_requote`,{
+      method:"POST",headers:{"Content-Type":"application/json",apikey:SERVICE,Authorization:`Bearer ${SERVICE}`},
+      body:JSON.stringify({p_staff_token:data.staffToken,p_order:data.orderId,p_rate:rate.value,p_rate_date:rate.date})
+    });
+    if(!refreshed.ok)return respond({error:"quote_not_eligible"},403);
+    return respond(await refreshed.json());
+  }
+    const result=await fetch(`${SUPABASE_URL}/rest/v1/rpc/learning_request_create_cad`,{
    method:"POST",
    headers:{"Content-Type":"application/json",apikey:SERVICE,Authorization:`Bearer ${SERVICE}`},
    body:JSON.stringify({p_data:data,p_rate:rate.value,p_rate_date:rate.date})
