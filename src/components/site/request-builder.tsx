@@ -308,7 +308,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
         className="mt-5 min-h-14 w-full rounded-full bg-violet px-5 font-bold text-white hover:bg-violet-600 disabled:cursor-not-allowed disabled:opacity-50">
         {busy?"Saving your request…":"Review and create invoice →"}
       </button>
-      <p className="mt-3 text-xs leading-relaxed text-ink-muted">Your itemized invoice will include your package, quantities, and delivery choice. Bank transfers in CAD are not yet enabled until the payable amount is locked.</p>
+      <p className="mt-3 text-xs leading-relaxed text-ink-muted">Your itemized invoice will include your package, quantities, and delivery choice. The invoice will show the CAD amount payable, payment reference and bank instructions. No payment is taken when you submit this request.</p>
     </aside>
   </form>;
 }
