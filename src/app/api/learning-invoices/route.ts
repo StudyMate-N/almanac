@@ -5,7 +5,7 @@ const HEADERS = { "Cache-Control": "no-store, private", "Referrer-Policy": "no-r
 const uuid = /^[0-9a-f-]{36}$/i;
 const tokenPattern = /^[0-9a-f]{48}$/i;
 
-function credentials(invoice: { payableCadCents?: number | null }) {
+function credentials(invoice: { payableCadCents?: number | null; quoteValidUntil?:string|null;paymentStatus?:string|null }) {
   const bank = {
     name: process.env.ALMANAC_BANK_NAME ?? "",
     address: process.env.ALMANAC_BANK_ADDRESS ?? "",
@@ -17,10 +17,10 @@ function credentials(invoice: { payableCadCents?: number | null }) {
     currency: process.env.ALMANAC_BANK_CURRENCY ?? "",
   };
   const ready = Object.values(bank).every(Boolean);
-  // USD list pricing does not imply that the CAD-receiving account should be
-  // sent USD. Until each invoice stores its locked payable CAD amount, do
-  // not release bank-transfer instructions for a CAD-denominated account.
-  return ready && bank.currency === "CAD" && Number(invoice.payableCadCents) > 0 ? bank : null;
+  // Never show banking instructions for an expired quote or a reported/verified transfer.
+  const quoteActive=invoice.quoteValidUntil?Date.parse(invoice.quoteValidUntil)>Date.now():false;
+  const awaiting=invoice.paymentStatus!=="verified"&&invoice.paymentStatus!=="reported";
+  return ready && bank.currency === "CAD" && Number(invoice.payableCadCents)>0 && quoteActive && awaiting ? bank : null;
 }
 
 export async function GET(request: NextRequest) {
