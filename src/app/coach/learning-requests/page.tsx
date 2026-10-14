@@ -20,6 +20,7 @@ type RequestRow = {
   status: string; payment_status: string; payment_reference: string | null;
  payment_date: string | null; invoice_ref: string; created_at: string;
  payable_cad_cents: number|null; fx_rate_date: string|null;
+ quote_valid_until?:string|null;
  learning_plan_title?:string|null;learning_plan_summary?:string|null;
  learning_plan_topics?:string[];learning_plan_objectives?:string[];
  learning_plan_dates?:string[];learning_plan_status?:string;
@@ -163,7 +164,7 @@ export default function LearningRequestsPage() {
               <StaffCoursePack orderId={r.id} token={token} modules={r.unit_count}
                 kind={r.kind} paymentStatus={r.payment_status} startedAt={r.production_started_at||null}/>
               <StaffRecoveryPanel orderId={r.id} token={token} role={role} invoiceRef={r.invoice_ref}
-                email={r.email}/>
+                email={r.email} quoteValidUntil={r.quote_valid_until} paymentStatus={r.payment_status}/>
             </article>
           ))}
         </div>
