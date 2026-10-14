@@ -691,6 +691,7 @@ export const s4: ASection = {
         },
         {
           id: "s4-l6-quiz",
+          topic: "Cardiovascular System Pathophysiology",
           title: "Quiz: Lesson 6 topics",
           kind: "quiz",
           blocks: [
@@ -1255,6 +1256,7 @@ export const s4: ASection = {
         },
         {
           id: "s4-l7-quiz",
+          topic: "Lymphatic System Pathophysiology",
           title: "Quiz: Lesson 7 topics",
           kind: "quiz",
           blocks: [

@@ -575,6 +575,7 @@ export const s2: ASection = {
         },
         {
           id: "s2-l3-quiz",
+          topic: "Musculoskeletal System Pathophysiology",
           title: "Quiz: Lesson 3 topics",
           kind: "quiz",
           blocks: [
@@ -1268,6 +1269,7 @@ export const s2: ASection = {
         },
         {
           id: "s2-l4-quiz",
+          topic: "Integumentary System Pathophysiology",
           title: "Quiz: Lesson 4 topics",
           kind: "quiz",
           blocks: [

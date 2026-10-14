@@ -321,6 +321,7 @@ export const s5: ASection = {
         },
         {
           id: "s5-l8-quiz",
+          topic: "Respiratory System Pathophysiology",
           title: "Section 5: Quiz",
           kind: "quiz",
           blocks: [

@@ -497,6 +497,7 @@ export const s6: ASection = {
         },
         {
           id: "s6-l9-quiz",
+          topic: "Gastrointestinal System Pathophysiology",
           title: "Quiz: Lesson 9 topics",
           kind: "quiz",
           blocks: [
@@ -1045,6 +1046,7 @@ export const s6: ASection = {
         },
         {
           id: "s6-l10-quiz",
+          topic: "Renal System Pathophysiology",
           title: "Quiz: Lesson 10 topics",
           kind: "quiz",
           blocks: [

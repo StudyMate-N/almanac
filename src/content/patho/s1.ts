@@ -628,6 +628,7 @@ export const s1: ASection = {
         },
         {
           id: "s1-l1-quiz",
+          topic: "Homeostasis Concepts",
           title: "Quiz: Lesson 1 topics",
           kind: "quiz",
           blocks: [
@@ -1226,6 +1227,7 @@ export const s1: ASection = {
         },
         {
           id: "s1-l2-quiz",
+          topic: "Cellular Response and Adaptation",
           title: "Quiz: Lesson 2 topics",
           kind: "quiz",
           blocks: [

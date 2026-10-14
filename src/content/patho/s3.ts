@@ -816,6 +816,7 @@ export const s3: ASection = {
         },
         {
           id: "s3-l5-quiz",
+          topic: "Neurological System Pathophysiology",
           title: "Quiz: Lesson 5 topics",
           kind: "quiz",
           blocks: [

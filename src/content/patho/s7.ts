@@ -500,6 +500,7 @@ export const s7: ASection = {
         },
         {
           id: "s7-l11-quiz",
+          topic: "Endocrine Pathophysiology",
           title: "Quiz: Lesson 11 topics",
           kind: "quiz",
           blocks: [
@@ -1054,6 +1055,7 @@ export const s7: ASection = {
         },
         {
           id: "s7-l12-quiz",
+          topic: "Reproductive System Pathophysiology",
           title: "Quiz: Lesson 12 topics",
           kind: "quiz",
           blocks: [
