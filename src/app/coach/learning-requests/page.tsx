@@ -94,7 +94,7 @@ export default function LearningRequestsPage() {
                 <div>
                   <p className="text-xs text-ink-muted">{new Date(r.created_at).toLocaleString()} · {r.invoice_ref}</p>
                   <h2 className="mt-2 font-display text-xl font-semibold">{r.subject}</h2>
-                  <p className="text-sm text-ink-body">{r.kind} · {r.unit_count} units · {r.speed} · {r.turnaround_days} days</p>
+                  <p className="text-sm text-ink-body">{r.kind} · {r.unit_count} modules · {r.speed} · {r.turnaround_days} days</p>
                 </div>
                 <div className="text-right">
                   <p className="font-display text-2xl font-semibold">US${r.quote_usd}</p>
