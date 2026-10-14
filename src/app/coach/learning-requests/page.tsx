@@ -89,7 +89,7 @@ export default function LearningRequestsPage() {
         throw new Error("Payment was already verified. The access code cannot be displayed again; contact the owner for a reset.");
       }
       setIssued({id,invoiceRef:result.invoiceRef,code:result.accessCode,email:result.email});
-      setRows(rows=>rows.map(row=>row.id===id?{...row,payment_status:"verified",status:"in_production"}:row));
+      setRows(rows=>rows.map(row=>row.id===id?{...row,payment_status:"verified",status:"received"}:row));
     } catch(e) {setError(e instanceof Error?e.message:friendlyError(e));}
     finally {setEditing(null);}
   }
