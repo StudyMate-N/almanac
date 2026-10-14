@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { SourceMaterialUploader } from "@/components/site/source-material-uploader";
 import { ENHANCEMENTS, OFFERS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 
 type Invoice = {
@@ -133,6 +134,7 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
           <p className="mt-2">This is a payment invoice, not a payment receipt. Access codes are issued only after payment verification. For questions, email help@almanac.study.</p>
         </div>
       </article>
+      <SourceMaterialUploader orderId={id} invoiceToken={token}/>
       {bank && <section className="rounded-tile bg-white p-5 sm:p-7 print:hidden">
         <h2 className="font-display text-2xl font-semibold">Already made your transfer?</h2>
         {invoice.paymentStatus==="verified" ? <p className="mt-3 text-ink-body">Your payment has been verified. Your learning access code will be provided using the contact email from your request.</p> : (
