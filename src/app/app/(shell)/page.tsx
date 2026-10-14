@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DueTile } from "@/components/due-tile";
 import { ArrowRightIcon } from "@/components/icons";
 import { PageHeader } from "@/components/page-header";
+import { TodaySession } from "@/components/today-session";
 import { lessons as allLessons, modulesInCourse, openCourses } from "@/content/course";
 import type { Course } from "@/content/types";
 import { EXAMS, REVIEWER } from "@/lib/config";
@@ -57,7 +58,8 @@ function CourseToday({ course, showTitle }: { course: Course; showTitle: boolean
       )}
       <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
         <div className="flex flex-col gap-5">
-          {nextLesson && (
+          {/* Topics are in Today's session; this picks up summaries, quizzes and tests. */}
+          {nextLesson && nextLesson.kind !== "topic" && (
             <Link href={`/app/learn/${nextLesson.id}`} className="flex flex-col gap-2 rounded-tile bg-lilac p-6 hover:bg-violet-200">
               <p className="text-sm font-bold text-violet-700">Continue · {modulesInCourse(course.id).find((m) => m.id === nextLesson.moduleId)?.title}</p>
               <p className="font-display text-[24px] leading-tight font-semibold">{nextLesson.title}</p>
@@ -126,6 +128,9 @@ export default function Today() {
   return (
     <>
       <PageHeader eyebrow={new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} title={name ? `Hi, ${name}` : "Today"} />
+      {openCourses.map((c) => (
+        <TodaySession key={c.id} course={c} />
+      ))}
       <div className="mb-8 grid gap-5 sm:grid-cols-2">
         <DueTile />
         <Link href="/app/coach" className="rounded-tile bg-mint p-6 hover:brightness-95">
