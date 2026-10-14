@@ -11,7 +11,7 @@ async function bankRate():Promise<{value:number;date:string}>{
  const timeout=setTimeout(()=>ctrl.abort(),7000);
  try{
   const res=await fetch(BOC_URL,{signal:ctrl.signal,headers:{Accept:"application/json"}});
-  if(!res.ok)throw Error("Exchange rate unavailable");
+  if(!res.ok)throw Error("FX_HTTP_"+res.status);
   const payload=await res.json();
   const observations=Array.isArray(payload?.observations)?payload.observations:[];
   const item=[...observations].reverse().find((x:any)=>Number(x?.FXUSDCAD?.v)>0);
@@ -27,7 +27,7 @@ Deno.serve(async req=>{
  if(req.method==="GET" && new URL(req.url).searchParams.get("diagnostic")==="preflight"){
   let bankStatus="unavailable";
   try { const fx=await bankRate(); bankStatus=fx.value>0?"available":"invalid"; }
-  catch { bankStatus="unavailable"; }
+  catch(error) { bankStatus=error instanceof Error?error.message.replace(/[^a-zA-Z0-9_ -]/g,"").slice(0,70):"unavailable"; }
   return respond({serviceConfigured:Boolean(SUPABASE_URL&&SERVICE),bankRate:bankStatus});
  }
  if(req.method==="OPTIONS")return new Response(null,{headers});
