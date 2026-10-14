@@ -40,7 +40,7 @@ export default function Home() {
                 <p className="text-xs font-bold text-violet-700">CONTINUE LEARNING</p>
                 <p className="mt-2 font-display text-lg font-semibold">Understand the mechanisms</p>
                 <p className="mt-1 text-sm text-ink-body">Your next lesson and learning checks, ready when you are.</p>
-                <p className="mt-4 font-semibold text-violet-700">Return to your lesson →</p>
+                <p className="mt-4 font-semibold text-violet-700">Your next lesson, in view</p>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <div className="rounded-2xl border border-hairline p-4"><p aria-hidden="true" className="text-2xl text-violet">◫</p><p className="mt-2 font-semibold">Practice</p><p className="mt-1 text-xs text-ink-muted">Check your understanding</p></div>
@@ -102,7 +102,7 @@ export default function Home() {
                 <div className="pt-1"><h3 className="font-display text-xl font-semibold">{t}</h3><p className="mt-1 text-ink-body">{d}</p></div>
               </li>)}
             </ol>
-            <Link href="/courses" className={`${secondary} mt-6`}>Find your starting point →</Link>
+            <Link href="/how-it-works" className={`${secondary} mt-6`}>See how Almanac works →</Link>
           </div>
         </section>
 
