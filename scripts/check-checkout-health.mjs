@@ -8,7 +8,7 @@ try {
   const body={
     kind:"resource",speed:"standard",deliveryMethod:"both",
     enhancements:{deep_video:0,exam_sim:0,unit:0},
-    learningPreference:"balanced",courseId:null,
+    learningPreference:"balanced",termsAccepted:true,courseId:null,
     name:"Checkout Diagnostic",email:"diagnostic-check@example.invalid",
     subject:"Test Learning Module",
     goal:"Non-purchasing quote validation for automated checkout health tests.",
