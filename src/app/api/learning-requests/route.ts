@@ -41,9 +41,9 @@ export async function POST(request: NextRequest) {
     if (!result.ok) {
       const body = (await result.text()).slice(0, 1500);
       if (body.includes("request_limit")) return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
-      if (body.includes("express_unavailable")) return NextResponse.json({ error: "Please choose Priority delivery or remove video overviews for this course." }, { status: 422 });
+      if (body.includes("delivery_unavailable")) return NextResponse.json({ error: "The selected enhancements need a longer delivery window. Choose an available tier or reduce their quantities." }, { status: 422 });
       if (body.includes("price_changed")) return NextResponse.json({ error: "Your package price has changed. Refresh before submitting." }, { status: 409 });
-      if (body.includes("invalid_")) return NextResponse.json({ error: "Check the selected options and request details." }, { status: 400 });
+      if (body.includes("invalid_")) return NextResponse.json({ error: "Check the package, quantities, learning preferences and request details." }, { status: 400 });
       return NextResponse.json({ error: "We couldn't save your request. Please try again shortly." }, { status: 503 });
     }
     const received: { id: string; quoteUsd: number; turnaroundDays: number; status: string } = await result.json();
