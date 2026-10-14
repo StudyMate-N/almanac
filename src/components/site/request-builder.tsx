@@ -17,7 +17,7 @@ const PREFERENCE_KEYS = Object.keys(PREFERENCES) as LearningPreference[];
 const inputClass="mt-2 w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-base outline-none focus:border-violet";
 const usd=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n);
 
-type Submitted={id:string;invoiceRef:string;invoiceToken:string;quoteUsd:number;payableCadCents:number;rateDate:string;turnaroundDays:number;status:string};
+type Submitted={id:string;invoiceRef:string;invoiceToken:string;quoteUsd:number;payableCadCents:number;rateDate:string;turnaroundDays:number;status:string;notification?:{configured:boolean;customerSent:boolean;staffSent:boolean}};
 
 export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId:string|null;initialSubject:string}) {
   const [kind,setKind]=useState<OfferKind>("course");
@@ -104,6 +104,10 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
       <div className="flex justify-between"><dt>Selected turnaround</dt><dd className="font-semibold">{submitted.turnaroundDays} calendar days</dd></div>
       <div className="flex justify-between"><dt>Payment status</dt><dd className="font-semibold">Awaiting payment</dd></div>
     </dl>
+    {submitted.notification?.customerSent
+       ?<p className="mt-4 rounded-xl bg-mist p-4 text-sm text-ink-body">A copy of your private invoice link was sent to your email address. Check your inbox and spam folder.</p>
+       :<p className="mt-4 rounded-xl border border-hairline bg-lilac p-4 text-sm text-ink-body">
+        <strong>Save your private invoice link.</strong> Automatic email delivery isn't available for this order. Use the copy button below or bookmark the invoice page. If you lose the link, email support@unemployedproff.com with the invoice reference above.</p>}
     {uploadProgress&&<p role="status" className="mt-4 rounded-xl bg-mist p-3 text-sm text-ink-body">{uploadProgress}</p>}
     <div className="mt-6 flex flex-wrap items-center gap-3">
       <Link href={`/invoice?id=${encodeURIComponent(submitted.id)}&token=${encodeURIComponent(submitted.invoiceToken)}`}
