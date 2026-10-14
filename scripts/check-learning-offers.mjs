@@ -25,7 +25,6 @@ assert.equal(calculateQuote({kind:"course",speed:"standard",enhancements:{deep_v
 assert.equal(calculateQuote({kind:"exam",speed:"standard",enhancements:{deep_video:2,exam_sim:2,unit:0}}).totalUsd,297);
 assert.equal(calculateQuote({kind:"resource",speed:"standard",enhancements:{deep_video:1,exam_sim:0,unit:0}}).totalUsd,84);
 assert.equal(isSpeedAvailable("course","express",{deep_video:0,exam_sim:0,unit:0}),false);
-assert.throws(()=>parseLearningRequest({...valid,speed:"express",enhancements:{deep_video:0,exam_sim:0,unit:0}}),OfferValidationError);
 assert.equal(isSpeedAvailable("course","express",{deep_video:0,exam_sim:0,unit:1}),false);
 assert.equal(isSpeedAvailable("course","priority",{deep_video:0,exam_sim:0,unit:4}),false);
 assert.equal(isSpeedAvailable("course","standard",{deep_video:0,exam_sim:0,unit:4}),true);
@@ -47,5 +46,6 @@ assert.throws(()=>parseLearningRequest({...valid,enhancements:{...valid.enhancem
 assert.throws(()=>parseLearningRequest({...valid,enhancements:{...valid.enhancements,unit:0,deep_video:1.5}}),OfferValidationError);
 assert.throws(()=>parseLearningRequest({...valid,kind:"resource"}),OfferValidationError);
 assert.throws(()=>parseLearningRequest({...valid,speed:"express",enhancements:{deep_video:0,exam_sim:0,unit:1}}),OfferValidationError);
+assert.throws(()=>parseLearningRequest({...valid,speed:"express",enhancements:{deep_video:0,exam_sim:0,unit:0}}),OfferValidationError);
 assert.throws(()=>parseLearningRequest({...valid,learningPreference:"wrong"}),OfferValidationError);
 console.log("Almanac complete-package quotes, quantities, preferences and validation passed.");
