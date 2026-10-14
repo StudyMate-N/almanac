@@ -24,6 +24,12 @@ async function bankRate():Promise<{value:number;date:string}>{
  }finally{clearTimeout(timeout);}
 }
 Deno.serve(async req=>{
+ if(req.method==="GET" && new URL(req.url).searchParams.get("diagnostic")==="preflight"){
+  let bankStatus="unavailable";
+  try { const fx=await bankRate(); bankStatus=fx.value>0?"available":"invalid"; }
+  catch { bankStatus="unavailable"; }
+  return respond({serviceConfigured:Boolean(SUPABASE_URL&&SERVICE),bankRate:bankStatus});
+ }
  if(req.method==="OPTIONS")return new Response(null,{headers});
  if(req.method!=="POST")return respond({error:"Method not allowed"},405);
  if(!SUPABASE_URL||!SERVICE)return respond({error:"Invoice service unavailable"},503);
