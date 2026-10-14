@@ -21,7 +21,7 @@ const SWIPE = 90;
 const words = (s: string) => s.trim().split(/\s+/).length;
 /** Short prompts read big; longer ones step down so a card never feels like a wall. */
 const frontSize = (s: string) => (words(s) <= 3 ? "text-[34px] sm:text-[40px] leading-[1.1]" : words(s) <= 8 ? "text-[27px] sm:text-[30px] leading-tight" : "text-[22px] sm:text-[24px] leading-snug");
-const backSize = (s: string) => (words(s) <= 3 ? "text-[32px] sm:text-[36px] leading-tight text-violet-600" : words(s) <= 8 ? "text-[24px] sm:text-[27px] leading-snug" : "text-[20px] sm:text-[22px] leading-snug");
+const backSize = (s: string) => (words(s) <= 3 ? "text-[32px] sm:text-[36px] leading-tight text-violet-600" : words(s) <= 8 ? "text-[24px] sm:text-[27px] leading-snug text-ink" : "text-[20px] sm:text-[22px] leading-snug text-ink");
 const minutes = (n: number) => Math.max(1, Math.round((n * SECONDS_PER_CARD) / 60));
 
 function sectionLabel(moduleId: string) {
@@ -38,7 +38,7 @@ function sectionLabel(moduleId: string) {
  * on touch, and a question that shrinks out of the way when the answer opens.
  */
 export function Review() {
-  const { state, update } = useStudent();
+  const { state, update, approvalsLoaded } = useStudent();
   const { cards } = useCourse();
   const today = useCardQueue();
   const [deck, setDeck] = useState<Deck | null>(null);
@@ -48,13 +48,22 @@ export function Review() {
   const [history, setHistory] = useState<Snapshot[]>([]);
   const [now, setNow] = useState(() => new Date());
 
+  const flippedAt = useRef(0);
+  const flip = useCallback(() => {
+    flippedAt.current = performance.now();
+    setFlipped(true);
+  }, []);
+
   useEffect(() => {
+    // Build the queue once per visit, as soon as approvals are known (cached copies make this instant
+    // on return visits). Building earlier would show "all caught up" to a student with cards due.
+    if (session || !approvalsLoaded) return;
     setDeck(today.deck);
     setFresh(state.deck?.fresh ?? {});
     setSession({ queue: today.queue, round: 1, inRound: 0, graded: 0, firsts: 0, recalled: 0, seen: [], waiting: today.waiting, locked: today.locked });
-    // Load once per visit; later saves must not reshuffle the queue.
+    // Later saves must not reshuffle the queue.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [approvalsLoaded]);
 
   const resting = Boolean(session && session.inRound >= ROUND && session.queue.length > 0);
   const currentId = resting ? undefined : session?.queue[0];
@@ -112,6 +121,7 @@ export function Review() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.repeat) return; // a held key must not flip and grade in one press
       const go = e.key === " " || e.key === "Enter";
       if (e.key === "u" || e.key === "U") return undo();
       if (resting) {
@@ -124,15 +134,15 @@ export function Review() {
       if (!currentId) return;
       if (go) {
         e.preventDefault();
-        if (!flipped) setFlipped(true);
-        else grade(Rating.Good);
+        if (!flipped) flip();
+        else if (performance.now() - flippedAt.current > 300) grade(Rating.Good);
       } else if (flipped && ["1", "2", "3", "4"].includes(e.key)) {
         grade(Number(e.key) as Grade);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [currentId, flipped, grade, resting, nextRound, undo]);
+  }, [currentId, flipped, flip, grade, resting, nextRound, undo]);
 
   const left = session?.queue.length ?? 0;
   const roundSize = session ? Math.min(ROUND, session.inRound + left) : ROUND;
@@ -179,13 +189,13 @@ export function Review() {
           <>
             <FlashCard
               key={`${content.id}-${session.graded}`}
-              section={sectionLabel(content.moduleId)}
+              section={/^\d+\.\d+ /.test(content.topic) || content.topic === "Word parts" ? content.topic : sectionLabel(content.moduleId)}
               front={content.front}
               back={content.back}
               detail={content.detail}
               source={content.source?.startsWith("McCance") ? BOOK : content.source}
               flipped={flipped}
-              onFlip={() => setFlipped(true)}
+              onFlip={flip}
               onSwipe={(g) => grade(g)}
             />
 
@@ -193,7 +203,7 @@ export function Review() {
             <div className="flex min-h-[92px] flex-col justify-end gap-2">
               {flipped && intervals ? (
                 <>
-                  <div className="grid grid-cols-4 gap-2" role="group" aria-label="How well did you recall it?">
+                  <div className="grid grid-cols-4 gap-2 motion-safe:animate-[fade-in_200ms_ease-out]" role="group" aria-label="How well did you recall it?">
                     {grades.map((g) => (
                       <button
                         key={g.grade}
@@ -214,7 +224,7 @@ export function Review() {
                 </>
               ) : (
                 <>
-                  <button type="button" onClick={() => setFlipped(true)} className="min-h-[60px] rounded-full bg-violet text-[16px] font-bold text-white hover:bg-violet-600">
+                  <button type="button" onClick={flip} className="min-h-[60px] rounded-full bg-violet text-[16px] font-bold text-white hover:bg-violet-600">
                     Show answer
                   </button>
                   <p className="hidden text-center text-xs text-ink-muted sm:block">Space to show</p>
@@ -307,37 +317,35 @@ function FlashCard({
         <span className="min-w-0 truncate rounded-full bg-lilac px-3 py-1 text-xs font-bold text-violet-700">{section}</span>
       </div>
 
-      {/* Two rows that trade space: 1fr/0fr before the flip, 0fr/1fr after. */}
-      <div
-        className="relative grid flex-1 px-[22px] pb-6 transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
-        style={{ gridTemplateRows: flipped ? "0fr 1fr" : "1fr 0fr" }}
-      >
-        <div className={`flex flex-col justify-center ${flipped ? "pt-4" : "py-6"}`}>
-          <p className={`transition-all duration-300 motion-reduce:transition-none ${flipped ? "text-xs font-bold tracking-[0.06em] text-ink-muted uppercase" : "sr-only"}`}>Question</p>
-          <h2
-            className={`font-display transition-all duration-300 motion-reduce:transition-none ${flipped ? "mt-1 text-[16px] leading-snug font-semibold text-ink-muted" : `${frontSize(front)} text-center font-medium text-ink`}`}
-          >
-            {front}
-          </h2>
-          {!flipped && <p className="mt-5 text-center text-[13px] font-semibold text-ink-faint">Tap the card to show the answer</p>}
-        </div>
-
-        <div className="min-h-0 overflow-hidden">
-          <div aria-live="polite" className={`flex h-full flex-col py-4 transition-opacity duration-300 motion-reduce:transition-none ${flipped ? "opacity-100" : "opacity-0"}`}>
-            {flipped && (
-              <>
-                <span aria-hidden="true" className="border-t-2 border-dashed border-hairline" />
-                <div className="my-auto flex flex-col gap-2 py-4">
-                  <p className="text-xs font-bold tracking-[0.06em] text-ink-muted uppercase">Answer</p>
-                  <p className={`font-display font-semibold text-ink ${backSize(back)}`}>{back}</p>
+      {/*
+        Shrink and expand, as one group centred in the card: before the flip the question
+        fills it; on the flip the question shrinks and the answer opens directly beneath it,
+        so the eye moves a few lines down, not across the card. Left-aligned in both states.
+      */}
+      <div className="relative flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-[22px] py-5">
+        <h2
+          className={`font-display transition-[font-size,line-height,color] duration-300 ease-out motion-reduce:transition-none ${flipped ? "text-[17px] leading-snug font-semibold text-ink-muted" : `${frontSize(front)} font-medium text-ink`}`}
+        >
+          {front}
+        </h2>
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none" style={{ gridTemplateRows: flipped ? "1fr" : "0fr" }}>
+          <div className="min-h-0 overflow-hidden">
+            <div aria-live="polite" className={`flex flex-col gap-2.5 pt-4 transition-opacity duration-200 ease-out motion-reduce:transition-none ${flipped ? "opacity-100 delay-100" : "opacity-0"}`}>
+              <span aria-hidden="true" className="mb-1 border-t-2 border-dashed border-hairline" />
+              {flipped && (
+                <>
+                  <p className={`font-display font-semibold ${backSize(back)}`}>{back}</p>
                   {detail && <p className="text-[15px] leading-relaxed text-ink-body">{detail}</p>}
-                </div>
-                {source && <p className="text-xs text-ink-muted">{source}</p>}
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
+        <p aria-hidden={flipped} className={`mt-6 text-[13px] font-semibold text-ink-faint transition-opacity duration-150 ${flipped ? "opacity-0" : "opacity-100"}`}>
+          {flipped ? "\u00a0" : "Tap the card or press Space"}
+        </p>
       </div>
+      <p className={`relative px-[22px] pb-5 text-xs text-ink-muted transition-opacity duration-300 ${flipped && source ? "opacity-100" : "opacity-0"}`}>{source || "\u00a0"}</p>
     </section>
   );
 }

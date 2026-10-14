@@ -1,6 +1,7 @@
 "use client";
 
 import { Sidebar, TabBar } from "@/components/app-nav";
+import { PageTransition } from "@/components/page-transition";
 import { useStudent } from "@/lib/store";
 
 export default function ShellLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +19,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
           {offline && (
             <p className="mb-5 rounded-2xl bg-peach px-4 py-2.5 text-[13px] font-medium text-peach-ink">You&apos;re offline. Your work is saved on this device and will sync when you reconnect.</p>
           )}
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
       </div>
       <TabBar />
