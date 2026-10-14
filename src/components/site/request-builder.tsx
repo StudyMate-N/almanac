@@ -261,7 +261,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
             return <button key={key} type="button" disabled={!available} aria-pressed={speed===key} onClick={()=>setSpeed(key)}
               className={`min-h-24 rounded-2xl border-2 px-2 py-3 text-center transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${speed===key?"border-violet bg-lilac":"border-hairline bg-white hover:bg-mist"}`}>
               <span className="block text-sm font-semibold">{SPEEDS[key].title}</span>
-              <span className="mt-1 block font-display text-lg font-semibold">{offer.turnaround[key]} days</span>
+              <span className="mt-1 block font-display text-lg font-semibold">{key==="express"&&kind==="course"?"Not offered":offer.turnaround[key]+" days"}</span>
               <span className="mt-1 block text-xs text-ink-muted">{available?(SPEEDS[key].factor===1?"Base rate":`${SPEEDS[key].factor}×`):"Unavailable"}</span>
             </button>;
           })}
