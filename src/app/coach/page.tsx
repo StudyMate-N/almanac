@@ -317,6 +317,9 @@ export default function CoachConsole() {
           <span className="font-semibold">
             {admin.label} · {admin.role}
           </span>
+          {admin.role !== "reviewer" && <a href="/coach/learning-requests" className="rounded-full bg-lilac px-3 py-2 font-bold text-violet-700">
+            Learning orders &amp; payments
+          </a>}
           <a href="/app" className="font-bold text-violet-600">
             Preview student app
           </a>
