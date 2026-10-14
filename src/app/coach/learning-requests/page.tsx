@@ -68,14 +68,21 @@ export default function LearningRequestsPage() {
   async function verifyPayment(id:string) {
     const row=rows.find(r=>r.id===id);
     const cad=row?.payable_cad_cents ? new Intl.NumberFormat("en-CA",{style:"currency",currency:"CAD"}).format(row.payable_cad_cents/100) : "CAD amount not recorded";
-    if(!token || editing || !row?.payable_cad_cents || !window.confirm(
-      "Confirm you independently checked your bank account and received "+cad+
-      " for invoice "+row.invoice_ref+". Do not rely on the customer's screenshot alone. This will issue a one-time access code."
-    )) return;
+    if(!token || editing || !row?.payable_cad_cents)return;
+    const typed=window.prompt("Enter the CAD amount actually received in your bank account for "+row.invoice_ref+" (example: 123.45). This is not the amount on a screenshot.");
+    if(typed===null)return;
+    if(!/^\\d+(?:\\.\\d{1,2})?$/.test(typed.trim())||
+      Math.round(Number(typed.trim())*100)!==row.payable_cad_cents){
+      setError("Bank amount does not match the invoice's fixed CAD total ("+cad+"). Do not issue access; investigate any shortfall or fee.");
+      return;
+    }
+    if(!window.confirm("I have independently verified that exactly "+cad+
+      " has been credited to the receiving bank account for invoice "+row.invoice_ref+
+      ". A payment screenshot alone is not sufficient. Issue the access code?"))return;
     setEditing(id);setError("");
     try {
       const result=await rpc<{paymentStatus:string;accessCode?:string;invoiceRef?:string;email?:string;alreadyVerified?:boolean}>(
-        "learning_payment_verify",{p_token:token,p_id:id});
+        "learning_payment_verify",{p_token:token,p_id:id,p_cad_cents:row.payable_cad_cents});
       if(result.alreadyVerified || !result.accessCode || !result.invoiceRef || !result.email) {
         throw new Error("Payment was already verified. The access code cannot be displayed again; contact the owner for a reset.");
       }
