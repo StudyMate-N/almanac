@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
@@ -13,7 +14,7 @@ const inputClass = "w-full rounded-2xl border border-hairline bg-white px-4 py-3
 const optionClass = "min-h-12 rounded-2xl border-2 px-4 py-3 text-left transition-colors";
 const usd = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
-type Submitted = { id: string; quoteUsd: number; turnaroundDays: number; status: string };
+type Submitted = { id: string; invoiceRef: string; invoiceToken: string; quoteUsd: number; turnaroundDays: number; status: string };
 
 export function RequestBuilder({ initialCourseId, initialSubject }: {
   initialCourseId: string | null;
@@ -67,17 +68,22 @@ export function RequestBuilder({ initialCourseId, initialSubject }: {
   if (submitted) return (
     <section className="mt-10 rounded-tile border border-hairline bg-white p-6 sm:p-10" role="status">
       <p className="text-sm font-bold text-violet-700">REQUEST RECEIVED</p>
-      <h2 className="mt-2 font-display text-3xl font-semibold">Your learning request is saved.</h2>
-      <p className="mt-3 text-ink-body">We have the details of what you would like us to prepare. Keep this reference for follow-up.</p>
+      <h2 className="mt-2 font-display text-3xl font-semibold">Your invoice is ready.</h2>
+      <p className="mt-3 text-ink-body">Your selections and final price have been saved. Open your invoice to view the bank transfer instructions, print a copy, and report your payment.</p>
       <dl className="mt-6 grid gap-3 rounded-card bg-mist p-5 text-sm">
-        <div className="flex flex-wrap justify-between gap-2"><dt>Reference</dt><dd className="break-all font-semibold">{submitted.id}</dd></div>
+        <div className="flex flex-wrap justify-between gap-2"><dt>Reference</dt><dd className="break-all font-semibold">{submitted.invoiceRef}</dd></div>
         <div className="flex justify-between"><dt>Package total</dt><dd className="font-semibold">{usd(submitted.quoteUsd)}</dd></div>
         <div className="flex justify-between"><dt>Turnaround</dt><dd className="font-semibold">{submitted.turnaroundDays} calendar days</dd></div>
-        <div className="flex justify-between"><dt>Request status</dt><dd className="font-semibold">Received · awaiting next steps</dd></div>
+        <div className="flex justify-between"><dt>Request status</dt><dd className="font-semibold">Awaiting payment</dd></div>
       </dl>
+      <Link href={`/invoice?id=${encodeURIComponent(submitted.id)}&token=${encodeURIComponent(submitted.invoiceToken)}`}
+        className="mt-6 inline-flex min-h-14 items-center rounded-full bg-violet px-6 font-bold text-white hover:bg-violet-600">
+        View and print your invoice →
+      </Link>
       <p className="mt-4 text-sm text-ink-muted">
-        No payment has been taken. Your delivery period begins once payment and the required materials are received.
-        We will use the email you provided to coordinate the next steps.
+        No payment has been collected. Keep your private invoice link to track verification.
+        Your delivery window starts once payment and required materials are received.
+        A learning access code is issued after verification.
       </p>
     </section>
   );
