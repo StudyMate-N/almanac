@@ -31,7 +31,13 @@ export async function POST(request:NextRequest) {
     });
     if(!response.ok){
       const message=await response.text();
-      return NextResponse.json({error:message.includes("invalid_payment_details")?"Check the transfer reference and date.":"We couldn't record the transfer details. Please try again."},{status:response.status===400?400:503});
+      return NextResponse.json({
+        error:message.includes("invoice_expired")
+          ?"This transfer date falls after the CAD quote expired. Do not pay again. Contact support with your invoice reference for help."
+          :message.includes("invalid_payment_details")
+          ?"Check the transfer reference and payment date. You may use a receipt instead of a reference."
+          :"We couldn't record the transfer details. Please try again."
+      },{status:response.status===400?400:503});
     }
     const responseData=await response.json();
     // A secondary notification failure must not lose a valid payment report.
