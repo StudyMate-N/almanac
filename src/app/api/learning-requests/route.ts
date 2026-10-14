@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
     });
     if (!result.ok) {
       const body = (await result.text()).slice(0, 1500);
+      if (body.includes("fx_rate_unavailable")) return NextResponse.json({
+        error: "We can't confirm the Canadian-dollar exchange rate just now. Please try again shortly. Your choices are still on this page."
+      }, { status: 503 });
       if (body.includes("request_limit")) return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
       if (body.includes("delivery_unavailable")) return NextResponse.json({ error: "The selected enhancements need a longer delivery window. Choose an available tier or reduce their quantities." }, { status: 422 });
       if (body.includes("price_changed")) return NextResponse.json({ error: "Your package price has changed. Refresh before submitting." }, { status: 409 });
