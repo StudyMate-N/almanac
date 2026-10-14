@@ -6,6 +6,8 @@ import { Suspense, useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { courseById, lessons, openCourses } from "@/content/course";
 import { EXAMS } from "@/lib/config";
+import { moduleWeeks, planFor, weekToday } from "@/lib/plan";
+import { topicStats } from "@/lib/progress";
 import { useStudent } from "@/lib/store";
 import { useCourse } from "@/lib/use-course";
 
@@ -64,6 +66,32 @@ function Practice() {
     ([v]) => v === "all" || questions.some((q) => q.level === v),
   );
   const cq = `?course=${courseId}`;
+
+  // One-tap presets.
+  const weak = topicStats(questions, latest).filter((t) => !/: Test$/.test(t.topic));
+  const missedCount = questions.filter((q) => latest.get(q.id)?.correct === false).length;
+  const plan = planFor(state, courseId);
+  const weeks = plan ? moduleWeeks(plan, courseId) : null;
+  const sections = withQs.filter((m) => m.kind === "section");
+  const nowSection =
+    (weeks && plan ? sections.find((m) => weeks[m.id] === weekToday(plan)) : undefined) ??
+    sections.find((m) => lessons.some((l) => l.moduleId === m.id && l.kind === "topic" && !state.lessons[l.id])) ??
+    sections[0];
+  const presets = [
+    {
+      key: "weak",
+      title: "My weak spots",
+      sub: weak.length ? `10 questions from ${weak[0].topic} and your other lowest topics · tutor mode` : "Answer a few questions first",
+      href: weak.length ? "/app/practice/weak?n=10" : undefined,
+    },
+    { key: "missed", title: "What I missed", sub: missedCount ? `${missedCount} question${missedCount === 1 ? "" : "s"} you got wrong last time` : "Nothing missed yet", href: missedCount ? "/app/practice/missed" : undefined },
+    {
+      key: "test",
+      title: "Before the section test",
+      sub: nowSection ? `10 questions from ${nowSection.title} · exam mode` : "Opens once questions are approved",
+      href: nowSection ? `/app/practice/custom?m=${nowSection.id}&t=all&l=all&p=all&n=10&mode=exam&timer=0` : undefined,
+    },
+  ];
   const href = `/app/practice/custom?m=${(mods.length ? mods : withQs.map((m) => m.id)).join(",")}&t=${type}&l=${level}&p=${pool}&n=${count}&mode=${mode}&timer=${timer}`;
 
   return (
@@ -75,6 +103,25 @@ function Practice() {
         </div>
       )}
       {questions.length === 0 && <p className="mb-5 rounded-tile bg-white p-6 text-ink-body">Questions appear here once our nurse reviewer approves them.</p>}
+
+      {questions.length > 0 && (
+        <section aria-label="Quick sets" className="mb-5 grid gap-4 sm:grid-cols-3">
+          {presets.map((p) =>
+            p.href ? (
+              <Link key={p.key} href={p.href} className="flex min-h-[120px] flex-col gap-1 rounded-tile bg-lilac p-5 hover:bg-violet-200">
+                <span className="font-display text-[19px] font-semibold text-violet-deep">{p.title}</span>
+                <span className="text-sm text-ink-body">{p.sub}</span>
+                <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-sm font-bold text-violet-700">Start</span>
+              </Link>
+            ) : (
+              <div key={p.key} className="flex min-h-[120px] flex-col gap-1 rounded-tile bg-white p-5 opacity-70">
+                <span className="font-display text-[19px] font-semibold">{p.title}</span>
+                <span className="text-sm text-ink-muted">{p.sub}</span>
+              </div>
+            ),
+          )}
+        </section>
+      )}
 
       <section className="mb-5 grid gap-4 sm:grid-cols-3">
         {(["midterm", "final"] as const).map((k) => (
@@ -95,8 +142,14 @@ function Practice() {
         ))}
       </section>
 
-      <section className="mb-5 flex flex-col gap-4 rounded-tile bg-white p-6">
-        <h2 className="font-display text-[21px] font-semibold">Build a practice set</h2>
+      <details className="group mb-5 rounded-tile bg-white">
+        <summary className="flex min-h-[64px] cursor-pointer list-none items-center justify-between gap-3 px-6 font-display text-[21px] font-semibold [&::-webkit-details-marker]:hidden">
+          Customize a set
+          <span aria-hidden="true" className="text-[18px] text-violet-600 transition-transform group-open:rotate-180">
+            ▾
+          </span>
+        </summary>
+      <section className="flex flex-col gap-4 px-6 pb-6">
         <fieldset>
           <legend className="mb-2 text-sm font-bold">Modules</legend>
           <div className="flex flex-wrap gap-2">
@@ -126,6 +179,7 @@ function Practice() {
           </span>
         </div>
       </section>
+      </details>
 
       {lessonSets.length > 0 && (
         <section className="rounded-tile bg-white p-6">
