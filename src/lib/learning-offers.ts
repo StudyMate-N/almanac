@@ -118,6 +118,8 @@ const allowed = (obj: object, value: unknown): value is string => typeof value =
 export function isSpeedAvailable(kind: OfferKind, speed: Speed, extras: EnhancementCounts) {
   // Actual staff production capacity still needs verification before enabling paid checkout.
   // Never remove included videos or other core materials to meet a shorter deadline.
+  // A complete eight-module course cannot be promised in three days without confirmed capacity.
+  if (kind === "course" && speed === "express") return false;
   if (speed === "express" && (extras.unit > 0 || extras.deep_video > 1 || extras.exam_sim > 1)) return false;
   if (speed === "priority" && extras.unit > 2) return false;
   return true;
