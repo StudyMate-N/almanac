@@ -20,7 +20,7 @@ export async function POST(request:NextRequest) {
   const token=typeof data.token==="string"?data.token:"";
   const reference=typeof data.reference==="string"?data.reference.trim():"";
   const paidOn=typeof data.paidOn==="string"?data.paidOn:"";
-  if(!uuid.test(id)||!tokenPattern.test(token)||reference.length<5||reference.length>120||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(paidOn)) {
+  if(!uuid.test(id)||!tokenPattern.test(token)||(reference.length>0&&reference.length<5)||reference.length>120||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(paidOn)) {
     return NextResponse.json({error:"Enter a valid transfer reference and payment date."},{status:400});
   }
   try {
