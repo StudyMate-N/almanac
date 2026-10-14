@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { ArrowRightIcon, BookIcon, CardsIcon } from "@/components/icons";
 import { VideoPlayer } from "@/components/video-player";
 import { cardById, imageById, questionById } from "@/content/course";
-import { clipById } from "@/content/patho";
+import { type Clip, clipById } from "@/content/patho";
 import type { Block, Card, Question } from "@/content/types";
 import { useStudent } from "@/lib/store";
 import { LearningCheck } from "./question";
@@ -13,7 +13,30 @@ import { QuizBlock } from "./quiz";
 
 const Html = ({ html, className }: { html: string; className?: string }) => <span className={className} dangerouslySetInnerHTML={{ __html: html }} />;
 
-const toSec = (t: string) => t.split(":").reduce((a, b) => a * 60 + Number(b), 0);
+export const toSec = (t: string) => t.split(":").reduce((a, b) => a * 60 + Number(b), 0);
+
+/** The reviewer's corrections to a clip, each with a link that seeks to it. */
+export function Corrections({ clip, seek }: { clip: Clip; seek: (at: string) => void }) {
+  if (!clip.corrections.length) return null;
+  return (
+    <details className="rounded-card bg-peach px-4 py-3 text-[15px]">
+      <summary className="cursor-pointer font-bold text-peach-ink">
+        {clip.corrections.length} correction{clip.corrections.length > 1 ? "s" : ""} to this clip
+      </summary>
+      <ul className="mt-3 flex flex-col gap-2.5">
+        {clip.corrections.map((c) => (
+          <li key={c.at} className="rounded-2xl bg-white p-3.5">
+            <button onClick={() => seek(c.at)} className="mb-1 rounded-full bg-peach px-2.5 py-0.5 text-xs font-bold text-peach-ink">
+              At {c.at}
+            </button>
+            <p className="text-ink-muted line-through decoration-1">{c.said}</p>
+            <p className="mt-1">{c.correct}</p>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
 
 function ClipBlock({ clip: id, note }: { clip: string; note?: string }) {
   const clip = clipById(id);
@@ -33,24 +56,7 @@ function ClipBlock({ clip: id, note }: { clip: string; note?: string }) {
         <span className="rounded-full bg-white px-3 py-0.5 text-[13px] font-semibold text-ink-muted">Course video · {clip.duration}</span>
       </figcaption>
       {note && <p className="px-1 text-[15px] text-ink-body">{note}</p>}
-      {clip.corrections.length > 0 && (
-        <details className="rounded-card bg-peach px-4 py-3 text-[15px]">
-          <summary className="cursor-pointer font-bold text-peach-ink">
-            {clip.corrections.length} correction{clip.corrections.length > 1 ? "s" : ""} to this clip
-          </summary>
-          <ul className="mt-3 flex flex-col gap-2.5">
-            {clip.corrections.map((c) => (
-              <li key={c.at} className="rounded-2xl bg-white p-3.5">
-                <button onClick={() => seek(c.at)} className="mb-1 rounded-full bg-peach px-2.5 py-0.5 text-xs font-bold text-peach-ink">
-                  At {c.at}
-                </button>
-                <p className="text-ink-muted line-through decoration-1">{c.said}</p>
-                <p className="mt-1">{c.correct}</p>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      <Corrections clip={clip} seek={seek} />
     </figure>
   );
 }
@@ -98,14 +104,14 @@ function CardsBlock({ title, cards }: { title: string; cards: Card[] }) {
   );
 }
 
-function Predict({ id, stem, options, correct, reveal }: { id: string; stem: string; options: { id: string; text: string }[]; correct: string; reveal: string }) {
+export function Predict({ id, stem, options, correct, reveal, eyebrow = "Predict first · not scored", children }: { id: string; stem: string; options: { id: string; text: string }[]; correct: string; reveal: string; eyebrow?: string; children?: React.ReactNode }) {
   const { state, update } = useStudent();
   const key = `predict:${id}`;
   const pick = state.notes[key];
   const choose = (o: string) => !pick && update("notes", { ...state.notes, [key]: o });
   return (
     <section aria-label="Predict first" className="flex flex-col gap-3 rounded-tile bg-white p-[20px_22px]">
-      <p className="text-xs font-extrabold tracking-[.06em] text-violet-600 uppercase">Predict first · not scored</p>
+      <p className="text-xs font-extrabold tracking-[.06em] text-violet-600 uppercase">{eyebrow}</p>
       <p className="font-display text-[18px] leading-snug font-semibold">{stem}</p>
       <div className="flex flex-wrap gap-2.5">
         {options.map((o) => {
@@ -122,6 +128,7 @@ function Predict({ id, stem, options, correct, reveal }: { id: string; stem: str
           <strong className="text-violet-700">{pick === correct ? "Right." : "Not quite."}</strong> {reveal}
         </p>
       )}
+      {pick && children}
     </section>
   );
 }
@@ -174,7 +181,7 @@ export function TopicHead({ eq, items }: { eq?: string; items: string[] }) {
   );
 }
 
-function OpenPrompt({ id, stem, expert }: { id: string; stem: string; expert: string }) {
+export function OpenPrompt({ id, stem, expert }: { id: string; stem: string; expert: string }) {
   const { state, update } = useStudent();
   const [text, setText] = useState(state.notes[id] ?? "");
   const [shown, setShown] = useState(Boolean(state.notes[id]));

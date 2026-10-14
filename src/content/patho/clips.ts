@@ -3,7 +3,15 @@
  * media store (mp4, jpg poster and vtt captions share each clip id). Each clip
  * carries the reviewers' corrections, shown under the player with a seek link.
  */
-export type Clip = { id: string; title: string; shortTitle?: string; duration: string; corrections: { at: string; said: string; correct: string }[] };
+export type Clip = {
+  id: string;
+  title: string;
+  shortTitle?: string;
+  duration: string;
+  corrections: { at: string; said: string; correct: string }[];
+  /** Chapter marks ("m:ss" and a label) for video-led topic pages. */
+  chapters?: { at: string; label: string }[];
+};
 
 export const clips: Clip[] = [
   {

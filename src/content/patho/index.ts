@@ -14,4 +14,4 @@ import { s7 } from "./s7";
 import { start } from "./start";
 
 export const patho = build([start, s1, s2, s3, s4, s5, s6, s7, final]);
-export { clipById, clips } from "./clips";
+export { type Clip, clipById, clips } from "./clips";

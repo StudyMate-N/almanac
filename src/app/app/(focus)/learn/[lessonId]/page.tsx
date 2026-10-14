@@ -7,6 +7,7 @@ import { LogoMark } from "@/components/brand";
 import { ArrowRightIcon, XIcon } from "@/components/icons";
 import { BlockView } from "@/components/player/blocks";
 import { kindLabel, Outline, Ring } from "@/components/player/outline";
+import { VideoLedTopic, videoLedClip } from "@/components/player/video-led";
 import { ReportButton, TutorButton } from "@/components/tutor";
 import { courseById, lessonById, lessons, modulesInCourse, moduleById, questionById } from "@/content/course";
 import type { Card, Lesson, Question } from "@/content/types";
@@ -70,6 +71,8 @@ export default function Player() {
   const next = coursePages.slice(idx + 1).find(isOpen);
   const done = coursePages.filter((p) => isDone(p.id)).length;
   const approved = isApproved(page.id, page);
+  // A topic page with a question-stop clip is video-led; without one (or without media) it reads.
+  const videoClip = videoLedClip(page);
   // Topic pages are titled "5.3 Obstructive disease": the number goes in the breadcrumb.
   const topicNum = page.kind === "topic" ? page.title.match(/^\d+\.\d+(?=\s)/)?.[0] : undefined;
   const sectionLabel = mod.kind === "section" ? `Section ${mod.number}` : mod.kind === "start" ? "Start here" : "Final review";
@@ -128,7 +131,7 @@ export default function Player() {
             </nav>
             <h1 className="font-display text-[30px] leading-[1.15] font-semibold sm:text-[36px]">{topicNum ? page.title.slice(topicNum.length).trim() : page.title}</h1>
             <div className="mt-3 mb-7 flex flex-wrap gap-2 text-[13px] font-bold">
-              <span className="rounded-full bg-white px-3 py-1 text-violet-700">{kindLabel[page.kind]}</span>
+              <span className="rounded-full bg-white px-3 py-1 text-violet-700">{videoClip ? "Video topic" : kindLabel[page.kind]}</span>
               <span className="rounded-full bg-white px-3 py-1 text-ink-muted">About {minutesFor(page)} min</span>
               {isDone(page.id) ? (
                 <span className="rounded-full bg-mint px-3 py-1 text-mint-ink">Done</span>
@@ -151,6 +154,9 @@ export default function Player() {
                 </p>
               </div>
             ) : (
+              videoClip ? (
+                <VideoLedTopic page={page} vb={videoClip} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} />
+              ) : (
               <div className="flex flex-col gap-6">
                 {page.blocks.map((b, i) => {
                   const prev = page.blocks[i - 1];
@@ -159,6 +165,7 @@ export default function Player() {
                   return <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} eq={eq} />;
                 })}
               </div>
+              )
             )}
 
             {open && (
