@@ -117,7 +117,7 @@ export function build(sections: ASection[]): Built {
         const source = p.source ?? s.source ?? TEXT;
         // A topic page is its own topic ("5.3 Obstructive disease" → "Obstructive disease"). Other pages
         // in a "Topics" group set `topic` themselves; lesson quizzes keep their pre-restructure topic.
-        const topic = p.topic ?? (p.kind === "topic" ? p.title.replace(/^\d+\.\d+\s+/, "") : undefined) ?? g.topic ?? g.title.replace(/^Lesson \d+:\s*/, "");
+        const topic = p.topic ?? (p.kind === "topic" ? (p.shortTitle ?? p.title).replace(/^\d+\.\d+\s+/, "") : undefined) ?? g.topic ?? g.title.replace(/^Lesson \d+:\s*/, "");
         if (topic === "Topics" && p.blocks.some((b) => b.t === "q" || b.t === "quiz")) console.warn(`[course] ${p.id}: questions get the topic "Topics"; set topic on the page`);
         // An img id names the image file, and one image can appear on more than one
         // page (s6-ckd-kidney is in 1.3 and 6.5), so it only has to be unique per page.
