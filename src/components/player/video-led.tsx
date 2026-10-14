@@ -78,7 +78,8 @@ export function VideoLedTopic({ page, vb, visibleQ, visibleCards, onComplete }: 
     if (!el) return;
     const now = el.currentTime;
     // Playing through a stop pauses for it; seeking past one doesn't (the page stays incomplete instead).
-    if (!el.seeking) {
+    // Browsers fire timeupdate after a seek with seeking already false, so a jump counts as a seek too.
+    if (!el.seeking && now - last.current < 1.5) {
       const hit = stops.find((s) => s.at > 0 && s.at > last.current && s.at <= now && !answered(s));
       if (hit) {
         el.pause();
@@ -120,6 +121,7 @@ export function VideoLedTopic({ page, vb, visibleQ, visibleCards, onComplete }: 
             onPause={() => setPlaying(false)}
             onLoadedMetadata={(e) => e.currentTarget.duration && setDur(e.currentTarget.duration)}
             onTimeUpdate={onTime}
+            onSeeking={(e) => (last.current = e.currentTarget.currentTime)}
             onSeeked={(e) => (last.current = e.currentTarget.currentTime)}
           >
             <source src={`${base}.mp4`} type="video/mp4" />
