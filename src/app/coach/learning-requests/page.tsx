@@ -9,6 +9,7 @@ import { StaffLearningPlan } from "@/components/site/staff-learning-plan";
 import { StaffPaymentProofs } from "@/components/site/staff-payment-proofs";
 import { StaffDeliveryPanel } from "@/components/site/staff-delivery-panel";
 import { StaffRecoveryPanel } from "@/components/site/staff-recovery-panel";
+import { StaffCoursePack } from "@/components/site/staff-course-pack";
 import { ENHANCEMENTS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 
 type RequestRow = {
@@ -159,6 +160,8 @@ export default function LearningRequestsPage() {
               <StaffDeliveryPanel orderId={r.id} token={token} paymentStatus={r.payment_status}
                 days={r.turnaround_days} startedAt={r.production_started_at||null}
                 dueAt={r.delivery_due_at||null} kind={r.kind} modules={r.unit_count}/>
+              <StaffCoursePack orderId={r.id} token={token} modules={r.unit_count}
+                kind={r.kind} paymentStatus={r.payment_status} startedAt={r.production_started_at||null}/>
               <StaffRecoveryPanel orderId={r.id} token={token} role={role} invoiceRef={r.invoice_ref}
                 email={r.email}/>
             </article>
