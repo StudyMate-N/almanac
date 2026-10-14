@@ -8,6 +8,7 @@ import {
   type DeliveryMethod, type Enhancement, type EnhancementCounts,
   type LearningPreference, type OfferKind, type Speed,
 } from "@/lib/learning-offers";
+import { SOURCE_ACCEPT, checkSourceFiles, uploadOrderSource } from "@/lib/learning-source-files";
 
 const PACKAGE_KEYS: OfferKind[] = ["resource","exam","course"];
 const ENHANCEMENT_KEYS = Object.keys(ENHANCEMENTS) as Enhancement[];
@@ -32,6 +33,9 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState("");
   const [submitted,setSubmitted]=useState<Submitted|null>(null);
+  const [sourceFiles,setSourceFiles]=useState<File[]>([]);
+  const [sourceError,setSourceError]=useState("");
+  const [uploadProgress,setUploadProgress]=useState("");
 
   const offer=OFFERS[kind];
   const quote=useMemo(()=>calculateQuote({kind,speed,enhancements}),[kind,speed,enhancements]);
@@ -50,6 +54,12 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
       return {...current,[key]:next};
     });
   }
+  function selectSources(fileList:FileList|null) {
+    const selected=Array.from(fileList??[]);
+    const validation=checkSourceFiles(selected);
+    setSourceError(validation??"");
+    setSourceFiles(validation?[]:selected);
+  }
   async function submit(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if(busy||!speedAvailable)return;
@@ -66,6 +76,18 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
       const result=await response.json() as Submitted&{error?:string};
       if(!response.ok)throw new Error(result.error||"We couldn't save your request. Please try again.");
       setSubmitted(result);
+      if(sourceFiles.length){
+        setUploadProgress(`Uploading your ${sourceFiles.length} course ${sourceFiles.length===1?"file":"files"} securely…`);
+        let completed=0;
+        for(const file of sourceFiles){
+          try{await uploadOrderSource(result.id,result.invoiceToken,file);completed++;}
+          catch(e){
+            setUploadProgress(`${completed} of ${sourceFiles.length} files saved. ${e instanceof Error?e.message:"An upload failed."} You can retry from your private invoice.`);
+            break;
+          }
+        }
+        if(completed===sourceFiles.length)setUploadProgress(`All ${completed} ${completed===1?"file":"files"} attached to your order.`);
+      }
     } catch(e) {setError(e instanceof Error?e.message:"We couldn't save your request.");}
     finally {setBusy(false);}
   }
@@ -80,6 +102,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
       <div className="flex justify-between"><dt>Selected turnaround</dt><dd className="font-semibold">{submitted.turnaroundDays} calendar days</dd></div>
       <div className="flex justify-between"><dt>Payment status</dt><dd className="font-semibold">Awaiting payment</dd></div>
     </dl>
+    {uploadProgress&&<p role="status" className="mt-4 rounded-xl bg-mist p-3 text-sm text-ink-body">{uploadProgress}</p>}
     <div className="mt-6 flex flex-wrap items-center gap-3">
       <Link href={`/invoice?id=${encodeURIComponent(submitted.id)}&token=${encodeURIComponent(submitted.invoiceToken)}`}
         className="inline-flex min-h-14 items-center rounded-full bg-violet px-6 font-bold text-white hover:bg-violet-600">View and print your invoice →</Link>
@@ -113,6 +136,34 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
             <textarea required minLength={10} maxLength={2000} rows={3} value={goal} onChange={e=>setGoal(e.target.value)}
               className={inputClass} placeholder="Your course, exam, important topics, syllabus or learning goals"/>
           </label>
+        </div>
+        <div className="mt-6 rounded-card border border-violet bg-mist p-4 sm:p-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-display text-lg font-semibold">Make it specific to your course.</h3>
+            <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-violet-700">Recommended · Optional</span>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-ink-body">
+            Have a syllabus, lecture slides, notes, or course resources?
+            Share them to help us match your learning materials to your actual topics, objectives, and dates.
+            Personalization is included in your package.
+          </p>
+          <label className="mt-4 block text-sm font-semibold">Add your course materials
+            <input type="file" multiple accept={SOURCE_ACCEPT}
+              onChange={e=>selectSources(e.target.files)}
+              className="mt-2 block w-full rounded-xl border border-hairline bg-white p-3 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-lilac file:px-3 file:py-2 file:font-semibold file:text-violet-700"/>
+          </label>
+          {sourceFiles.length>0&&<ul className="mt-3 space-y-1 text-xs text-ink-body">
+            {sourceFiles.map((file,i)=><li key={i} className="flex flex-wrap justify-between gap-2">
+              <span className="break-all">{file.name}</span>
+              <span>{(file.size/1024/1024).toFixed(1)} MB · Selected</span>
+            </li>)}
+          </ul>}
+          {sourceError&&<p role="alert" className="mt-3 text-sm font-medium text-rose-ink">{sourceError}</p>}
+          <p className="mt-3 text-xs text-ink-muted">
+            PDF, DOCX, PPTX, TXT, PNG, JPG · Up to 8 files, 10 MB each, 40 MB total.
+            Your files upload securely after you create the request. You can also add them later using your private invoice.
+            Only share materials you have permission to use; don't include passwords or sensitive student records.
+          </p>
         </div>
       </section>
 
