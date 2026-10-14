@@ -39,7 +39,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
   })}).then(r=>r.json()).then(data=>{if(!cancelled&&Array.isArray(data.files))setProofs(data.files);})
   .catch(()=>{});
   return()=>{cancelled=true};
- },[id,token,payable]);
+ },[id,token,hasQuote]);
 
  async function copy(value:string,label:string){
   try{await navigator.clipboard.writeText(value);setCopied(label);}catch{setNotice("Copy isn't available in this browser. You can select the details below.");}
