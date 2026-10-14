@@ -9,8 +9,6 @@ export type Clip = {
   shortTitle?: string;
   duration: string;
   corrections: { at: string; said: string; correct: string }[];
-  /** Chapter marks ("m:ss" and a label) for video-led topic pages. */
-  chapters?: { at: string; label: string }[];
 };
 
 export const clips: Clip[] = [

@@ -1,3 +1,4 @@
+import { clipById } from "@/content/patho";
 import type { Block, Lesson } from "@/content/types";
 
 const strip = (s: string) => s.replace(/<[^>]+>/g, " ");
@@ -23,7 +24,10 @@ export function minutesFor(p: Lesson) {
     else if (b.t === "quiz") extra += b.ids.length * 1.2;
     else if (b.t === "predict") extra += 0.5;
     else if (b.t === "open") extra += 2;
-    else if (b.t === "video") extra += 6;
+    else if (b.t === "video") {
+      const d = clipById(b.clip)?.duration;
+      extra += d ? d.split(":").reduce((a, x) => a * 60 + Number(x), 0) / 60 : 6;
+    }
   }
   return Math.max(2, Math.round(readingWords(p.blocks) / 200 + extra));
 }

@@ -8,6 +8,7 @@
  * the same item feeds the page, practice, exam simulations and review.
  */
 import type { Block, Card, Lesson, Level, Module, PageKind, Question } from "../types";
+import { clipById } from "./clips";
 
 export const COURSE_ID = "advanced-pathophysiology";
 export const TEXT = "McCance & Huether, Pathophysiology: The Biologic Basis for Disease in Adults and Children, 10th ed.";
@@ -178,6 +179,8 @@ export function build(sections: ASection[]): Built {
   return out;
 }
 
+const toSeconds = (t: string) => t.split(":").reduce((a, b) => a * 60 + Number(b), 0);
+
 /* Course standard v1 checks. Topic pages must pass; other pages only warn while migrating. */
 const words = (s: string) => stripTags(s).split(/\s+/).filter(Boolean).length;
 
@@ -209,6 +212,27 @@ export function lint(sections: ASection[]) {
           return sum;
         }, 0);
         if (prose > 600) add(p.id, true, `${prose} words (max 600)`);
+        // Video-led topic: every learning check is a stop in the clip, and every stop and
+        // chapter points at a real check and falls inside its clip.
+        const videos = p.blocks.filter((b): b is Extract<ABlock, { t: "video" }> => b.t === "video");
+        if (videos.length) {
+          const checks = p.blocks.flatMap((b) => (b.t === "q" ? [b.q.id] : []));
+          const stopped = new Set(videos.flatMap((v) => (v.stops ?? []).map((st) => st.check)));
+          for (const id of checks) if (!stopped.has(id)) add(p.id, true, `check ${id} is not attached to a video stop`);
+          for (const v of videos) {
+            const clip = clipById(v.clip);
+            if (!clip) {
+              add(p.id, true, `unknown clip ${v.clip}`);
+              continue;
+            }
+            const len = toSeconds(clip.duration);
+            for (const st of v.stops ?? []) {
+              if (!checks.includes(st.check)) add(p.id, true, `stop at ${st.at} in ${v.clip} points at ${st.check}, which is not a check on this page`);
+              if (toSeconds(st.at) <= 0 || toSeconds(st.at) >= len) add(p.id, true, `stop at ${st.at} is outside ${v.clip} (${clip.duration})`);
+            }
+            for (const c of v.chapters ?? []) if (toSeconds(c.at) >= len) add(p.id, true, `chapter "${c.label}" at ${c.at} is outside ${v.clip}`);
+          }
+        }
       }
       if (p.kind === "summary" && (n("confused") < 1 || n("values") < 1)) add(p.id, false, "summary needs confused and values blocks");
       for (const b of p.blocks) {

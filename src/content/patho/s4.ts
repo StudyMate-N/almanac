@@ -520,6 +520,14 @@ export const s4: ASection = {
               t: "video",
               clip: "foundations-04",
               note: "The heart-failure case from the course video. Watch it now, then use the table below to sort left-sided from right-sided signs.",
+              chapters: [
+                { at: "0:00", label: "Signs and symptoms" },
+                { at: "1:20", label: "Tests" },
+                { at: "2:00", label: "Diagnosis: heart failure" },
+                { at: "2:40", label: "Treatment and hyperkalemia" },
+                { at: "3:20", label: "Sequelae and iatrogenic disease" },
+              ],
+              stops: [{ at: "2:35", check: "s4-c5" }],
             },
             { t: "h2", text: "Heart failure" },
             {
@@ -1057,9 +1065,38 @@ export const s4: ASection = {
               t: "p",
               html: "Primary immunodeficiencies are inherited. Secondary (acquired) immunodeficiency is far more common: from HIV, chemotherapy, long-term steroids, malnutrition, diabetes, cancers of the immune system and older age. The course video walks through HIV step by step in three clips.",
             },
-            { t: "video", clip: "foundations-09" },
-            { t: "video", clip: "foundations-10" },
-            { t: "video", clip: "foundations-11" },
+            {
+              t: "video",
+              clip: "foundations-09",
+              chapters: [
+                { at: "0:00", label: "HIV hijacks the cell" },
+                { at: "2:00", label: "CD4 helper T cells" },
+                { at: "3:20", label: "Attachment: CD4 and CCR5" },
+                { at: "4:20", label: "Entry" },
+              ],
+              stops: [{ at: "2:30", check: "s4-c7" }],
+            },
+            {
+              t: "video",
+              clip: "foundations-10",
+              chapters: [
+                { at: "0:00", label: "Reverse transcription" },
+                { at: "1:20", label: "Integration" },
+                { at: "2:40", label: "Making viral proteins" },
+                { at: "4:00", label: "Assembly and maturation" },
+              ],
+            },
+            {
+              t: "video",
+              clip: "foundations-11",
+              chapters: [
+                { at: "0:00", label: "Entry inhibitors" },
+                { at: "1:20", label: "Reverse transcriptase inhibitors" },
+                { at: "2:00", label: "Integrase inhibitors" },
+                { at: "2:30", label: "Protease inhibitors" },
+                { at: "3:10", label: "Combination therapy" },
+              ],
+            },
             {
               t: "table",
               head: ["Step", "What happens"],

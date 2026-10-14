@@ -132,8 +132,29 @@ export const s1: ASection = {
               t: "p",
               html: "<strong>Negative feedback</strong> pushes a value back toward the set point. Almost all homeostasis works this way. <strong>Positive feedback</strong> amplifies a change until an event finishes, as in the clotting cascade or oxytocin driving contractions during labor. Positive feedback is useful for a short time but harmful when it runs unchecked.",
             },
-            { t: "video", clip: "foundations-01" },
-            { t: "video", clip: "foundations-05" },
+            // Video-led: chapters from the clip transcripts; the check is a stop in the clip.
+            {
+              t: "video",
+              clip: "foundations-01",
+              chapters: [
+                { at: "0:00", label: "What pathophysiology is" },
+                { at: "2:40", label: "Homeostasis" },
+                { at: "3:40", label: "Allostasis" },
+              ],
+            },
+            {
+              t: "video",
+              clip: "foundations-05",
+              chapters: [
+                { at: "0:00", label: "Why the blood matters" },
+                { at: "2:40", label: "Electrolytes" },
+                { at: "5:20", label: "Fluid" },
+                { at: "5:40", label: "Glucose" },
+                { at: "7:00", label: "Toxins" },
+                { at: "8:00", label: "pH" },
+              ],
+              stops: [{ at: "5:38", check: "s1-c1" }],
+            },
             { t: "h2", text: "Where body water sits" },
             {
               t: "p",
@@ -980,7 +1001,20 @@ export const s1: ASection = {
               correct: "a",
               reveal: "Neutrophils arrive within hours in acute inflammation. Lymphocytes drive the slower adaptive response.",
             },
-            { t: "video", clip: "foundations-06" },
+            {
+              t: "video",
+              clip: "foundations-06",
+              chapters: [
+                { at: "0:00", label: "Misfolded proteins" },
+                { at: "1:00", label: "Receptors and viral entry" },
+                { at: "2:50", label: "Antibodies" },
+                { at: "4:20", label: "Autoimmunity" },
+              ],
+              stops: [
+                { at: "4:50", check: "s1-c5" },
+                { at: "6:40", check: "s1-c6" },
+              ],
+            },
             { t: "h2", text: "Two branches of the immune response" },
             {
               t: "table",
@@ -1158,8 +1192,26 @@ export const s1: ASection = {
               correct: "a",
               reveal: "Each parent passes the faulty gene half the time, so the chance of two faulty copies is 1 in 4 for each pregnancy.",
             },
-            { t: "video", clip: "foundations-07" },
-            { t: "video", clip: "foundations-08" },
+            {
+              t: "video",
+              clip: "foundations-07",
+              chapters: [
+                { at: "0:00", label: "DNA and cancer" },
+                { at: "1:20", label: "Genes that control division" },
+                { at: "6:40", label: "What cancer is" },
+                { at: "7:40", label: "Inherited risk: BRCA and p53" },
+              ],
+            },
+            {
+              t: "video",
+              clip: "foundations-08",
+              chapters: [
+                { at: "0:00", label: "Genetic disorders" },
+                { at: "0:20", label: "Sickle cell anemia" },
+                { at: "1:15", label: "Trisomy 21" },
+              ],
+              stops: [{ at: "1:15", check: "s1-c7" }],
+            },
             { t: "h2", text: "Patterns of inheritance" },
             {
               t: "table",

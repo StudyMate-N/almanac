@@ -59,8 +59,12 @@ export type Block =
   | { t: "labs"; caption?: string; cols: string[]; rows: LabRow[] }
   /** Essential question for the page. */
   | { t: "eq"; text: string }
-  /** One of the course's own video clips, by clip id. */
-  | { t: "video"; clip: string; note?: string; stops?: { at: string; ref: string }[] }
+  /**
+   * One of the course's own video clips, by clip id. On a topic page, the clip leads
+   * (video-led layout): `chapters` are jump points under the player and `stops` pause
+   * the clip for a learning check on the page. Times are "m:ss" within this clip.
+   */
+  | { t: "video"; clip: string; note?: string; chapters?: { at: string; label: string }[]; stops?: { at: string; check: string }[] }
   /** 3–5 key points shown with the essential question. HTML allowed. */
   | { t: "keypoints"; items: string[] }
   /** Ungraded prediction before reading. Stored in notes, never scored. */
