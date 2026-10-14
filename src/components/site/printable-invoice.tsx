@@ -121,6 +121,11 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
           <p className="mt-2">This is a payment invoice, not a payment receipt. Access codes are issued only after payment verification. For questions, email support@unemployedproff.com.</p>
         </div>
       </article>
+      {invoice.paymentStatus==="verified"&&<section className="rounded-tile border border-hairline bg-white p-5 sm:p-7 print:hidden">
+        <h2 className="font-display text-2xl font-semibold">Your learning workspace is ready for access</h2>
+        <p className="mt-2 text-sm text-ink-body">After payment verification, Almanac staff provide your access code by email. Sign in to view preparation milestones and resources released specifically for your order. Course files may still be in preparation.</p>
+        <Link href="/app/orders" className="mt-4 inline-flex min-h-12 items-center rounded-full bg-violet px-5 font-semibold text-white">Go to your learning orders →</Link>
+      </section>}
       <SourceMaterialUploader orderId={id} invoiceToken={token}/>
       <LearningPlanReview id={id} token={token} plan={invoice} onRefresh={refresh}/>
       <style jsx global>{`@media print {
