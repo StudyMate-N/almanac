@@ -14,7 +14,7 @@ async function bankRate():Promise<{value:number;date:string}>{
   if(!res.ok)throw Error("FX_HTTP_"+res.status);
   const payload=await res.json();
   const observations=Array.isArray(payload?.observations)?payload.observations:[];
-  const item=[...observations].reverse().find((x:any)=>Number(x?.FXUSDCAD?.v)>0);
+  const item=[...observations].filter((x:any)=>Number(x?.FXUSDCAD?.v)>0 && /^\d{4}-\d{2}-\d{2}$/.test(String(x?.d||""))).sort((a:any,b:any)=>String(b.d).localeCompare(String(a.d)))[0];
   const value=Number(item?.FXUSDCAD?.v);
   const date=String(item?.d||"");
   if(!Number.isFinite(value)||value<.5||value>3||!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error("Invalid rate");
