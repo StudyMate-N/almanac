@@ -1,3 +1,4 @@
+// Reference manifest for image alt text and captions; not imported.
 // Generated from image-manifest.json. Images render only when delivered and approved.
 export type PathoImage = { id: string; file: string; section: string; place: string; title: string; aspect: string; alt: string; panels: { label: string; sub?: string }[]; delivered: boolean };
 export const PATHO_IMAGES: Record<string, PathoImage> = {
