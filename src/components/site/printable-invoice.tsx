@@ -13,7 +13,7 @@ type Invoice = LearningPlan & {
   addons:string[]; enhancements?: Record<string,number>; learningPreference?: string;
   units:number; baseUsd:number; addonUsd:number;
   quoteUsd:number; turnaroundDays:number; paymentStatus:string; status:string; createdAt:string;
- payableCadCents:number|null;rateCadPerUsd:number|null;rateDate:string|null;fxSource:string|null;
+ payableCadCents:number|null;rateCadPerUsd:number|null;rateDate:string|null;fxSource:string|null;quoteValidUntil:string|null;
 };
 type Result = {invoice:Invoice;bank:PaymentBank|null;whatsappNumber:string|null};
 const money=(v:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(v);
@@ -89,6 +89,10 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
             <dt>Total payable by bank transfer (CAD)</dt>
             <dd className="font-display text-2xl">CA${(invoice.payableCadCents/100).toFixed(2)}</dd>
           </div>}
+          {invoice.quoteValidUntil&&<div className="flex flex-wrap justify-between gap-3 text-xs text-ink-muted">
+            <dt>Original bank-transfer quote valid through</dt>
+            <dd>{new Date(invoice.quoteValidUntil).toLocaleString("en-US",{year:"numeric",month:"short",day:"numeric"})}</dd>
+          </div>}
         </dl>
         <p className="mt-3 text-xs text-ink-muted">Delivery: {label(invoice.deliveryMethod)} · Study preference: {PREFERENCES[invoice.learningPreference as keyof typeof PREFERENCES] ?? "Balanced mix"}. Work begins when payment and all required materials have been received.</p>
 
@@ -111,7 +115,7 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
               Cross-border transfers may require additional bank instructions from your payment provider.
             </p>
           </> : <p className="mt-3 text-sm text-ink-body">
-            Bank instructions are unavailable because this invoice has no locked CAD total. Do not transfer until the payable amount is confirmed.
+            Bank-transfer instructions are withheld because the original CAD quote has expired, the payment has already been reported, or the amount is not yet confirmed. Do not send a new transfer until current instructions are visible. Contact support with the invoice reference for help.
             Contact <a className="font-semibold text-violet-700 underline" href={`mailto:support@unemployedproff.com?subject=${encodeURIComponent(invoice.invoiceRef)}`}>Almanac support</a> with your invoice reference.
           </p>}
         </section>
