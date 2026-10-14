@@ -5,7 +5,7 @@ const HEADERS = { "Cache-Control": "no-store, private", "Referrer-Policy": "no-r
 const uuid = /^[0-9a-f-]{36}$/i;
 const tokenPattern = /^[0-9a-f]{48}$/i;
 
-function credentials() {
+function credentials(invoice: { payableCadCents?: number | null }) {
   const bank = {
     name: process.env.ALMANAC_BANK_NAME ?? "",
     address: process.env.ALMANAC_BANK_ADDRESS ?? "",
@@ -20,7 +20,7 @@ function credentials() {
   // USD list pricing does not imply that the CAD-receiving account should be
   // sent USD. Until each invoice stores its locked payable CAD amount, do
   // not release bank-transfer instructions for a CAD-denominated account.
-  return ready && bank.currency === "USD" ? bank : null;
+  return ready && bank.currency === "CAD" && Number(invoice.payableCadCents) > 0 ? bank : null;
 }
 
 export async function GET(request: NextRequest) {
@@ -34,7 +34,9 @@ export async function GET(request: NextRequest) {
     });
     if(!res.ok) return NextResponse.json({error:"Invoice not found."},{status:404,headers:HEADERS});
     const invoice = await res.json();
-    return NextResponse.json({invoice,bank:credentials()}, {headers:HEADERS});
+    const rawWhatsApp=(process.env.ALMANAC_WHATSAPP_NUMBER||"").replace(/[^0-9]/g,"");
+    const whatsappNumber=/^[1-9][0-9]{7,14}$/.test(rawWhatsApp)?rawWhatsApp:null;
+    return NextResponse.json({invoice,bank:credentials(invoice),whatsappNumber}, {headers:HEADERS});
   } catch {
     return NextResponse.json({error:"Invoice service is temporarily unavailable."},{status:503,headers:HEADERS});
   }
