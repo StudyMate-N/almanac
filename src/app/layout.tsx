@@ -5,11 +5,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Almanac: hard courses, broken into weekly steps",
+    default: "Almanac — Everything you need to make sense of your course & exams",
     template: "%s · Almanac",
   },
   description:
-    "Course companions that run alongside the course you're taking: short lessons, questions that explain every answer, spaced flashcards and practice exams built around your dates.",
+    "Almanac brings learning modules, clear lessons, video overviews, exam practice, flashcards, schedules and progress into one place. Browse courses or request a personalized learning companion.",
 };
 
 export const viewport: Viewport = {
