@@ -7,6 +7,7 @@ import { COACH_KEY } from "@/lib/store";
 import { StaffSourceFiles } from "@/components/site/staff-source-files";
 import { StaffLearningPlan } from "@/components/site/staff-learning-plan";
 import { StaffPaymentProofs } from "@/components/site/staff-payment-proofs";
+import { StaffDeliveryPanel } from "@/components/site/staff-delivery-panel";
 import { ENHANCEMENTS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 
 type RequestRow = {
@@ -21,6 +22,7 @@ type RequestRow = {
  learning_plan_topics?:string[];learning_plan_objectives?:string[];
  learning_plan_dates?:string[];learning_plan_status?:string;
  learning_plan_feedback?:string|null;
+ production_started_at?:string|null;delivery_due_at?:string|null;delivered_at?:string|null;
 };
 const statuses = ["received","awaiting_payment","in_production","review","delivered","cancelled"];
 export default function LearningRequestsPage() {
@@ -144,6 +146,9 @@ export default function LearningRequestsPage() {
                 <div className="sm:col-span-2"><StaffSourceFiles orderId={r.id} staffToken={token}/></div>
               </div>
               <StaffLearningPlan id={r.id} token={token} plan={r}/>
+              <StaffDeliveryPanel orderId={r.id} token={token} paymentStatus={r.payment_status}
+                days={r.turnaround_days} startedAt={r.production_started_at||null}
+                dueAt={r.delivery_due_at||null} kind={r.kind} modules={r.unit_count}/>
             </article>
           ))}
         </div>
