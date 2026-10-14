@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LogoMark } from "@/components/brand";
 import { ArrowRightIcon, XIcon } from "@/components/icons";
 import { BlockView } from "@/components/player/blocks";
+import { CheckGroup } from "@/components/player/topic-check";
 import { kindLabel, Outline, Ring } from "@/components/player/outline";
 import { VideoLedTopic, videoLedClip } from "@/components/player/video-led";
 import { ReportButton, TutorButton } from "@/components/tutor";
@@ -45,12 +46,25 @@ export default function Player() {
     : [];
   const checksLeft = checkIds.filter((id) => !answers.some((a) => a.questionId === id)).length;
   const checksAnswered = checksLeft === 0;
-  const canSelfComplete = Boolean(page && SELF_COMPLETING.has(page.kind) && checksAnswered);
+  // Course standard: a page with checks is done when they're answered; one without checks
+  // is done when the student reaches its end (the Previous/Next row scrolls into view).
+  const [reachedEnd, setReachedEnd] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
+  const canSelfComplete = Boolean(page && SELF_COMPLETING.has(page.kind) && checksAnswered && (checkIds.length > 0 || reachedEnd));
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
     setDrawer(false);
   }, [page?.id]);
+
+  useEffect(() => {
+    setReachedEnd(false);
+    const el = endRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && setReachedEnd(true));
+    io.observe(el);
+    return () => io.disconnect();
+  }, [page?.id, open]);
 
   useEffect(() => {
     if (page && open && canSelfComplete && !state.lessons[page.id]) markDone();
@@ -125,11 +139,11 @@ export default function Player() {
         <aside className="sticky top-[88px] hidden h-[calc(100dvh-112px)] w-[320px] flex-none overflow-y-auto pr-1 lg:block">{outline}</aside>
 
         <main className="min-w-0 flex-1">
-          <article className="mx-auto max-w-[760px]">
+          <article className="mx-auto max-w-[720px]">
             <nav aria-label="Breadcrumb" className="mb-2 text-[13px] font-semibold text-ink-muted">
               {mod.kind !== "section" ? sectionLabel : topicNum ? `${sectionLabel} · Topic ${topicNum}` : page.groupTitle === page.title ? `${sectionLabel} · ${mod.title}` : `${sectionLabel} · ${page.groupTitle}`}
             </nav>
-            <h1 className="font-display text-[30px] leading-[1.15] font-semibold sm:text-[36px]">{topicNum ? page.title.slice(topicNum.length).trim() : page.title}</h1>
+            <h1 className="font-display text-[clamp(30px,4vw,38px)] leading-[1.12] font-semibold">{topicNum ? page.title.slice(topicNum.length).trim() : page.title}</h1>
             <div className="mt-3 mb-7 flex flex-wrap gap-2 text-[13px] font-bold">
               <span className="rounded-full bg-white px-3 py-1 text-violet-700">{videoClip ? "Video topic" : kindLabel[page.kind]}</span>
               <span className="rounded-full bg-white px-3 py-1 text-ink-muted">About {minutesFor(page)} min</span>
@@ -161,6 +175,16 @@ export default function Player() {
                 {page.blocks.map((b, i) => {
                   const prev = page.blocks[i - 1];
                   if (b.t === "eq" && page.blocks[i + 1]?.t === "keypoints") return null;
+                  // Consecutive learning checks render as one "Learning check n of N" group.
+                  if (b.t === "check") {
+                    if (prev?.t === "check") return null;
+                    const run: Question[] = [];
+                    for (let j = i; page.blocks[j]?.t === "check"; j++) {
+                      const q = questionById((page.blocks[j] as { id: string }).id);
+                      if (q && visibleQ(q)) run.push(q);
+                    }
+                    return <CheckGroup key={i} qs={run} pageId={page.id} onDone={() => document.querySelector('[aria-label="Submit and compare"]')?.scrollIntoView({ behavior: "smooth", block: "start" })} />;
+                  }
                   const eq = b.t === "keypoints" && prev?.t === "eq" ? prev.text : undefined;
                   return <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} eq={eq} />;
                 })}
@@ -176,20 +200,20 @@ export default function Player() {
               </div>
             )}
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div ref={endRef} className="mt-6 grid gap-3 sm:grid-cols-2">
               {prev ? (
                 <Link href={`/app/learn/${prev.id}`} className="flex flex-col rounded-tile bg-white p-5 hover:bg-mist">
                   <span className="text-[12px] font-bold text-ink-muted">Previous</span>
-                  <span className="font-display text-[17px] leading-snug font-semibold">{prev.title}</span>
+                  <span className="font-display text-[17px] leading-snug font-semibold">{prev.shortTitle ?? prev.title}</span>
                 </Link>
               ) : (
                 <span />
               )}
               {next && (
-                <Link href={`/app/learn/${next.id}`} onClick={() => canSelfComplete && markDone()} className="flex items-center gap-3 rounded-tile bg-tangerine p-5 text-ink hover:bg-tangerine-700">
+                <Link href={`/app/learn/${next.id}`} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} className="flex items-center gap-3 rounded-tile bg-tangerine p-5 text-ink hover:bg-tangerine-700">
                   <span className="min-w-0 flex-1">
                     <span className="block text-[12px] font-extrabold">Next</span>
-                    <span className="block font-display text-[17px] leading-snug font-semibold">{next.title}</span>
+                    <span className="block font-display text-[17px] leading-snug font-semibold">{next.shortTitle ?? next.title}</span>
                   </span>
                   <ArrowRightIcon size={20} />
                 </Link>

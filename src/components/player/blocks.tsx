@@ -2,16 +2,23 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { ArrowRightIcon, BookIcon, CardsIcon } from "@/components/icons";
+import { ArrowRightIcon, CardsIcon } from "@/components/icons";
 import { VideoPlayer } from "@/components/video-player";
 import { cardById, imageById, questionById } from "@/content/course";
 import { type Clip, clipById } from "@/content/patho";
+import { BOOK } from "@/content/patho/author";
 import type { Block, Card, Question } from "@/content/types";
 import { useStudent } from "@/lib/store";
-import { LearningCheck } from "./question";
+import { CheckGroup } from "./topic-check";
 import { QuizBlock } from "./quiz";
 
 const Html = ({ html, className }: { html: string; className?: string }) => <span className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+
+/** Reading references read heading first, page numbers last ("pp. 12–20: Heading" → "Heading · pp. 12–20"). */
+const citeRef = (ref: string) => {
+  const m = ref.match(/^(pp?\. [^:]+):\s*(.+)$/);
+  return m ? `${m[2]} · ${m[1]}` : ref;
+};
 
 export const toSec = (t: string) => t.split(":").reduce((a, b) => a * 60 + Number(b), 0);
 
@@ -115,16 +122,16 @@ export function Predict({ id, stem, options, correct, reveal, eyebrow = "Predict
       <p className="font-display text-[18px] leading-snug font-semibold">{stem}</p>
       <div className="flex flex-wrap gap-2.5">
         {options.map((o) => {
-          const tone = !pick ? "border-hairline bg-mist" : o.id === correct ? "border-correct bg-mint" : o.id === pick ? "border-incorrect bg-rose" : "border-hairline bg-mist opacity-60";
+          const tone = !pick ? "border-hairline bg-mist" : o.id === correct ? "border-correct bg-mint" : o.id === pick ? "border-incorrect bg-rose" : "border-transparent bg-mist";
           return (
-            <button key={o.id} onClick={() => choose(o.id)} disabled={Boolean(pick)} aria-pressed={pick === o.id} className={`min-h-[52px] flex-[1_1_160px] rounded-full border-2 px-5 text-[15.5px] font-bold text-ink ${tone}`}>
+            <button key={o.id} onClick={() => choose(o.id)} disabled={Boolean(pick)} aria-pressed={pick === o.id} className={`min-h-[52px] flex-[1_1_160px] rounded-full border-2 px-5 text-[15px] font-bold text-ink ${tone}`}>
               {o.text}
             </button>
           );
         })}
       </div>
       {pick && (
-        <p role="status" className="rounded-2xl bg-lilac px-3.5 py-3 text-[15px] leading-relaxed text-ink-body">
+        <p role="status" className="rounded-2xl bg-lilac px-3.5 py-3 text-[15px] leading-[1.55] text-ink-body">
           <strong className="text-violet-700">{pick === correct ? "Right." : "Not quite."}</strong> {reveal}
         </p>
       )}
@@ -140,13 +147,13 @@ function Figure({ id, alt, panels, aspect }: { id: string; alt: string; panels: 
   if (!img || !isVisible(img.reviewId, img.item)) return null;
   const pending = preview && !isApproved(img.reviewId, img.item);
   return (
-    <figure className="flex flex-col gap-3 rounded-card bg-mist p-3">
+    <figure className="flex flex-col gap-2.5 rounded-card bg-mist p-[12px_12px_14px]">
       {/* 3:1 sources are cropped to 3.6:1 from the top: the generator leaves an empty strip below the panels. */}
       <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: aspect === "3:2" ? "2.4 / 1" : "3.6 / 1" }}>
         <Image src={`/images/patho/${id}.png`} alt={alt} fill sizes="(max-width: 800px) 100vw, 736px" className="object-cover object-top" />
         {pending && <span className="absolute top-2 left-2 rounded-full bg-peach px-3 py-1 text-xs font-bold text-peach-ink">Image awaiting review (preview)</span>}
       </div>
-      <figcaption className="grid gap-2 pb-1 text-center" style={{ gridTemplateColumns: `repeat(${panels.length}, minmax(0, 1fr))` }}>
+      <figcaption className="grid gap-2 text-center" style={{ gridTemplateColumns: `repeat(${panels.length}, minmax(0, 1fr))` }}>
         {panels.map((p) => (
           <span key={p.label} className="flex flex-col">
             <span className="text-[13.5px] font-bold text-ink">{p.label}</span>
@@ -186,9 +193,9 @@ export function OpenPrompt({ id, stem, expert }: { id: string; stem: string; exp
   const [text, setText] = useState(state.notes[id] ?? "");
   const [shown, setShown] = useState(Boolean(state.notes[id]));
   return (
-    <section aria-label="Submit and compare" className="rounded-tile bg-mint/70 p-5 sm:p-6">
-      <p className="mb-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-extrabold tracking-wide text-mint-ink uppercase">Explain it in your own words</p>
-      <p className="mb-3 font-display text-[18px] leading-snug font-semibold">{stem}</p>
+    <section aria-label="Submit and compare" className="flex flex-col gap-3 rounded-tile bg-mint p-[20px_22px]">
+      <p className="self-start rounded-full bg-white px-3 py-1 text-xs font-extrabold tracking-[.06em] text-mint-ink uppercase">Explain it in your own words</p>
+      <p className="font-display text-[18px] leading-[1.35] font-semibold">{stem}</p>
       <label className="sr-only" htmlFor={`open-${id}`}>
         Your answer
       </label>
@@ -197,26 +204,26 @@ export function OpenPrompt({ id, stem, expert }: { id: string; stem: string; exp
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={4}
-        placeholder="Write a few sentences before you compare."
-        className="w-full rounded-2xl border-2 border-hairline bg-white p-4 text-[15px] outline-none focus:border-violet"
+        placeholder="Two or three sentences, then compare."
+        className="w-full resize-y rounded-2xl border-2 border-hairline bg-white p-3.5 text-[15px] outline-none focus:border-violet"
       />
-      <div className="mt-3 flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3">
         <button
           onClick={() => {
+            // As in the design: the expert answer opens once the student has written something.
+            if (!text.trim()) return document.getElementById(`open-${id}`)?.focus();
             setShown(true);
-            if (text.trim()) update("notes", { ...state.notes, [id]: text.trim() });
+            update("notes", { ...state.notes, [id]: text.trim() });
           }}
-          disabled={!text.trim() && !shown}
-          className="min-h-12 rounded-full bg-violet px-6 font-bold text-white disabled:opacity-40"
+          className="min-h-12 rounded-full bg-violet px-[22px] font-bold text-white"
         >
           Compare with the expert answer
         </button>
       </div>
       {shown && (
-        <div className="mt-4 rounded-2xl bg-white p-4 text-[15px] text-ink-body" role="status">
+        <div className="rounded-2xl bg-white p-[14px_16px] text-[15px] leading-relaxed text-ink-body" role="status">
           <p className="mb-1 font-bold text-mint-ink">Expert answer</p>
           <p>{expert}</p>
-          <p className="mt-2 text-sm text-ink-muted">Check yours for the same key steps. Missing one? That is the part to reread.</p>
         </div>
       )}
     </section>
@@ -325,14 +332,13 @@ export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete, eq }:
     case "case": {
       const initials = b.title.replace(/[^A-Za-z ]/g, "").trim().split(/\s+/)[0]?.slice(0, 2) ?? "";
       return (
-        <aside className="flex gap-4 rounded-tile bg-white p-5 ring-2 ring-lilac">
+        <aside className="flex gap-3.5 rounded-tile bg-white p-[18px_20px] ring-2 ring-lilac ring-inset">
           <span aria-hidden="true" className="grid h-12 w-12 flex-none place-items-center rounded-2xl bg-lilac font-display text-lg font-semibold text-violet-700">
             {initials}
           </span>
           <div className="min-w-0">
-            <p className="text-xs font-extrabold tracking-wide text-violet-600 uppercase">Patient</p>
-            <p className="font-display text-[18px] font-semibold">{b.title}</p>
-            <Html html={b.html} className="mt-1 block text-[15.5px] leading-relaxed text-ink-body" />
+            <p className="text-xs font-extrabold tracking-[.06em] text-violet-600 uppercase">Patient · {b.title}</p>
+            <Html html={b.html} className="mt-1 block text-[15.5px] leading-[1.6] text-ink-body" />
           </div>
         </aside>
       );
@@ -393,7 +399,7 @@ export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete, eq }:
       return <ClipBlock clip={b.clip} note={b.note} />;
     case "check": {
       const q = questionById(b.id);
-      return q && visibleQ(q) ? <LearningCheck q={q} pageId={pageId} /> : null;
+      return q && visibleQ(q) ? <CheckGroup qs={[q]} pageId={pageId} /> : null;
     }
     case "open":
       return <OpenPrompt id={b.id} stem={b.stem} expert={b.expert} />;
@@ -408,18 +414,14 @@ export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete, eq }:
     }
     case "read":
       return (
-        <aside className="rounded-card bg-mist px-5 py-4">
-          <p className="mb-2 inline-flex items-center gap-2 text-sm font-extrabold text-ink">
-            <BookIcon size={16} /> Read in your textbook
-          </p>
-          <ul className="flex flex-col gap-1.5 text-[15px]">
-            {b.items.map((it) => (
-              <li key={it.ref}>
-                <span className="font-semibold text-ink">{it.ref}</span>
-                {it.note && <span className="text-ink-muted"> — {it.note}</span>}
-              </li>
-            ))}
-          </ul>
+        <aside className="flex flex-col gap-1.5 rounded-card bg-mist p-[16px_18px]">
+          <p className="text-[14px] font-extrabold text-ink">Read in your textbook</p>
+          {b.items.map((it) => (
+            <p key={it.ref} className="text-[15px] leading-[1.55] text-ink-body">
+              <strong className="text-ink">{BOOK}</strong> · {citeRef(it.ref)}
+              {it.note && <span className="block text-[14px] text-ink-muted">{it.note}</span>}
+            </p>
+          ))}
         </aside>
       );
     default:

@@ -131,7 +131,8 @@ export const s5: ASection = {
         },
         {
           id: "s5-tp3",
-          title: "5.3 Obstructive disease",
+          title: "5.3 Obstructive disease: asthma and COPD",
+          shortTitle: "5.3 Obstructive disease",
           kind: "topic",
           blocks: [
             { t: "eq", text: "Why do asthma and COPD make it hard to get air out?" },
@@ -143,24 +144,23 @@ export const s5: ASection = {
               "Chronic bronchitis is about mucus. Emphysema is about lost elastic recoil.",
               "Smoking tips the protease–antiprotease balance toward emphysema.",
             ] },
-            // REVIEW: new
-            { t: "predict", id: "s5-p3", stem: "In an asthma attack, which is harder?", options: [{ id: "a", text: "Breathing in" }, { id: "b", text: "Breathing out" }], correct: "b", reveal: "Breathing out is harder. Narrowed airways narrow further as the chest squeezes on expiration, so air is trapped." },
-            { t: "table", head: ["", "Obstructive", "Restrictive"], rows: [
-              ["The problem", "Air cannot get <strong>out</strong>: narrowed or collapsing airways", "The lungs cannot expand: air cannot get <strong>in</strong>"],
-              ["Lung function", "FEV₁ falls more than FVC, so the FEV₁/FVC ratio is low; air trapping", "All volumes are small (low total lung capacity); FEV₁/FVC normal or high; low compliance"],
-              ["Examples", "Asthma, chronic bronchitis, emphysema, bronchiectasis, cystic fibrosis", "Pulmonary fibrosis, ARDS, pneumonia, pleural effusion, obesity, kyphoscoliosis, neuromuscular weakness"],
-            ] },
+            // REVIEW: new (copy from design/Topic Page 5.3.dc.html)
+            { t: "predict", id: "s5-p3", stem: "In an asthma attack, which is harder?", options: [{ id: "a", text: "Breathing in" }, { id: "b", text: "Breathing out" }], correct: "b", reveal: "Breathing out is harder. Narrowed airways close further as pressure in the chest rises during expiration, so air is trapped. Keep that in mind as you read." },
+            // REVIEW: new (copy from design/Topic Page 5.3.dc.html)
+            { t: "h2", text: "One problem: getting air out" },
+            { t: "p", html: "In obstructive disease the airways are narrowed, blocked or floppy. Air gets in, but it can't get out fast enough, so it is trapped. On spirometry, FEV₁ (the air forced out in one second) falls more than FVC, so the <strong>FEV₁/FVC ratio is low</strong>." },
+            { t: "img", id: "s5-airways-4up", alt: "Four cross-sections of a small airway. Normal: open lumen held by alveolar attachments. Asthma: thick contracted muscle and swollen lining narrow the lumen. Chronic bronchitis: a mucus plug fills the lumen. Emphysema: lost alveolar attachments let the airway collapse to a slit.", panels: [{"label":"Normal","sub":"Open lumen, held by attachments"},{"label":"Asthma","sub":"Muscle spasm, swollen lining"},{"label":"Chronic bronchitis","sub":"Big glands, mucus plug"},{"label":"Emphysema","sub":"Attachments lost, airway collapses"}], aspect: "3:1" },
             { t: "h2", text: "Asthma" },
-            { t: "p", html: "Asthma is chronic inflammation of the airways that makes them hyperresponsive. A trigger (allergen, exercise, cold air, smoke, infection, aspirin or NSAIDs in some people) causes bronchospasm, mucosal swelling and thick mucus. Obstruction is <strong>largely reversible</strong>. Allergic asthma is a type I hypersensitivity with an early phase (minutes) and a late phase (hours). Expect wheeze, cough worse at night, chest tightness and breathlessness." },
-            { t: "img", id: "s5-airways-4up", alt: "Four cross-sections of a small airway. Normal: open lumen held by alveolar attachments. Asthma: thick contracted muscle and swollen lining narrow the lumen. Chronic bronchitis: a mucus plug fills the lumen. Emphysema: lost alveolar attachments let the airway collapse to a slit.", panels: [{"label":"Normal","sub":"Open, held by attachments"},{"label":"Asthma","sub":"Muscle spasm, swollen lining"},{"label":"Chronic bronchitis","sub":"Big glands, mucus plug"},{"label":"Emphysema","sub":"Attachments lost, collapses"}], aspect: "3:1" },
+            // REVIEW: edited (copy from design/Topic Page 5.3.dc.html)
+            { t: "p", html: "Asthma is chronic airway inflammation that makes the airways hyperresponsive. A trigger (allergen, exercise, cold air, smoke, infection, or aspirin and NSAIDs in some people) causes bronchospasm, mucosal swelling and thick mucus. Allergic asthma is a type I hypersensitivity, with an early phase within minutes and a late phase hours later. The obstruction is <strong>largely reversible</strong>. If it stays poorly controlled for years, the airways remodel and some obstruction becomes fixed." },
             { t: "callout", title: "Danger signs in an attack", html: "Can't speak in full sentences, uses accessory muscles, PaCO₂ rising (the client is tiring), and a <strong>silent chest</strong>." },
             { t: "h2", text: "COPD" },
+            // REVIEW: edited (copy from design/Topic Page 5.3.dc.html)
             { t: "table", head: ["", "Chronic bronchitis", "Emphysema"], rows: [
-              ["Definition", "Productive cough for at least 3 months in each of 2 consecutive years", "Destruction of alveolar walls with permanent enlargement of air spaces"],
-              ["Mechanism", "Irritants enlarge mucus glands and paralyze cilia; airways inflame and clog", "Loss of elastic recoil; small airways collapse on expiration and trap air"],
-              ["Picture", "Heavy sputum, frequent infections, hypoxemia, cyanosis, edema from cor pulmonale", "Severe breathlessness, barrel chest, pursed-lip breathing, thin build"],
+              ["Mechanism", "Irritants enlarge mucus glands and paralyze cilia; airways inflame and clog", "Alveolar walls destroyed; elastic recoil lost; small airways collapse on expiration"],
+              ["Picture", "Productive cough 3 months a year for 2 years, frequent infections, cyanosis", "Severe breathlessness, barrel chest, pursed-lip breathing, thin build"],
             ] },
-            { t: "p", html: "<strong>How smoking causes COPD:</strong> smoke recruits neutrophils and macrophages, which release proteases such as elastase. Normally <strong>alpha-1 antitrypsin</strong> neutralizes them; smoke both increases the proteases and inactivates the antitrypsin, so elastin in the alveolar walls is digested. People with inherited alpha-1 antitrypsin deficiency develop emphysema young, especially if they smoke." },
+            { t: "p", html: "<strong>How smoking causes it:</strong> smoke recruits neutrophils and macrophages that release proteases such as elastase. Alpha-1 antitrypsin normally neutralizes them. Smoke raises the proteases and inactivates the antitrypsin, so elastin in the alveolar walls is digested. People with inherited alpha-1 antitrypsin deficiency develop emphysema young." },
             { t: "case", title: "Melissa, 46", html: "Her pneumonia is clearing on antibiotics. Before discharge she asks why her nurse keeps bringing up smoking. She has smoked a pack a day for 25 years." },
             { t: "q", q: {
               id: "s5-c2", type: "mc", level: "application",
@@ -187,10 +187,7 @@ export const s5: ASection = {
             } },
             // REVIEW: new
             { t: "open", id: "s5-o3", stem: "Why is a silent chest in an asthma attack more worrying than a loud wheeze?", expert: "Wheeze needs air moving through narrowed airways. When obstruction is so severe that almost no air moves, the wheeze fades. A silent chest, especially with a rising PaCO₂, means the client is tiring and may stop ventilating." },
-            { t: "read", items: [
-              { ref: "pp. 1137–1143 and 1153–1158: Ventilation; clinical manifestations of pulmonary alterations" },
-              { ref: "pp. 1167–1175: Obstructive pulmonary disease", note: "Poorly controlled asthma causes airway remodeling (thickened walls, fibrosis), and the obstruction becomes partly fixed." },
-            ] },
+            { t: "read", items: [{ ref: "Alterations of pulmonary function · Obstructive pulmonary disease · pp. 1167–1175" }] },
           ],
         },
         {

@@ -8,7 +8,7 @@ import { MEDIA_BASE, REVIEWER } from "@/lib/config";
 import { readingWords } from "@/lib/minutes";
 import { useStudent } from "@/lib/store";
 import { BlockView, Corrections, OpenPrompt, Predict, TopicHead, toSec } from "./blocks";
-import { LearningCheck } from "./question";
+import { CheckCard } from "./topic-check";
 
 type VideoBlock = Extract<Block, { t: "video" }>;
 type Stop = { at: number; label: string; ref: string; kind: "predict" | "check" };
@@ -210,10 +210,7 @@ export function VideoLedTopic({ page, vb, visibleQ, visibleCards, onComplete }: 
           <p className="text-xs font-extrabold tracking-[.06em] text-violet-600 uppercase">
             Video paused at {active.label} · Check {checkStops.findIndex((s) => s.ref === active.ref) + 1} of {checkStops.length}
           </p>
-          <LearningCheck q={questionById(active.ref)!} pageId={page.id} />
-          <button onClick={play} disabled={!answered(active)} className="min-h-[54px] rounded-full bg-violet font-bold text-white disabled:bg-violet-300">
-            Continue the video ▶
-          </button>
+          <CheckCard key={active.ref} q={questionById(active.ref)!} pageId={page.id} action={{ label: "Continue the video ▶", onClick: play }} />
         </section>
       )}
 
@@ -232,8 +229,8 @@ export function VideoLedTopic({ page, vb, visibleQ, visibleCards, onComplete }: 
                 {notesSub ? `${notesSub} · ` : ""}about {notesMin} min
               </span>
             </span>
-            <span aria-hidden="true" className={`text-[18px] font-bold text-violet-600 transition-transform ${notesOpen ? "rotate-180" : ""}`}>
-              ▾
+            <span aria-hidden="true" className="text-[18px] font-bold text-violet-600">
+              {notesOpen ? "Hide ▴" : "Open ▾"}
             </span>
           </button>
           {notesOpen && notes.map((b, i) => <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={onComplete} />)}

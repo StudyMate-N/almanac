@@ -11,6 +11,8 @@ import type { Block, Card, Lesson, Level, Module, PageKind, Question } from "../
 
 export const COURSE_ID = "advanced-pathophysiology";
 export const TEXT = "McCance & Huether, Pathophysiology: The Biologic Basis for Disease in Adults and Children, 10th ed.";
+/** The short citation that opens every "Read in your textbook" line. */
+export const BOOK = "McCance & Huether, 10th ed.";
 
 /** An option: text, whether it is correct, and why. */
 export type AOpt = { t: string; ok: boolean; why: string };
