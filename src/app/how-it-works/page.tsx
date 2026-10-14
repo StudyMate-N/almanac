@@ -53,7 +53,7 @@ export default function HowItWorksPage() {
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-sm text-ink-muted">Some format and speed combinations have production limits and cannot be selected together. A confirmed delivery date follows payment and receipt of the necessary materials.</p>
+          <p className="mt-3 text-sm text-ink-muted">Some enhancement quantities and delivery speeds have production limits and cannot be selected together. A confirmed delivery date follows payment and receipt of the necessary materials.</p>
         </section>
         <section className="mt-14">
           <h2 className="font-display text-3xl font-semibold">Your materials, your way.</h2>
