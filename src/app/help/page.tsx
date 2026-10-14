@@ -5,12 +5,16 @@ import { SiteHeader, SiteFooter } from "@/components/site/chrome";
 export const metadata: Metadata = { title: "Help & Support", description: "Help with Almanac courses, study resources, learning requests and workspace access." };
 
 const questions = [
-  ["How do I request a course or study resource?", "Choose a listed course or open the custom request page. Select your package, formats, delivery method, and timeline before submitting."],
-  ["When does the preparation timeline begin?", "The selected turnaround starts after payment and all required materials have been received. No payment is collected by the initial request form."],
-  ["Can I use Almanac for exam preparation?", "Yes. Choose the Exam Preparation Pack or select custom study materials, including practice and exam simulations when available."],
-  ["Can I download my materials?", "Supported files can be included in your order. Interactive features such as scored practice and progress tracking require the learning workspace."],
-  ["I already have a learning access code. Where do I sign in?", "Use the Learning Workspace link and enter your existing code to access your assigned course."],
-  ["What if a course isn't listed?", "You can request a course for a subject, exam, or specific study need even when it is not shown in the catalog."],
+ ["How do I request a course or study module?", "Choose a package and describe your course or exam. Your core lessons, videos, visuals and practice are included. Add only clearly priced extra resources if you need them."],
+ ["Can I upload a syllabus or course materials?", "Yes. Course files are optional and help staff personalize your modules. Upload them while ordering or later via the private invoice link; do not share school passwords, private patient records, or confidential third-party materials."],
+ ["How are bank transfers made?", "Your invoice shows the exact fixed CAD amount, bank details and an invoice reference. Transfer to the beneficiary shown, then report your bank reference or upload a receipt in the secure form. Staff verify actual bank receipt independently."],
+ ["When does the delivery timeline begin?", "Payment verification alone does not start production. Staff confirm all required course materials have arrived, start preparation, and show a target delivery date in your learning orders."],
+ ["How do I get my learning access code?", "After staff verify the bank transfer, they issue a code to the email attached to your invoice. Sign in under Learning Workspace, then open My orders & delivered files. Your resources appear as staff approve and release them."],
+ ["Can I link another purchase to my existing account?", "Yes. After payment verification, use the 'Already have an account? Link this order' option on that invoice while signed in with the same email address."],
+ ["I lost my private invoice link or access code. What do I do?", "Contact support@unemployedproff.com with your invoice reference. After confirming your identity and email, an authorized owner can reissue your link or reset your code. An old link or code stops working after replacement."],
+ ["Can I download course materials?", "Yes, for supported resources released to your paid order. Interactive practice and automatic progress tracking require the applicable workspace tools."],
+ ["What if I need changes or more than the stated modules?", "Review the learning plan shared by staff. You can ask for corrections within the agreed scope; adding new modules or more extensive resources requires a separately priced enhancement."],
+ ["What if I sent payment but it hasn't appeared?", "Use the invoice's payment-report form, or contact support with your invoice reference. Do not transfer twice without checking; international bank settlement can take time."],
 ] as const;
 export default function HelpPage() {
   return <div className="min-h-screen bg-ground text-ink"><SiteHeader/>
