@@ -17,7 +17,7 @@ export default function Home() {
         <section className="mx-auto grid max-w-[1200px] items-center gap-10 px-4 pb-20 pt-12 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:pt-20" aria-labelledby="hero-h">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.13em] text-violet-700">Learning, organized around you</p>
-            <h1 id="hero-h" className="mt-5 max-w-xl font-display text-[44px] font-semibold leading-[1.08] tracking-tight sm:text-[64px]">One place. A clearer way to learn.</h1>
+            <h1 id="hero-h" className="mt-5 max-w-2xl font-display text-[40px] font-semibold leading-[1.08] tracking-tight sm:text-[54px]">Everything you need to make sense of your course &amp; exams.</h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-body">
               Almanac brings your study materials, learning plan, and progress together in one organized experience.
               Start with a ready-made course or resource, shape it around your goals, or request something built for what you want to learn.
@@ -132,7 +132,7 @@ export default function Home() {
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.13em] text-violet-700">Custom Learning Requests</p>
               <h2 id="request-h" className="mt-3 font-display text-[36px] font-semibold leading-tight sm:text-[44px]">Your needs don't have to fit our catalog.</h2>
-              <p className="mt-4 text-lg text-ink-body">A course we haven't covered. An exam you're preparing for. A study guide for one particular topic. Tell us what you're working toward, and we'll see what we can create for you.</p>
+              <p className="mt-4 text-lg text-ink-body">A course we haven't covered. An exam you're preparing for. A complete study module for a particular part of your course. Tell us what you're working toward, and we'll see what we can create for you.</p>
               <Link href="/request" className={`${primary} mt-7`}>Request a course or resource →</Link>
               <p className="mt-4 text-sm text-ink-muted">We'll review your request and explain what's possible and what happens next.</p>
             </div>
@@ -141,7 +141,7 @@ export default function Home() {
               <p className="mt-1 text-sm text-ink-muted">A few details help us get started.</p>
               <ol className="mt-5 space-y-5">
                 {[
-                  ["What are you learning?", "A subject, course, exam, or specific topic"],
+                  ["What are you learning?", "A subject, course, exam, or module"],
                   ["What would help?", "A full course, study guide, practice, or something else"],
                   ["When do you need it?", "Select a delivery timeline and price"],
                 ].map(([h,d],i)=>(
