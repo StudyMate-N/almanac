@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo } from "react";
 import { Logo } from "@/components/brand";
 import { BookIcon, CardsIcon, ChartIcon, HomeIcon, PlayIcon } from "@/components/icons";
 import { openCourses } from "@/content/course";
-import { dueCardIds, reviveDeck } from "@/lib/deck";
 import { planFor, weekToday } from "@/lib/plan";
 import { useStudent } from "@/lib/store";
-import { useCourse } from "@/lib/use-course";
+import { useDueCount } from "@/lib/use-cards";
 
 const items = [
   { href: "/app", label: "Today", Icon: HomeIcon, match: (p: string) => p === "/app" || p === "/app/setup" },
@@ -19,11 +17,7 @@ const items = [
   { href: "/app/progress", label: "Progress", Icon: ChartIcon, match: (p: string) => p.startsWith("/app/progress") || p.startsWith("/app/coach") },
 ];
 
-export function useDueCount() {
-  const { state } = useStudent();
-  const { cards } = useCourse();
-  return useMemo(() => dueCardIds(reviveDeck(state.deck, cards.map((c) => c.id))).length, [state.deck, cards]);
-}
+export { useDueCount };
 
 export function Sidebar() {
   const pathname = usePathname();

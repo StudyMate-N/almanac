@@ -1,35 +1,63 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CheckIcon, UndoIcon, XIcon } from "@/components/icons";
-import { dayKey, dueCardIds, formatInterval, gradeCard, grades, nextDueDate, previewIntervals, reviveDeck, storeDeck, type Deck } from "@/lib/deck";
+import { modules } from "@/content/course";
+import { BOOK } from "@/content/patho/author";
+import { dayKey, formatInterval, gradeCard, grades, isNew, nextDueDate, previewIntervals, ROUND, storeDeck, type Deck } from "@/lib/deck";
 import { useStudent } from "@/lib/store";
+import { useCardQueue } from "@/lib/use-cards";
 import { useCourse } from "@/lib/use-course";
-import type { Grade } from "ts-fsrs";
+import { Rating, type Grade } from "ts-fsrs";
 
-type Session = { queue: string[]; total: number; done: number };
+/** One review session. `inRound` counts grades in the current round; `recalled` counts Good/Easy on a card's first showing. */
+type Session = { queue: string[]; round: number; inRound: number; graded: number; firsts: number; recalled: number; seen: string[]; waiting: number; locked: number };
+type Snapshot = { deck: Deck; session: Session; fresh: Record<string, number> };
 
-/** Flashcard review with FSRS scheduling, saved to the student's account. */
+const SECONDS_PER_CARD = 24;
+const SWIPE = 90;
+
+const words = (s: string) => s.trim().split(/\s+/).length;
+/** Short prompts read big; longer ones step down so a card never feels like a wall. */
+const frontSize = (s: string) => (words(s) <= 3 ? "text-[34px] sm:text-[40px] leading-[1.1]" : words(s) <= 8 ? "text-[27px] sm:text-[30px] leading-tight" : "text-[22px] sm:text-[24px] leading-snug");
+const backSize = (s: string) => (words(s) <= 3 ? "text-[32px] sm:text-[36px] leading-tight text-violet-600" : words(s) <= 8 ? "text-[24px] sm:text-[27px] leading-snug" : "text-[20px] sm:text-[22px] leading-snug");
+const minutes = (n: number) => Math.max(1, Math.round((n * SECONDS_PER_CARD) / 60));
+
+function sectionLabel(moduleId: string) {
+  const m = modules.find((x) => x.id === moduleId);
+  if (!m) return "";
+  const n = m.id.match(/-s(\d+)$/)?.[1];
+  return n ? `Section ${n} · ${m.title}` : m.title;
+}
+
+/**
+ * Flashcard review with FSRS scheduling, saved to the student's account.
+ * Built to keep fatigue low: short rounds with a pause between them, one
+ * action spot at the bottom, Space then Space for the common path, a swipe
+ * on touch, and a question that shrinks out of the way when the answer opens.
+ */
 export function Review() {
   const { state, update } = useStudent();
   const { cards } = useCourse();
+  const today = useCardQueue();
   const [deck, setDeck] = useState<Deck | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [fresh, setFresh] = useState<Record<string, number>>({});
   const [flipped, setFlipped] = useState(false);
-  const [history, setHistory] = useState<{ deck: Deck; session: Session }[]>([]);
+  const [history, setHistory] = useState<Snapshot[]>([]);
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
-    const d = reviveDeck(state.deck, cards.map((c) => c.id));
-    const queue = dueCardIds(d);
-    setDeck(d);
-    setSession({ queue, total: queue.length, done: 0 });
+    setDeck(today.deck);
+    setFresh(state.deck?.fresh ?? {});
+    setSession({ queue: today.queue, round: 1, inRound: 0, graded: 0, firsts: 0, recalled: 0, seen: [], waiting: today.waiting, locked: today.locked });
     // Load once per visit; later saves must not reshuffle the queue.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const currentId = session?.queue[0];
+  const resting = Boolean(session && session.inRound >= ROUND && session.queue.length > 0);
+  const currentId = resting ? undefined : session?.queue[0];
   const content = useMemo(() => cards.find((c) => c.id === currentId), [currentId, cards]);
   const intervals = useMemo(() => (deck && currentId ? previewIntervals(deck[currentId], now) : null), [deck, currentId, now]);
 
@@ -37,174 +65,340 @@ export function Review() {
     (g: Grade) => {
       if (!deck || !session || !currentId) return;
       const at = new Date();
+      const day = dayKey(at);
+      const wasNew = isNew(deck[currentId]);
       const updated = gradeCard(deck[currentId], g, at);
       const nextDeck = { ...deck, [currentId]: updated };
       const rest = session.queue.slice(1);
-      // Cards that come back within this session (e.g. "Again" = minutes) go to the end of the queue.
-      const sessionCutoff = at.getTime() + 20 * 60 * 1000;
-      const requeue = updated.due.getTime() <= sessionCutoff ? [...rest, currentId] : rest;
-      setHistory((h) => [...h, { deck, session }]);
+      // A card due again within the session ("Again" is minutes) comes back a few cards later, not at the very end.
+      const back = updated.due.getTime() <= at.getTime() + 20 * 60 * 1000;
+      const queue = back ? [...rest.slice(0, 3), currentId, ...rest.slice(3)] : rest;
+      const first = !session.seen.includes(currentId);
+      const nextFresh = wasNew ? { ...fresh, [day]: (fresh[day] ?? 0) + 1 } : fresh;
+      setHistory((h) => [...h, { deck, session, fresh }]);
       setDeck(nextDeck);
-      setSession({ queue: requeue, total: session.total, done: session.done + (requeue.length < session.queue.length ? 1 : 0) });
+      setFresh(nextFresh);
+      setSession({
+        ...session,
+        queue,
+        inRound: session.inRound + 1,
+        graded: session.graded + 1,
+        firsts: session.firsts + (first ? 1 : 0),
+        recalled: session.recalled + (first && g >= Rating.Good ? 1 : 0),
+        seen: first ? [...session.seen, currentId] : session.seen,
+      });
       setFlipped(false);
       setNow(at);
       const log = { ...(state.deck?.log ?? {}) };
-      log[dayKey(at)] = (log[dayKey(at)] ?? 0) + 1;
-      update("deck", storeDeck(nextDeck, log, state.deck));
+      log[day] = (log[day] ?? 0) + 1;
+      update("deck", storeDeck(nextDeck, log, state.deck, nextFresh));
     },
-    [deck, session, currentId, state.deck, update],
+    [deck, session, currentId, fresh, state.deck, update],
   );
 
-  const undo = () => {
+  const undo = useCallback(() => {
     const last = history[history.length - 1];
     if (!last) return;
     setHistory((h) => h.slice(0, -1));
     setDeck(last.deck);
     setSession(last.session);
+    setFresh(last.fresh);
     setFlipped(true);
-    update("deck", storeDeck(last.deck, state.deck?.log ?? {}, state.deck));
-  };
+    update("deck", storeDeck(last.deck, state.deck?.log ?? {}, state.deck, last.fresh));
+  }, [history, state.deck, update]);
+
+  const nextRound = useCallback(() => setSession((s) => (s ? { ...s, round: s.round + 1, inRound: 0 } : s)), []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!currentId || e.target instanceof HTMLInputElement) return;
-      if (e.key === " " || e.key === "Enter") {
-        if (!flipped) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.metaKey || e.ctrlKey || e.altKey) return;
+      const go = e.key === " " || e.key === "Enter";
+      if (e.key === "u" || e.key === "U") return undo();
+      if (resting) {
+        if (go) {
           e.preventDefault();
-          setFlipped(true);
+          nextRound();
         }
+        return;
+      }
+      if (!currentId) return;
+      if (go) {
+        e.preventDefault();
+        if (!flipped) setFlipped(true);
+        else grade(Rating.Good);
       } else if (flipped && ["1", "2", "3", "4"].includes(e.key)) {
         grade(Number(e.key) as Grade);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [currentId, flipped, grade]);
+  }, [currentId, flipped, grade, resting, nextRound, undo]);
 
-  const progress = session && session.total > 0 ? (session.done / session.total) * 100 : 0;
+  const left = session?.queue.length ?? 0;
+  const roundSize = session ? Math.min(ROUND, session.inRound + left) : ROUND;
 
   return (
-    <>
-      <header className="px-4 pt-3.5 pb-2.5 sm:px-6">
-        <div className="mx-auto flex max-w-xl flex-col gap-3.5">
-          <div className="flex items-center gap-3">
-            <Link href="/app" aria-label="End review" className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white text-ink hover:bg-mist">
-              <XIcon size={18} />
-            </Link>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-violet-600">Card review</p>
-              <p className="font-display text-[17px] font-semibold" aria-live="polite">
-                {session ? (session.total === 0 ? "Nothing due" : `${Math.min(session.done + 1, session.total)} of ${session.total}`) : "Loading…"}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={undo}
-              disabled={history.length === 0}
-              aria-label="Undo last answer"
-              className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white text-ink-muted hover:bg-mist disabled:opacity-40"
-            >
-              <UndoIcon size={18} />
-            </button>
+    <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 sm:px-6">
+      <header className="flex flex-col gap-3 pt-3.5 pb-3">
+        <div className="flex items-center gap-3">
+          <Link href="/app" aria-label="End review" className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white text-ink hover:bg-mist">
+            <XIcon size={18} />
+          </Link>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-violet-600">{session && session.graded + left > ROUND ? `Cards · Round ${session.round}` : "Cards"}</p>
+            <p className="font-display text-[17px] font-semibold" aria-live="polite">
+              {!session ? "Loading…" : left === 0 ? "Done for today" : `${left} left · about ${minutes(left)} min`}
+            </p>
           </div>
-          <div aria-hidden="true" className="h-2 overflow-hidden rounded bg-hairline">
-            <div className="h-full rounded bg-violet transition-all" style={{ width: `${progress}%` }} />
-          </div>
+          <button
+            type="button"
+            onClick={undo}
+            disabled={history.length === 0}
+            aria-label="Undo last answer"
+            title="Undo (U)"
+            className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white text-ink-muted hover:bg-mist disabled:opacity-40"
+          >
+            <UndoIcon size={18} />
+          </button>
         </div>
+        {session && left > 0 && (
+          <div aria-hidden="true" className="flex gap-1">
+            {Array.from({ length: roundSize }, (_, i) => (
+              <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i < session.inRound ? "bg-violet" : i === session.inRound && !resting ? "bg-violet-300" : "bg-hairline"}`} />
+            ))}
+          </div>
+        )}
       </header>
 
-      <main className="mx-auto flex min-h-[calc(100dvh-110px)] max-w-xl flex-col gap-3.5 px-4 pb-8 sm:px-6">
-        {!session || !deck ? null : !content ? (
-          <Finished deck={deck} reviewed={session.done} />
+      <main className="flex flex-1 flex-col gap-3 pb-[max(16px,env(safe-area-inset-bottom))]">
+        {!session || !deck ? null : resting ? (
+          <Breather session={session} onContinue={nextRound} />
+        ) : !content ? (
+          <Finished deck={deck} session={session} />
         ) : (
           <>
-            <span className="self-start rounded-full bg-lilac px-3 py-1 text-xs font-bold text-violet-700">{content.topic}</span>
+            <FlashCard
+              key={`${content.id}-${session.graded}`}
+              section={sectionLabel(content.moduleId)}
+              front={content.front}
+              back={content.back}
+              detail={content.detail}
+              source={content.source?.startsWith("McCance") ? BOOK : content.source}
+              flipped={flipped}
+              onFlip={() => setFlipped(true)}
+              onSwipe={(g) => grade(g)}
+            />
 
-            <button
-              type="button"
-              onClick={() => setFlipped(true)}
-              disabled={flipped}
-              aria-label={flipped ? undefined : "Show answer"}
-              className="relative flex min-h-[380px] flex-1 flex-col gap-4 overflow-hidden rounded-tile bg-white px-[22px] py-[26px] text-left disabled:cursor-default"
-            >
-              <svg width="140" height="140" viewBox="0 0 140 140" aria-hidden="true" className="absolute -right-10 -bottom-10">
-                <circle cx="70" cy="70" r="70" fill="var(--color-mist)" />
-                <circle cx="58" cy="58" r="14" fill="var(--color-peach)" />
-              </svg>
-              <span className="flex flex-col gap-2">
-                <span className="text-xs font-bold tracking-[0.06em] text-ink-muted uppercase">Question</span>
-                <span className="font-display text-[22px] leading-snug font-medium">{content.front}</span>
-              </span>
-              {flipped ? (
+            {/* One action spot: the same place before and after the flip, so the hand never travels. */}
+            <div className="flex min-h-[92px] flex-col justify-end gap-2">
+              {flipped && intervals ? (
                 <>
-                  <span aria-hidden="true" className="border-t-2 border-dashed border-hairline" />
-                  <span className="relative flex flex-col gap-2" aria-live="polite">
-                    <span className="text-xs font-bold tracking-[0.06em] text-ink-muted uppercase">Answer</span>
-                    <span className="font-display text-[34px] leading-tight font-semibold text-violet-600">{content.back}</span>
-                    {content.detail && <span className="text-[15px] leading-relaxed text-ink-body">{content.detail}</span>}
-                  </span>
-                  <span className="relative mt-auto text-xs text-ink-muted">{content.source}</span>
+                  <div className="grid grid-cols-4 gap-2" role="group" aria-label="How well did you recall it?">
+                    {grades.map((g) => (
+                      <button
+                        key={g.grade}
+                        type="button"
+                        onClick={() => grade(g.grade)}
+                        aria-keyshortcuts={String(g.grade)}
+                        className={`flex min-h-[64px] flex-col items-center justify-center gap-0.5 rounded-[18px] ${g.tone} hover:brightness-95 ${g.grade === Rating.Good ? "ring-2 ring-correct/40" : ""}`}
+                      >
+                        <span className="text-[15px] font-bold">{g.label}</span>
+                        <span className="text-xs font-semibold opacity-80">{intervals[g.grade]}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-center text-xs text-ink-muted">
+                    <span className="hidden sm:inline">Space = Good · 1–4 to choose · U to undo</span>
+                    <span className="sm:hidden">{session.graded < 3 ? "Swipe right for Good, left for Again" : "How well did you recall it?"}</span>
+                  </p>
                 </>
               ) : (
-                <span className="relative mt-auto self-center rounded-full bg-lilac px-4 py-2 text-sm font-bold text-violet-700">Tap to show the answer</span>
+                <>
+                  <button type="button" onClick={() => setFlipped(true)} className="min-h-[60px] rounded-full bg-violet text-[16px] font-bold text-white hover:bg-violet-600">
+                    Show answer
+                  </button>
+                  <p className="hidden text-center text-xs text-ink-muted sm:block">Space to show</p>
+                </>
               )}
-            </button>
-
-            {flipped && intervals ? (
-              <>
-                <p className="text-center text-[13px] font-semibold text-ink-muted">How well did you recall it?</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {grades.map((g) => (
-                    <button
-                      key={g.grade}
-                      type="button"
-                      onClick={() => grade(g.grade)}
-                      className={`flex min-h-[66px] flex-col items-center justify-center gap-0.5 rounded-[18px] ${g.tone} hover:brightness-95`}
-                    >
-                      <span className="text-[15px] font-bold">{g.label}</span>
-                      <span className="text-xs font-semibold">{intervals[g.grade]}</span>
-                    </button>
-                  ))}
-                </div>
-                <p className="hidden text-center text-xs text-ink-muted sm:block">Keys 1–4 to answer</p>
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setFlipped(true)}
-                className="min-h-[56px] rounded-full bg-violet font-bold text-white hover:bg-violet-600"
-              >
-                Show answer
-              </button>
-            )}
+            </div>
           </>
         )}
       </main>
-    </>
+    </div>
   );
 }
 
-function Finished({ deck, reviewed }: { deck: Deck; reviewed: number }) {
+/**
+ * The card. Before the flip the question fills it. On the flip the question
+ * shrinks to a line at the top and the answer expands into the space it left,
+ * so the eye stays in one place. Once flipped, a swipe grades (right Good, left Again).
+ */
+function FlashCard({
+  section,
+  front,
+  back,
+  detail,
+  source,
+  flipped,
+  onFlip,
+  onSwipe,
+}: {
+  section: string;
+  front: string;
+  back: string;
+  detail?: string;
+  source?: string;
+  flipped: boolean;
+  onFlip: () => void;
+  onSwipe: (g: Grade) => void;
+}) {
+  const [dx, setDx] = useState(0);
+  const start = useRef<{ x: number; y: number } | null>(null);
+  const dragged = useRef(false);
+
+  const onDown = (e: React.PointerEvent) => {
+    if (!flipped || e.pointerType === "mouse") return;
+    start.current = { x: e.clientX, y: e.clientY };
+    dragged.current = false;
+  };
+  const onMove = (e: React.PointerEvent) => {
+    if (!start.current) return;
+    const x = e.clientX - start.current.x;
+    if (!dragged.current && Math.abs(x) > 8 && Math.abs(x) > Math.abs(e.clientY - start.current.y)) {
+      dragged.current = true;
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
+    if (dragged.current) setDx(x);
+  };
+  const onUp = () => {
+    if (!start.current) return;
+    start.current = null;
+    if (dx > SWIPE) onSwipe(Rating.Good);
+    else if (dx < -SWIPE) onSwipe(Rating.Again);
+    else setDx(0);
+  };
+  const pull = Math.min(1, Math.abs(dx) / SWIPE);
+
+  return (
+    <section
+      aria-label="Flashcard"
+      onClick={() => !flipped && onFlip()}
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+      style={{ transform: dx ? `translateX(${dx}px) rotate(${dx / 30}deg)` : undefined, touchAction: flipped ? "pan-y" : undefined }}
+      className={`relative flex max-h-[560px] min-h-[300px] flex-1 flex-col overflow-hidden rounded-tile bg-white motion-safe:animate-card-in ${dx ? "" : "transition-transform duration-200"} ${flipped ? "" : "cursor-pointer"}`}
+    >
+      {dx !== 0 && (
+        <>
+          <span aria-hidden="true" style={{ opacity: pull * 0.55 }} className={`pointer-events-none absolute inset-0 ${dx > 0 ? "bg-mint" : "bg-rose"}`} />
+          <span
+            aria-hidden="true"
+            style={{ opacity: pull }}
+            className={`pointer-events-none absolute bottom-5 left-1/2 z-10 -translate-x-1/2 rounded-full bg-white px-4 py-1.5 text-sm font-bold ${dx > 0 ? "text-mint-ink" : "text-rose-ink"}`}
+          >
+            {dx > 0 ? "Good →" : "← Again"}
+          </span>
+        </>
+      )}
+
+      <div className="relative flex items-center justify-between gap-3 px-[22px] pt-5">
+        <span className="min-w-0 truncate rounded-full bg-lilac px-3 py-1 text-xs font-bold text-violet-700">{section}</span>
+      </div>
+
+      {/* Two rows that trade space: 1fr/0fr before the flip, 0fr/1fr after. */}
+      <div
+        className="relative grid flex-1 px-[22px] pb-6 transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
+        style={{ gridTemplateRows: flipped ? "0fr 1fr" : "1fr 0fr" }}
+      >
+        <div className={`flex flex-col justify-center ${flipped ? "pt-4" : "py-6"}`}>
+          <p className={`transition-all duration-300 motion-reduce:transition-none ${flipped ? "text-xs font-bold tracking-[0.06em] text-ink-muted uppercase" : "sr-only"}`}>Question</p>
+          <h2
+            className={`font-display transition-all duration-300 motion-reduce:transition-none ${flipped ? "mt-1 text-[16px] leading-snug font-semibold text-ink-muted" : `${frontSize(front)} text-center font-medium text-ink`}`}
+          >
+            {front}
+          </h2>
+          {!flipped && <p className="mt-5 text-center text-[13px] font-semibold text-ink-faint">Tap the card to show the answer</p>}
+        </div>
+
+        <div className="min-h-0 overflow-hidden">
+          <div aria-live="polite" className={`flex h-full flex-col py-4 transition-opacity duration-300 motion-reduce:transition-none ${flipped ? "opacity-100" : "opacity-0"}`}>
+            {flipped && (
+              <>
+                <span aria-hidden="true" className="border-t-2 border-dashed border-hairline" />
+                <div className="my-auto flex flex-col gap-2 py-4">
+                  <p className="text-xs font-bold tracking-[0.06em] text-ink-muted uppercase">Answer</p>
+                  <p className={`font-display font-semibold text-ink ${backSize(back)}`}>{back}</p>
+                  {detail && <p className="text-[15px] leading-relaxed text-ink-body">{detail}</p>}
+                </div>
+                {source && <p className="text-xs text-ink-muted">{source}</p>}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Breather({ session, onContinue }: { session: Session; onContinue: () => void }) {
+  const left = session.queue.length;
+  return (
+    <section className="flex max-h-[560px] flex-1 flex-col justify-center gap-5 rounded-tile bg-white p-7 motion-safe:animate-card-in" aria-live="polite">
+      <p className="text-xs font-extrabold tracking-[.06em] text-violet-600 uppercase">Round {session.round} done</p>
+      <h1 className="font-display text-[30px] leading-tight font-semibold">Good place for a breath.</h1>
+      <p className="text-ink-body">
+        {session.firsts > 0 && `You recalled ${session.recalled} of ${session.firsts} on the first try. `}
+        Everything so far is saved, so you can stop here and the rest waits for you.
+      </p>
+      <p className="font-display text-[17px] font-semibold">
+        {left} left · about {minutes(left)} min
+      </p>
+      <div className="flex flex-col gap-2.5 sm:flex-row">
+        <button type="button" onClick={onContinue} className="min-h-[56px] rounded-full bg-violet px-7 font-bold text-white hover:bg-violet-600">
+          Keep going
+        </button>
+        <Link href="/app" className="inline-flex min-h-[56px] items-center justify-center rounded-full bg-mist px-7 font-bold text-ink hover:bg-hairline">
+          Stop for now
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function Finished({ deck, session }: { deck: Deck; session: Session }) {
   const next = nextDueDate(deck);
   const now = new Date();
+  const reviewed = session.seen.length;
   return (
-    <section className="mt-6 flex flex-col items-start gap-4 rounded-tile bg-white p-7">
+    <section className="mt-2 flex flex-col items-start gap-4 rounded-tile bg-white p-7 motion-safe:animate-card-in">
       <span className="grid h-14 w-14 place-items-center rounded-2xl bg-mint text-correct" aria-hidden="true">
         <CheckIcon size={26} />
       </span>
       <h1 className="font-display text-[30px] leading-tight font-semibold">
         {reviewed > 0 ? `${reviewed} card${reviewed === 1 ? "" : "s"} reviewed` : "You're all caught up"}
       </h1>
+      {reviewed > 0 && (
+        <p className="text-ink-body">
+          You recalled {session.recalled} of {session.firsts} on the first try.
+        </p>
+      )}
       <p className="text-ink-body">
         {next && next.getTime() > now.getTime()
           ? `The next card comes back in ${formatInterval(next, now)}. Coming back then keeps today's work from fading.`
           : "Nothing else is due right now."}
       </p>
+      {(session.waiting > 0 || session.locked > 0) && (
+        <ul className="flex flex-col gap-1.5 text-[15px] text-ink-muted">
+          {session.waiting > 0 && <li>{session.waiting} new cards wait for tomorrow. A few new cards a day keeps every session short.</li>}
+          {session.locked > 0 && <li>{session.locked} cards open as you start their sections.</li>}
+        </ul>
+      )}
       <div className="flex flex-wrap gap-2.5">
         <Link href="/app" className="inline-flex min-h-[52px] items-center rounded-full bg-violet px-6 font-bold text-white hover:bg-violet-600">
           Back to Today
         </Link>
-
       </div>
     </section>
   );
