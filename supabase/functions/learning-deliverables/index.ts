@@ -109,7 +109,7 @@ Deno.serve(async req=>{
    const result=await rpc("learning_student_delivery_path",{
     p_token:p.studentToken,p_order:p.orderId,p_file:p.fileId});
    if(typeof result.path!=="string")return json({error:"File unavailable"},404);
-   return await stream(result.path,"almanac-resource");
+   return await stream(result.path,String(result.name||"almanac-resource"));
   }
   return json({error:"Invalid operation"},400);
  }catch{
