@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { friendlyError, rpc } from "@/lib/api";
 import { COACH_KEY } from "@/lib/store";
+import { StaffSourceFiles } from "@/components/site/staff-source-files";
 import { ENHANCEMENTS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 
 type RequestRow = {
@@ -123,6 +124,7 @@ export default function LearningRequestsPage() {
                   .map(key=>`${ENHANCEMENTS[key].title} × ${r.enhancements?.[key]}`).join(", ")
                   || (r.addons.length?r.addons.join(", "):"Core package only")}</span>
                 <span>Study preference: {PREFERENCES[r.learning_preference as keyof typeof PREFERENCES] ?? "Balanced"}</span>
+                <div className="sm:col-span-2"><StaffSourceFiles orderId={r.id} staffToken={token}/></div>
               </div>
             </article>
           ))}
