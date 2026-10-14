@@ -108,6 +108,7 @@ export type LearningRequestInput = {
   enhancements: EnhancementCounts;
   learningPreference: LearningPreference;
   website?: string;
+  termsAccepted: boolean;
 };
 
 export class OfferValidationError extends Error {}
@@ -124,7 +125,7 @@ export function isSpeedAvailable(kind: OfferKind, speed: Speed, extras: Enhancem
 
 export function parseLearningRequest(value: unknown): LearningRequestInput {
   if (!isObject(value)) throw new OfferValidationError("Please check your request and try again.");
-  const { kind, speed, deliveryMethod, enhancements, learningPreference, courseId, subject, goal, name, email, website } = value;
+  const { kind, speed, deliveryMethod, enhancements, learningPreference, courseId, subject, goal, name, email, website, termsAccepted } = value;
   if (!allowed(OFFERS, kind) || !allowed(SPEEDS, speed) || !["both", "workspace", "files"].includes(String(deliveryMethod))) {
     throw new OfferValidationError("Choose a package, delivery method and timeline.");
   }
@@ -132,6 +133,7 @@ export function parseLearningRequest(value: unknown): LearningRequestInput {
     Object.keys(enhancements).some(key => !allowed(ENHANCEMENTS,key))) {
     throw new OfferValidationError("Choose a learning preference and valid enhancements.");
   }
+  if (termsAccepted !== true) throw new OfferValidationError("Please review and accept the learning service terms and privacy policy.");
   const extras = { ...EMPTY_ENHANCEMENTS };
   for (const id of Object.keys(ENHANCEMENTS) as Enhancement[]) {
     const count = enhancements[id] ?? 0;
@@ -164,6 +166,7 @@ export function parseLearningRequest(value: unknown): LearningRequestInput {
     courseId: typeof courseId === "string" ? courseId : null,
     subject: cleanSubject, goal: cleanGoal, name: cleanName, email: cleanEmail,
     website: typeof website === "string" ? website.slice(0,100) : "",
+    termsAccepted: true,
   };
 }
 
