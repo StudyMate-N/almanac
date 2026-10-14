@@ -27,15 +27,10 @@ export async function POST(request: NextRequest) {
 
   const quote = calculateQuote(input);
   try {
-    const result = await fetch(`${SUPABASE_URL}/rest/v1/rpc/learning_request_create`, {
+    const result = await fetch(`${SUPABASE_URL}/functions/v1/learning-order-checkout`, {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
-      body: JSON.stringify({
-        p_data: {
-          ...input,
-          expectedTotalUsd: quote.totalUsd,
-        },
-      }),
+      body: JSON.stringify({ ...input, expectedTotalUsd: quote.totalUsd }),
       cache: "no-store",
     });
     if (!result.ok) {
@@ -46,7 +41,7 @@ export async function POST(request: NextRequest) {
       if (body.includes("invalid_")) return NextResponse.json({ error: "Check the package, quantities, learning preferences and request details." }, { status: 400 });
       return NextResponse.json({ error: "We couldn't save your request. Please try again shortly." }, { status: 503 });
     }
-    const received: { id: string; quoteUsd: number; turnaroundDays: number; status: string } = await result.json();
+    const received: { id: string; quoteUsd: number; payableCadCents: number; turnaroundDays: number; status: string } = await result.json();
     return NextResponse.json(received, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "The request service is temporarily unavailable. Please try again." }, { status: 503 });
