@@ -26,6 +26,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
   const [name,setName]=useState("");
   const [email,setEmail]=useState("");
   const [website,setWebsite]=useState("");
+  const [termsAccepted,setTermsAccepted]=useState(false);
   const [enhancements,setEnhancements]=useState<EnhancementCounts>({...EMPTY_ENHANCEMENTS});
   const [learningPreference,setLearningPreference]=useState<LearningPreference>("balanced");
   const [deliveryMethod,setDeliveryMethod]=useState<DeliveryMethod>("both");
@@ -69,7 +70,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-          kind,subject,goal,name,email,website,enhancements,learningPreference,
+          kind,subject,goal,name,email,website,enhancements,learningPreference,termsAccepted,
           courseId:initialCourseId,deliveryMethod,speed,
         }),
       });
@@ -281,6 +282,12 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
         <div aria-hidden="true" className="absolute -left-[9999px]">
           <label>Website <input tabIndex={-1} autoComplete="off" value={website} onChange={e=>setWebsite(e.target.value)}/></label>
         </div>
+        <label className="mt-5 flex items-start gap-3 rounded-2xl border border-hairline bg-mist p-4 text-sm">
+          <input type="checkbox" required checked={termsAccepted} onChange={e=>setTermsAccepted(e.target.checked)}
+            className="mt-1 h-4 w-4 accent-violet"/>
+          <span>I have reviewed Almanac's <Link href="/terms" target="_blank" className="font-semibold text-violet-700 underline">service terms</Link> and <Link href="/privacy" target="_blank" className="font-semibold text-violet-700 underline">privacy policy</Link>.
+            I understand the scope, that payment is by verified CAD bank transfer, and that the delivery timeline begins only when payment and required course materials are confirmed.</span>
+        </label>
         <p className="mt-4 text-xs text-ink-muted">No payment is collected when you submit this request.</p>
       </section>
     </div>
@@ -304,7 +311,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
       </dl>
       <p className="mt-3 text-xs text-ink-muted">Preference: {PREFERENCES[learningPreference]}</p>
       {error && <p role="alert" className="mt-4 rounded-xl bg-rose p-3 text-sm text-rose-ink">{error}</p>}
-      <button type="submit" disabled={busy||!speedAvailable}
+      <button type="submit" disabled={busy||!speedAvailable||!termsAccepted}
         className="mt-5 min-h-14 w-full rounded-full bg-violet px-5 font-bold text-white hover:bg-violet-600 disabled:cursor-not-allowed disabled:opacity-50">
         {busy?"Saving your request…":"Review and create invoice →"}
       </button>
