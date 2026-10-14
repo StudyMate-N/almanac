@@ -17,7 +17,7 @@ export default function ContactPage() {
         <div className="rounded-tile bg-white p-6">
           <h2 className="font-display text-xl font-semibold">General support</h2>
           <p className="mt-2 text-sm text-ink-body">Tell us what you need help with and include a request reference if you have one.</p>
-          <a href="mailto:help@almanac.study" className="mt-5 inline-block break-all font-semibold text-violet-700 underline">help@almanac.study</a>
+          <a href="mailto:support@unemployedproff.com" className="mt-5 inline-block break-all font-semibold text-violet-700 underline">support@unemployedproff.com</a>
         </div>
         <div className="rounded-tile bg-lilac p-6">
           <h2 className="font-display text-xl font-semibold">Request learning materials</h2>
