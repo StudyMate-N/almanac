@@ -124,7 +124,13 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
       {invoice.paymentStatus==="verified"&&<section className="rounded-tile border border-hairline bg-white p-5 sm:p-7 print:hidden">
         <h2 className="font-display text-2xl font-semibold">Your learning workspace is ready for access</h2>
         <p className="mt-2 text-sm text-ink-body">After payment verification, Almanac staff provide your access code by email. Sign in to view preparation milestones and resources released specifically for your order. Course files may still be in preparation.</p>
-        <Link href="/app/orders" className="mt-4 inline-flex min-h-12 items-center rounded-full bg-violet px-5 font-semibold text-white">Go to your learning orders →</Link>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link href="/app/orders" className="inline-flex min-h-12 items-center rounded-full bg-violet px-5 font-semibold text-white">Go to your learning orders →</Link>
+          <Link href={`/app/orders?claimId=${encodeURIComponent(id)}&claimToken=${encodeURIComponent(token)}`}
+            className="inline-flex min-h-12 items-center rounded-full border border-hairline px-5 font-semibold text-violet-700">
+            Already have an Almanac account? Link this order →
+          </Link>
+        </div>
       </section>}
       <SourceMaterialUploader orderId={id} invoiceToken={token}/>
       <LearningPlanReview id={id} token={token} plan={invoice} onRefresh={refresh}/>
