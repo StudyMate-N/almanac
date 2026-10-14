@@ -1,4 +1,4 @@
-import { createEmptyCard, fsrs, generatorParameters, Rating, type Card as FsrsCard, type Grade } from "ts-fsrs";
+import { createEmptyCard, fsrs, generatorParameters, Rating, State, type Card as FsrsCard, type Grade } from "ts-fsrs";
 
 /**
  * Spaced-repetition scheduling (FSRS). Card states are saved per student
@@ -9,7 +9,13 @@ export const scheduler = fsrs(generatorParameters({ enable_fuzz: false, enable_s
 
 export type Deck = Record<string, FsrsCard>;
 type StoredCard = Omit<FsrsCard, "due" | "last_review"> & { due: string; last_review?: string };
-export type StoredDeck = { cards: Record<string, StoredCard>; log: Record<string, number> };
+/** `log`: cards graded per day. `fresh`: new cards first seen per day (for the daily new-card limit). */
+export type StoredDeck = { cards: Record<string, StoredCard>; log: Record<string, number>; fresh?: Record<string, number> };
+
+/** New cards introduced per day. Keeps a session short; reviews of seen cards are never capped. */
+export const NEW_PER_DAY = 15;
+/** Cards per round. After each round the student can stop; everything is already saved. */
+export const ROUND = 10;
 
 export function reviveDeck(stored: StoredDeck | null | undefined, cardIds: string[], now = new Date()): Deck {
   const deck: Deck = {};
@@ -20,14 +26,15 @@ export function reviveDeck(stored: StoredDeck | null | undefined, cardIds: strin
   return deck;
 }
 
-export function storeDeck(deck: Deck, log: Record<string, number>, previous?: StoredDeck | null): StoredDeck {
+export function storeDeck(deck: Deck, log: Record<string, number>, previous?: StoredDeck | null, fresh?: Record<string, number>): StoredDeck {
   const cards: Record<string, StoredCard> = { ...(previous?.cards ?? {}) };
   for (const [id, c] of Object.entries(deck)) {
     // Untouched new cards need no storage.
     if (c.reps === 0 && !previous?.cards?.[id]) continue;
     cards[id] = { ...c, due: c.due.toISOString(), last_review: c.last_review?.toISOString() };
   }
-  return { cards, log };
+  const f = fresh ?? previous?.fresh;
+  return f ? { cards, log, fresh: f } : { cards, log };
 }
 
 export function dueCardIds(deck: Deck, now = new Date()): string[] {
@@ -36,8 +43,25 @@ export function dueCardIds(deck: Deck, now = new Date()): string[] {
     .map(([id]) => id);
 }
 
+export const isNew = (c: FsrsCard) => c.state === State.New;
+
+/**
+ * Today's queue: seen cards that are due (oldest first, never capped), then up to
+ * `newLeft` new cards in course order from sections the student has started.
+ */
+export function cardQueue(deck: Deck, unlocked: (id: string) => boolean, newLeft: number, now = new Date()) {
+  const reviews = Object.entries(deck)
+    .filter(([, c]) => !isNew(c) && c.due.getTime() <= now.getTime())
+    .sort(([, a], [, b]) => a.due.getTime() - b.due.getTime())
+    .map(([id]) => id);
+  const open = Object.entries(deck).filter(([id, c]) => isNew(c) && unlocked(id)).map(([id]) => id);
+  const locked = Object.entries(deck).filter(([id, c]) => isNew(c) && !unlocked(id)).length;
+  const fresh = open.slice(0, Math.max(0, newLeft));
+  return { reviews, fresh, queue: [...reviews, ...fresh], waiting: open.length - fresh.length, locked };
+}
+
 export function nextDueDate(deck: Deck): Date | null {
-  const dates = Object.values(deck).map((c) => c.due.getTime());
+  const dates = Object.values(deck).filter((c) => !isNew(c)).map((c) => c.due.getTime());
   return dates.length ? new Date(Math.min(...dates)) : null;
 }
 
