@@ -8,7 +8,7 @@
 2. **Define the learning scope.** Choose the complete $49 / $149 / $399 package; describe the subject, goal, and required module coverage. All listed core videos, practice, slides, cards and assessments are included in the package price.
 3. **Tailor the experience.** Select a study preference at no extra fee. Quantified enhancements may include deep-dive videos, independent exam simulations or complete extra learning modules. Staff must review these before scheduling work.
 4. **Share course material (optional).** Upload authorized syllabus, lecture notes, presentation files and relevant course resources. Eight attachments maximum, 10 MB each, 40 MB combined. Learners can supply files later using their private invoice link. Avoid confidential student/patient records.
-5. **Choose a timeline.** Standard / Priority / Express availability is subject to capacity. The deadline is not started by completing the form, reporting a transfer or merely issuing an access code.
+5. **Choose a timeline.** Standard / Priority / Express availability is subject to capacity. The eight-module Complete Course does **not** offer automatic three-day Express; only Standard (14 days) and Priority (7 days) are presented. Focused Study Module and Exam Prep may have faster options within their preset limits. The deadline is not started by completing the form, reporting a transfer or merely issuing an access code.
 6. **Acknowledge the service terms.** Request form validates the explicit consent flag on client and server; the date is recorded with the order.
 7. **Create invoice.** Backend independently validates the package and USD price, fetches the latest available Bank of Canada USD/CAD published reference rate, and locks the CAD payable total on the order. The unpaid quote is valid for seven days.
 8. **Save the private link.** Customer receives an invoice URL with a secret token and may copy or bookmark it. Automatic transactional email is OPTIONAL and not active without a verified sender/provider. The confirmation page states whether mail was actually sent and provides recovery guidance.
@@ -31,7 +31,7 @@
 - Use **Manage course resources** for private files. Resource types: lesson, video, slides, practice, flashcards, simulation, plan and other. Confirm accuracy and right to share before releasing each file.
 - Use **Interactive module content** to download a JSON template, fill exact module coverage, import/save a draft, and publish after the structural and volume checks pass. The interactive learner player is at `/app/orders/[orderId]/learn`.
 - Drafts are not visible to learners. Republishing after changes requires renewed review.
-- Mark an order **Delivered** only after the backend completeness guard passes and the learner can access the published content and files.
+- Mark an order **Delivered** only after the backend completeness guard passes and the learner can access the published content and files. The Complete Course additionally requires a separate released written lesson, video and slide summary for **every** purchased module; simply attaching duplicate files to one module cannot satisfy it.
 - Owner-only controls: invoice-link reissue, access-code reset, and refresh of an expired/unpaid CAD quote. Old private links and credentials are invalidated on rotation.
 
 ## Standard content importer
@@ -95,6 +95,8 @@ The development Vercel project stores bank details and WhatsApp number as sensit
 - Rollback-only Supabase transactions: create a quote and invoice; reject incorrect payment attestation; issue access; start the delivery deadline; save/publish module content; answer a question; persist flashcard review; register and release files; enforce package completion; link customer accounts; confirm delivery.
 - Rollback-only identity tests: prevent cross-account reads; rotate invoice links; revoke old access codes/sessions; link a second paid order; prevent cancelled orders from appearing.
 - Seven-day quote renewal transaction **not validated**: the attempted dynamic rollback-only test was blocked by the available execution safety guard. Requires a controlled manual staging test.
+- Read-only GitHub CI security probes confirm that unknown students and staff receive 4xx errors for private source, receipt and delivery endpoints. These probes never upload files, alter real orders or read private data.
+- A separate rollback-only course guard test confirmed that duplicate assets all assigned to one module cannot count as complete course delivery.
 
 No real bank transfer, customer money, live email delivery or externally uploaded/video file has been represented as successfully tested.
 
