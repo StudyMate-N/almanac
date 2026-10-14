@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { friendlyError, rpc } from "@/lib/api";
 import { COACH_KEY } from "@/lib/store";
+import { ENHANCEMENTS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 
 type RequestRow = {
   id: string; name: string; email: string; course_id: string | null;
   subject: string; goal: string; kind: string; delivery_method: string;
-  speed: string; addons: string[]; unit_count: number;
+  speed: string; addons: string[]; enhancements?: Record<string,number>; learning_preference?: string; unit_count: number;
   quote_usd: number; turnaround_days: number;
   status: string; payment_status: string; payment_reference: string | null; payment_date: string | null; invoice_ref: string; created_at: string;
 };
@@ -117,7 +118,11 @@ export default function LearningRequestsPage() {
                 <span>Requested by: <strong>{r.name}</strong></span>
                 <a className="font-semibold text-violet-700 underline" href={`mailto:${r.email}`}>{r.email}</a>
                 <span>Delivery: {r.delivery_method}</span>
-                <span>Additions: {r.addons.length ? r.addons.join(", ") : "Core package"}</span>
+                <span>Extras: {(Object.keys(ENHANCEMENTS) as Enhancement[])
+                  .filter(key=>(r.enhancements?.[key] ?? 0)>0)
+                  .map(key=>`${ENHANCEMENTS[key].title} × ${r.enhancements?.[key]}`).join(", ")
+                  || (r.addons.length?r.addons.join(", "):"Core package only")}</span>
+                <span>Study preference: {PREFERENCES[r.learning_preference as keyof typeof PREFERENCES] ?? "Balanced"}</span>
               </div>
             </article>
           ))}
