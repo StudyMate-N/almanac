@@ -17,7 +17,7 @@ const PREFERENCE_KEYS = Object.keys(PREFERENCES) as LearningPreference[];
 const inputClass="mt-2 w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-base outline-none focus:border-violet";
 const usd=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n);
 
-type Submitted={id:string;invoiceRef:string;invoiceToken:string;quoteUsd:number;turnaroundDays:number;status:string};
+type Submitted={id:string;invoiceRef:string;invoiceToken:string;quoteUsd:number;payableCadCents:number;rateDate:string;turnaroundDays:number;status:string};
 
 export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId:string|null;initialSubject:string}) {
   const [kind,setKind]=useState<OfferKind>("course");
@@ -99,6 +99,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
     <dl className="mt-6 grid gap-3 rounded-card bg-mist p-5 text-sm">
       <div className="flex flex-wrap justify-between gap-2"><dt>Reference</dt><dd className="break-all font-semibold">{submitted.invoiceRef}</dd></div>
       <div className="flex justify-between"><dt>Catalog total (USD)</dt><dd className="font-semibold">{usd(submitted.quoteUsd)}</dd></div>
+      <div className="flex justify-between"><dt>Payable amount (CAD)</dt><dd className="font-semibold">{new Intl.NumberFormat("en-CA",{style:"currency",currency:"CAD"}).format(submitted.payableCadCents/100)}</dd></div>
       <div className="flex justify-between"><dt>Selected turnaround</dt><dd className="font-semibold">{submitted.turnaroundDays} calendar days</dd></div>
       <div className="flex justify-between"><dt>Payment status</dt><dd className="font-semibold">Awaiting payment</dd></div>
     </dl>
@@ -111,7 +112,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
         Copy private invoice link
       </button>
     </div>
-    <p className="mt-4 text-sm text-ink-muted">No payment has been taken. Bank instructions stay unavailable until a confirmed CAD amount is shown. After payment is verified, staff issue a learning access code. Your delivery period begins when payment and required materials have been received.</p>
+    <p className="mt-4 text-sm text-ink-muted">No payment has been taken. Your CAD amount is fixed on your private invoice. After payment is verified, staff issue a learning access code. Your delivery period begins when payment and required materials have been received.</p>
   </section>;
 
   return <form onSubmit={submit} className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_310px] lg:items-start">
