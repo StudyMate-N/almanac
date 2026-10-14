@@ -43,8 +43,8 @@ function SignIn() {
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-5 py-10">
       <Logo />
       <div>
-        <h1 className="font-display text-[34px] leading-tight font-semibold">Sign in to the pilot</h1>
-        <p className="mt-2 text-ink-body">Use the access code your coach sent you. Your progress is saved to your account, so you can switch devices.</p>
+        <h1 className="font-display text-[34px] leading-tight font-semibold">Sign in to Almanac</h1>
+        <p className="mt-2 text-ink-body">Use the access code Almanac sent you after verifying your payment. Your progress is saved to your account, so you can switch devices.</p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-3.5 rounded-tile bg-white p-6">
         <label className="flex flex-col gap-1.5 text-sm font-semibold">
@@ -68,7 +68,7 @@ function SignIn() {
           {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>
-      <p className="text-sm text-ink-muted">No code yet? The pilot is open to 50 students. Ask your Meridian coach for one.</p>
+      <p className="text-sm text-ink-muted">No code yet? You will receive your access code after staff verify your payment. For help, contact support@unemployedproff.com.</p>
     </main>
   );
 }
