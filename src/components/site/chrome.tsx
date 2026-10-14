@@ -6,12 +6,13 @@ export function SiteHeader() {
     <header className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-4 py-5 sm:px-6">
       <Logo />
       <nav aria-label="Main" className="flex items-center gap-5 text-[15px] font-semibold">
-        <Link href="/#courses" className="hidden sm:inline">
-          Courses
+        <Link href="/courses" className="hidden sm:inline">
+          Courses &amp; Resources
         </Link>
         <Link href="/#how" className="hidden sm:inline">
           How it works
         </Link>
+        <Link href="/request" className="hidden sm:inline">Request a course</Link>
         <Link href="/app" className="rounded-full bg-white px-4 py-2">
           Have a code? Sign in
         </Link>
@@ -22,8 +23,22 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-hairline px-4 py-8 text-center text-sm text-ink-muted">
-      Almanac is study help, not medical or professional advice. Independent; not affiliated with any school or publisher.
+    <footer className="border-t border-hairline px-4 py-8 text-sm text-ink-muted">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 sm:px-2">
+        <div>
+          <p className="font-display text-xl font-semibold text-ink">Almanac</p>
+          <p className="mt-1">One place. A clearer way to learn.</p>
+        </div>
+        <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 font-medium">
+          <Link href="/courses" className="hover:text-violet">Courses &amp; Resources</Link>
+          <Link href="/request" className="hover:text-violet">Request a course or resource</Link>
+          <Link href="/app" className="hover:text-violet">Learning workspace</Link>
+        </nav>
+        <p className="w-full border-t border-hairline pt-4 text-xs">
+          © 2026 Almanac. Learning support, not medical or professional advice.
+          Independent; not affiliated with any school or publisher.
+        </p>
+      </div>
     </footer>
   );
 }
