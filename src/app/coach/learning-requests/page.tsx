@@ -159,7 +159,7 @@ export default function LearningRequestsPage() {
               <StaffLearningPlan id={r.id} token={token} plan={r}/>
               <StaffDeliveryPanel orderId={r.id} token={token} paymentStatus={r.payment_status}
                 days={r.turnaround_days} startedAt={r.production_started_at||null}
-                dueAt={r.delivery_due_at||null} kind={r.kind} modules={r.unit_count}/>
+                dueAt={r.delivery_due_at||null} kind={r.kind} modules={r.unit_count} enhancements={r.enhancements}/>
               <StaffCoursePack orderId={r.id} token={token} modules={r.unit_count}
                 kind={r.kind} paymentStatus={r.payment_status} startedAt={r.production_started_at||null}/>
               <StaffRecoveryPanel orderId={r.id} token={token} role={role} invoiceRef={r.invoice_ref}
