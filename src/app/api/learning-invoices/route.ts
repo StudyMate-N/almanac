@@ -17,7 +17,10 @@ function credentials() {
     currency: process.env.ALMANAC_BANK_CURRENCY ?? "",
   };
   const ready = Object.values(bank).every(Boolean);
-  return ready ? bank : null;
+  // USD list pricing does not imply that the CAD-receiving account should be
+  // sent USD. Until each invoice stores its locked payable CAD amount, do
+  // not release bank-transfer instructions for a CAD-denominated account.
+  return ready && bank.currency === "USD" ? bank : null;
 }
 
 export async function GET(request: NextRequest) {
