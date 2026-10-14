@@ -10,7 +10,7 @@
 import type { Block, Card, Lesson, Level, Module, PageKind, Question } from "../types";
 
 export const COURSE_ID = "advanced-pathophysiology";
-export const TEXT = "McCance & Huether, Pathophysiology: The Biologic Basis for Disease in Adults and Children";
+export const TEXT = "McCance & Huether, Pathophysiology: The Biologic Basis for Disease in Adults and Children, ___ ed."; // TODO(owner): edition number
 
 /** An option: text, whether it is correct, and why. */
 export type AOpt = { t: string; ok: boolean; why: string };
@@ -135,7 +135,7 @@ export function build(sections: ASection[]): Built {
             });
             return { t: "cards", title: b.title, ids };
           }
-          if (b.t === "open") unique(b.id);
+          if (b.t === "open" || b.t === "predict" || b.t === "img") unique(b.id);
           return b;
         });
         const eq = blocks.find((b) => b.t === "eq") as { text: string } | undefined;
@@ -156,5 +156,54 @@ export function build(sections: ASection[]): Built {
       }
     }
   }
+  lint(sections);
   return out;
+}
+
+/* Course standard v1 checks. Topic pages must pass; other pages only warn while migrating. */
+const words = (s: string) => stripTags(s).split(/\s+/).filter(Boolean).length;
+
+export function lint(sections: ASection[]) {
+  const problems: { id: string; strict: boolean; msg: string }[] = [];
+  const add = (id: string, strict: boolean, msg: string) => problems.push({ id, strict, msg });
+  if (!TEXT.includes("ed.")) add("TEXT", false, "TEXT has no edition");
+  for (const s of sections) {
+    if (s.kind !== "section") continue;
+    const pages = s.groups.flatMap((g) => g.pages);
+    const topics = pages.filter((p) => p.kind === "topic");
+    if (topics.length < 3 || topics.length > 6) add(s.id, false, `${topics.length} topics (want 3–6)`);
+    if (pages.filter((p) => p.kind === "summary").length !== 1) add(s.id, false, "needs exactly one summary page");
+    for (const p of pages) {
+      const n = (t: ABlock["t"]) => p.blocks.filter((b) => b.t === t).length;
+      if (p.kind === "topic") {
+        const kp = p.blocks.find((b) => b.t === "keypoints") as { items: string[] } | undefined;
+        if (n("eq") !== 1) add(p.id, true, "needs one eq");
+        if (!kp || kp.items.length < 3 || kp.items.length > 5) add(p.id, true, "needs 3–5 key points");
+        if (n("predict") < 1) add(p.id, true, "needs a predict");
+        if (n("q") < 1 || n("q") > 2) add(p.id, true, "needs 1–2 learning checks");
+        if (n("open") !== 1) add(p.id, true, "needs one explain prompt");
+        if (n("read") !== 1) add(p.id, true, "needs one read block");
+        if (n("table") > 4) add(p.id, true, "more than 4 tables");
+        const prose = p.blocks.reduce((sum, b) => {
+          if (b.t === "p") return sum + words(b.html);
+          if (b.t === "ul" || b.t === "ol") return sum + b.items.reduce((x, i) => x + words(i), 0);
+          if (b.t === "table") return sum + [...b.head, ...b.rows.flat()].reduce((x, c) => x + words(c), 0);
+          return sum;
+        }, 0);
+        if (prose > 600) add(p.id, true, `${prose} words (max 600)`);
+      }
+      if (p.kind === "summary" && (n("confused") < 1 || n("values") < 1)) add(p.id, false, "summary needs confused and values blocks");
+      for (const b of p.blocks) {
+        const qs = b.t === "q" ? [b.q] : b.t === "quiz" ? b.qs : [];
+        for (const q of qs) {
+          if (!q.level) add(q.id, p.kind === "topic", "question has no level");
+          if (b.t === "quiz" && b.mode === "test" && /^what is true about/i.test(stripTags(q.stem))) add(q.id, true, "test stem starts with 'What is true about'");
+        }
+      }
+    }
+  }
+  if (!problems.length) return;
+  const strict = problems.filter((x) => x.strict);
+  if (process.env.NODE_ENV !== "production") for (const x of problems) console.warn(`[course lint] ${x.id}: ${x.msg}`);
+  if (strict.length) throw new Error(`Course standard failed:\n${strict.map((x) => `${x.id}: ${x.msg}`).join("\n")}`);
 }

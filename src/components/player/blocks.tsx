@@ -97,6 +97,74 @@ function CardsBlock({ title, cards }: { title: string; cards: Card[] }) {
   );
 }
 
+function Predict({ id, stem, options, correct, reveal }: { id: string; stem: string; options: { id: string; text: string }[]; correct: string; reveal: string }) {
+  const { state, update } = useStudent();
+  const key = `predict:${id}`;
+  const pick = state.notes[key];
+  const choose = (o: string) => !pick && update("notes", { ...state.notes, [key]: o });
+  return (
+    <section aria-label="Predict first" className="flex flex-col gap-3 rounded-tile bg-white p-[20px_22px]">
+      <p className="text-xs font-extrabold tracking-[.06em] text-violet-600 uppercase">Predict first · not scored</p>
+      <p className="font-display text-[18px] leading-snug font-semibold">{stem}</p>
+      <div className="flex flex-wrap gap-2.5">
+        {options.map((o) => {
+          const tone = !pick ? "border-hairline bg-mist" : o.id === correct ? "border-correct bg-mint" : o.id === pick ? "border-incorrect bg-rose" : "border-hairline bg-mist opacity-60";
+          return (
+            <button key={o.id} onClick={() => choose(o.id)} disabled={Boolean(pick)} aria-pressed={pick === o.id} className={`min-h-[52px] flex-[1_1_160px] rounded-full border-2 px-5 text-[15.5px] font-bold text-ink ${tone}`}>
+              {o.text}
+            </button>
+          );
+        })}
+      </div>
+      {pick && (
+        <p role="status" className="rounded-2xl bg-lilac px-3.5 py-3 text-[15px] leading-relaxed text-ink-body">
+          <strong className="text-violet-700">{pick === correct ? "Right." : "Not quite."}</strong> {reveal}
+        </p>
+      )}
+    </section>
+  );
+}
+
+function Figure({ id, alt, panels, aspect }: { id: string; alt: string; panels: { label: string; sub?: string }[]; aspect?: "3:1" | "3:2" }) {
+  return (
+    <figure className="flex flex-col gap-3 rounded-card bg-mist p-3">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`/images/patho/${id}.png`} alt={alt} loading="lazy" className="w-full rounded-xl object-cover object-top" style={{ aspectRatio: aspect === "3:2" ? "2.4 / 1" : "3.6 / 1" }} />
+      <figcaption className="grid gap-2 pb-1 text-center" style={{ gridTemplateColumns: `repeat(${panels.length}, minmax(0, 1fr))` }}>
+        {panels.map((p) => (
+          <span key={p.label} className="flex flex-col">
+            <span className="text-[13.5px] font-bold text-ink">{p.label}</span>
+            {p.sub && <span className="text-[12.5px] text-ink-muted">{p.sub}</span>}
+          </span>
+        ))}
+      </figcaption>
+    </figure>
+  );
+}
+
+export function TopicHead({ eq, items }: { eq?: string; items: string[] }) {
+  return (
+    <div className="flex flex-col gap-4 rounded-tile bg-violet p-[22px_24px] text-white">
+      {eq && (
+        <div>
+          <p className="mb-1 text-xs font-extrabold tracking-[.06em] text-violet-on uppercase">Essential question</p>
+          <p className="font-display text-[22px] leading-[1.3] font-semibold">{eq}</p>
+        </div>
+      )}
+      <div className="rounded-card bg-white/10 p-[16px_18px]">
+        <p className="mb-2 text-xs font-extrabold tracking-[.06em] text-violet-on uppercase">Key points</p>
+        <ul className="flex list-disc flex-col gap-1.5 pl-5 text-[15.5px] leading-normal [&_strong]:font-bold">
+          {items.map((it, i) => (
+            <li key={i}>
+              <Html html={it} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 function OpenPrompt({ id, stem, expert }: { id: string; stem: string; expert: string }) {
   const { state, update } = useStudent();
   const [text, setText] = useState(state.notes[id] ?? "");
@@ -139,8 +207,47 @@ function OpenPrompt({ id, stem, expert }: { id: string; stem: string; expert: st
   );
 }
 
-export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete }: { b: Block; pageId: string; visibleQ: (q: Question) => boolean; visibleCards: (c: Card) => boolean; onComplete: () => void }) {
+export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete, eq }: { b: Block; pageId: string; visibleQ: (q: Question) => boolean; visibleCards: (c: Card) => boolean; onComplete: () => void; eq?: string }) {
   switch (b.t) {
+    case "keypoints":
+      return <TopicHead eq={eq} items={b.items} />;
+    case "predict":
+      return <Predict id={b.id} stem={b.stem} options={b.options} correct={b.correct} reveal={b.reveal} />;
+    case "img":
+      return <Figure id={b.id} alt={b.alt} panels={b.panels} aspect={b.aspect} />;
+    case "confused":
+      return (
+        <section aria-label="Commonly confused" className="rounded-tile bg-white p-5 sm:p-6">
+          <p className="mb-3 font-display text-[18px] font-semibold">Commonly confused</p>
+          <ul className="flex flex-col gap-2.5">
+            {b.rows.map(([x, y, d]) => (
+              <li key={x + y} className="rounded-card bg-mist p-4">
+                <p className="font-display text-[16px] font-semibold">
+                  {x} <span className="text-ink-muted">vs</span> {y}
+                </p>
+                <Html html={d} className="mt-1 block text-[15px] leading-relaxed text-ink-body" />
+              </li>
+            ))}
+          </ul>
+        </section>
+      );
+    case "values":
+      return (
+        <section aria-label="Key values" className="overflow-x-auto rounded-card border border-hairline bg-white">
+          <p className="px-4 pt-3 font-display text-[18px] font-semibold">Key values</p>
+          <table className="w-full border-collapse text-left text-[15px]">
+            <tbody>
+              {b.rows.map((r) => (
+                <tr key={r[0]} className="border-t border-hairline align-top first:border-t-0">
+                  <th scope="row" className="px-4 py-2.5 font-semibold text-ink">{r[0]}</th>
+                  <td className="px-4 py-2.5 font-bold text-violet-700">{r[1]}</td>
+                  <td className="px-4 py-2.5 text-ink-muted">{r[2] ?? ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      );
     case "h2":
       return <h2 className="mt-3 font-display text-[23px] leading-tight font-semibold">{b.text}</h2>;
     case "p":
@@ -194,9 +301,9 @@ export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete }: { b
       );
     case "callout":
       return (
-        <aside className="rounded-card border-l-[6px] border-tangerine bg-peach/70 px-5 py-4">
-          <p className="mb-1 font-display text-[16px] font-semibold text-peach-ink">{b.title}</p>
-          <Html html={b.html} className="block text-[15.5px] leading-relaxed text-[#5C3218] [&_strong]:font-bold" />
+        <aside className="rounded-card bg-rose p-[16px_18px]">
+          <p className="mb-1 font-display text-[16px] font-semibold text-rose-ink">{b.title}</p>
+          <Html html={b.html} className="block text-[15px] leading-relaxed text-ink-body [&_strong]:font-bold [&_strong]:text-ink" />
         </aside>
       );
     case "case": {

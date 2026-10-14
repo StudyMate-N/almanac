@@ -13,6 +13,7 @@ export const kindLabel: Record<PageKind, string> = {
   quiz: "Quiz",
   test: "Test",
   video: "Video",
+  topic: "Topic",
 };
 
 export function Ring({ done, total, size = 34, tone = "violet" }: { done: number; total: number; size?: number; tone?: "violet" | "white" }) {

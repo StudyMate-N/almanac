@@ -42,6 +42,16 @@ export function blockText(b: Block): string {
         .filter(Boolean)
         .map((c) => `- ${c!.front}: ${c!.back}`)
         .join("\n");
+    case "keypoints":
+      return `Key points:\n${b.items.map((i) => `- ${strip(i)}`).join("\n")}`;
+    case "predict":
+      return `Predict: ${b.stem} Answer: ${b.options.find((o) => o.id === b.correct)?.text ?? ""}. ${b.reveal}`;
+    case "img":
+      return `Image: ${b.alt}`;
+    case "confused":
+      return `Commonly confused:\n${b.rows.map(([x, y, d]) => `- ${x} vs ${y}: ${strip(d)}`).join("\n")}`;
+    case "values":
+      return `Key values:\n${b.rows.map((r) => `- ${r[0]}: ${r[1]}${r[2] ? ` (${r[2]})` : ""}`).join("\n")}`;
     case "read":
       return `Reading: ${b.items.map((i) => i.ref).join("; ")}`;
     default:

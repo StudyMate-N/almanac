@@ -59,6 +59,10 @@ function Practice() {
   const size = count === "0" ? available : Math.min(Number(count), available);
   const withQs = modules.filter((m) => questions.some((q) => q.moduleId === m.id));
   const lessonSets = lessons.filter((l) => questions.some((q) => q.lessonId === l.id));
+  // Only offer levels that have questions.
+  const levelOptions = ([["all", "Any"], ["recall", "Recall"], ["application", "Application"], ["analysis", "Analysis"]] as [typeof level, string][]).filter(
+    ([v]) => v === "all" || questions.some((q) => q.level === v),
+  );
   const cq = `?course=${courseId}`;
   const href = `/app/practice/custom?m=${(mods.length ? mods : withQs.map((m) => m.id)).join(",")}&t=${type}&l=${level}&p=${pool}&n=${count}&mode=${mode}&timer=${timer}`;
 
@@ -78,7 +82,7 @@ function Practice() {
             <p className="text-xs font-bold">Exam simulation</p>
             <p className="font-display text-lg font-semibold">{EXAMS[k].label}</p>
             <p className="text-sm">
-              {Math.min(EXAMS[k].questions, questions.length)} of {EXAMS[k].questions} questions available · timed · answers at the end
+              {Math.min(EXAMS[k].questions, questions.length)} of {EXAMS[k].questions} questions available · timed · new questions first, answers at the end
             </p>
           </Link>
         ))}
@@ -108,7 +112,7 @@ function Practice() {
           </div>
         </fieldset>
         <Chips label="Question type" value={type} onChange={setType} options={[["all", "All"], ["single", "One best answer"], ["multiple", "Select all that apply"]]} />
-        <Chips label="Level" value={level} onChange={setLevel} options={[["all", "Any"], ["recall", "Recall"], ["application", "Application"], ["analysis", "Analysis"]]} />
+        <Chips label="Level" value={level} onChange={setLevel} options={levelOptions} />
         <Chips label="Questions" value={pool} onChange={setPool} options={[["all", "All"], ["new", "Not seen yet"], ["missed", "Missed last time"], ["flagged", "Flagged"]]} />
         <Chips label="How many" value={count} onChange={setCount} options={[["5", "5"], ["10", "10"], ["20", "20"], ["0", "All"]]} />
         <Chips label="Mode" value={mode} onChange={setMode} options={[["tutor", "Tutor: rationale after each"], ["exam", "Exam: rationales at the end"]]} />

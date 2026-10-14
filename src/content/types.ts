@@ -41,7 +41,7 @@ export type Module = {
 
 /* Course player content: sections → lessons → pages → blocks. */
 
-export type PageKind = "reading" | "activity" | "summary" | "quiz" | "test" | "video";
+export type PageKind = "reading" | "activity" | "summary" | "quiz" | "test" | "video" | "topic";
 
 export type LabRow = [name: string, unit: string, ...rest: (string | number)[]];
 
@@ -57,7 +57,17 @@ export type Block =
   /** Essential question for the page. */
   | { t: "eq"; text: string }
   /** One of the course's own video clips, by clip id. */
-  | { t: "video"; clip: string; note?: string }
+  | { t: "video"; clip: string; note?: string; stops?: { at: string; ref: string }[] }
+  /** 3–5 key points shown with the essential question. HTML allowed. */
+  | { t: "keypoints"; items: string[] }
+  /** Ungraded prediction before reading. Stored in notes, never scored. */
+  | { t: "predict"; id: string; stem: string; options: { id: string; text: string }[]; correct: string; reveal: string }
+  /** Course image from /images/patho/{id}.png. Labels are page text, never in the image. */
+  | { t: "img"; id: string; alt: string; panels: { label: string; sub?: string }[]; aspect?: "3:1" | "3:2" }
+  /** "Commonly confused" pairs: [a, b, the difference]. */
+  | { t: "confused"; rows: [a: string, b: string, difference: string][] }
+  /** "Key values": [name, value, note?]. */
+  | { t: "values"; rows: ([name: string, value: string] | [name: string, value: string, note: string])[] }
   /** A learning check: one question, answered in place. */
   | { t: "check"; id: string }
   /** A write-then-compare prompt with an expert answer. */

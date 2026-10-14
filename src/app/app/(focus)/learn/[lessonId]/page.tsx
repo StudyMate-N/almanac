@@ -13,7 +13,7 @@ import type { Card, Lesson, Question } from "@/content/types";
 import { REVIEWER } from "@/lib/config";
 import { useStudent } from "@/lib/store";
 
-const SELF_COMPLETING = new Set(["reading", "activity", "summary", "video"]);
+const SELF_COMPLETING = new Set(["reading", "activity", "summary", "video", "topic"]);
 
 function minutesFor(p: Lesson) {
   let words = 0;
@@ -30,7 +30,7 @@ function minutesFor(p: Lesson) {
 
 export default function Player() {
   const { lessonId } = useParams<{ lessonId: string }>();
-  const { state, update, isVisible, isApproved, preview } = useStudent();
+  const { state, answers, update, isVisible, isApproved, preview } = useStudent();
   const [drawer, setDrawer] = useState(false);
   const page = lessonById(lessonId);
   const mod = page ? moduleById(page.moduleId) : undefined;
@@ -46,12 +46,20 @@ export default function Player() {
     if (page && !state.lessons[page.id]) update("lessons", { ...state.lessons, [page.id]: { at: new Date().toISOString() } });
   };
 
+  // A page with learning checks is done only when every visible check has been answered.
+  const checkIds = page ? page.blocks.flatMap((b) => (b.t === "check" ? [b.id] : [])) : [];
+  const checksAnswered = checkIds.every((id) => answers.some((a) => a.questionId === id));
+  const canSelfComplete = Boolean(page && SELF_COMPLETING.has(page.kind) && checksAnswered);
+
   useEffect(() => {
-    if (page && open && SELF_COMPLETING.has(page.kind) && !state.lessons[page.id]) markDone();
     window.scrollTo({ top: 0 });
     setDrawer(false);
+  }, [page?.id]);
+
+  useEffect(() => {
+    if (page && open && canSelfComplete && !state.lessons[page.id]) markDone();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page?.id, open]);
+  }, [page?.id, open, canSelfComplete]);
 
   if (!page || !mod || !course)
     return (
@@ -138,9 +146,12 @@ export default function Player() {
               </div>
             ) : (
               <div className="flex flex-col gap-6">
-                {page.blocks.map((b, i) => (
-                  <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} />
-                ))}
+                {page.blocks.map((b, i) => {
+                  const prev = page.blocks[i - 1];
+                  if (b.t === "eq" && page.blocks[i + 1]?.t === "keypoints") return null;
+                  const eq = b.t === "keypoints" && prev?.t === "eq" ? prev.text : undefined;
+                  return <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} eq={eq} />;
+                })}
               </div>
             )}
 
@@ -162,7 +173,7 @@ export default function Player() {
                 <span />
               )}
               {next && (
-                <Link href={`/app/learn/${next.id}`} onClick={() => SELF_COMPLETING.has(page.kind) && markDone()} className="flex items-center gap-3 rounded-tile bg-tangerine p-5 text-ink hover:bg-tangerine-700">
+                <Link href={`/app/learn/${next.id}`} onClick={() => canSelfComplete && markDone()} className="flex items-center gap-3 rounded-tile bg-tangerine p-5 text-ink hover:bg-tangerine-700">
                   <span className="min-w-0 flex-1">
                     <span className="block text-[12px] font-extrabold">Next</span>
                     <span className="block font-display text-[17px] leading-snug font-semibold">{next.title}</span>
