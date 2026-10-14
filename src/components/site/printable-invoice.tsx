@@ -112,13 +112,13 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
             </p>
           </> : <p className="mt-3 text-sm text-ink-body">
             Bank instructions are unavailable because this invoice has no locked CAD total. Do not transfer until the payable amount is confirmed.
-            Contact <a className="font-semibold text-violet-700 underline" href={`mailto:help@almanac.study?subject=${encodeURIComponent(invoice.invoiceRef)}`}>Almanac support</a> with your invoice reference.
+            Contact <a className="font-semibold text-violet-700 underline" href={`mailto:support@unemployedproff.com?subject=${encodeURIComponent(invoice.invoiceRef)}`}>Almanac support</a> with your invoice reference.
           </p>}
         </section>
         <div className="mt-6 border-t border-hairline pt-4 text-xs text-ink-muted">
           <p>Payment status: <strong>{invoice.paymentStatus==="verified"?"Verified":invoice.paymentStatus==="reported"?"Reported · awaiting verification":"Awaiting payment"}</strong></p>
           <p className="mt-2">Learning package status: <strong>{prepLabel}</strong>. Check this private invoice link for updates recorded by staff.</p>
-          <p className="mt-2">This is a payment invoice, not a payment receipt. Access codes are issued only after payment verification. For questions, email help@almanac.study.</p>
+          <p className="mt-2">This is a payment invoice, not a payment receipt. Access codes are issued only after payment verification. For questions, email support@unemployedproff.com.</p>
         </div>
       </article>
       <SourceMaterialUploader orderId={id} invoiceToken={token}/>
