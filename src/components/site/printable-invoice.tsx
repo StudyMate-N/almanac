@@ -88,7 +88,7 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
           <div className="flex justify-between gap-3"><dt>Base package</dt><dd>{money(invoice.baseUsd)}</dd></div>
           <div className="flex justify-between gap-3"><dt>Additional materials {invoice.addons.length? `(${invoice.addons.map(label).join(", ")})` : ""}</dt><dd>{money(invoice.addonUsd)}</dd></div>
           <div className="flex justify-between gap-3"><dt>Delivery: {label(invoice.speed)} ({invoice.turnaroundDays} calendar days)</dt><dd>{money(invoice.quoteUsd-invoice.baseUsd-invoice.addonUsd)}</dd></div>
-          <div className="flex justify-between gap-3 border-t border-hairline pt-4 font-semibold"><dt>Amount due (USD)</dt><dd className="font-display text-2xl">{money(invoice.quoteUsd)}</dd></div>
+          <div className="flex justify-between gap-3 border-t border-hairline pt-4 font-semibold"><dt>Catalog price (USD)</dt><dd className="font-display text-2xl">{money(invoice.quoteUsd)}</dd></div>
         </dl>
         <p className="mt-3 text-xs text-ink-muted">Delivery method: {label(invoice.deliveryMethod)}. Work begins when payment and all required materials have been received.</p>
 
@@ -111,7 +111,7 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
               Cross-border transfers may require additional bank instructions from your payment provider.
             </p>
           </> : <p className="mt-3 text-sm text-ink-body">
-            Bank instructions are being configured. Do not transfer funds until the verified instructions appear on this invoice.
+            This account receives Canadian dollars. The CAD amount payable and exchange rate must be locked on your invoice before making a transfer. Do not send a payment based on the USD catalog price.
             Contact <a className="font-semibold text-violet-700 underline" href={`mailto:help@almanac.study?subject=${encodeURIComponent(invoice.invoiceRef)}`}>Almanac support</a> with your invoice reference.
           </p>}
         </section>
@@ -120,7 +120,7 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
           <p className="mt-2">This is a payment invoice, not a payment receipt. Access codes are issued only after payment verification. For questions, email help@almanac.study.</p>
         </div>
       </article>
-      <section className="rounded-tile bg-white p-5 sm:p-7 print:hidden">
+      {bank && <section className="rounded-tile bg-white p-5 sm:p-7 print:hidden">
         <h2 className="font-display text-2xl font-semibold">Already made your transfer?</h2>
         {invoice.paymentStatus==="verified" ? <p className="mt-3 text-ink-body">Your payment has been verified. Your learning access code will be provided using the contact email from your request.</p> : (
           <>
@@ -143,7 +143,7 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
           If the transfer reference is unavailable, you can send a receipt to <a href={`mailto:help@almanac.study?subject=${encodeURIComponent(invoice.invoiceRef+" payment")}`} className="text-violet-700 underline">help@almanac.study</a> with your invoice number.
           Please omit unnecessary bank account balances or other sensitive details.
         </p>
-      </section>
+      </section>}
       <style jsx global>{`@media print {
         @page { size: A4; margin: 14mm; }
         body { background: white !important; color: #1b1530 !important; }
