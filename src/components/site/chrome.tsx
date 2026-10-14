@@ -33,6 +33,10 @@ export function SiteFooter() {
           <Link href="/courses" className="hover:text-violet">Courses &amp; Resources</Link>
           <Link href="/request" className="hover:text-violet">Request a course or resource</Link>
           <Link href="/app" className="hover:text-violet">Learning workspace</Link>
+          <Link href="/help" className="hover:text-violet">Help</Link>
+          <Link href="/contact" className="hover:text-violet">Contact</Link>
+          <Link href="/privacy" className="hover:text-violet">Privacy</Link>
+          <Link href="/terms" className="hover:text-violet">Terms</Link>
         </nav>
         <p className="w-full border-t border-hairline pt-4 text-xs">
           © 2026 Almanac. Learning support, not medical or professional advice.
