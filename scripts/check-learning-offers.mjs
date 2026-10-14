@@ -10,6 +10,11 @@ for(const [kind,expected] of Object.entries(packages)){
     assert.equal(calculateQuote({kind,speed,enhancements:{...EMPTY_ENHANCEMENTS}}).totalUsd,expected[i],kind+" "+speed);
   });
 }
+assert.equal(OFFERS.resource.title,"Focused Study Module");
+assert.equal(OFFERS.resource.summary.includes("module"),true);
+assert.equal(OFFERS.exam.includes.some(x=>x.includes("4 defined course modules")),true);
+assert.equal(OFFERS.course.summary.includes("eight clearly defined course modules"),true);
+assert.equal(ENHANCEMENTS.unit.title,"Additional complete learning module");
 assert.equal(OFFERS.course.includes.some(x=>x.includes("8 narrated video overviews")),true);
 assert.equal(OFFERS.course.includes.some(x=>x.includes("120 practice questions")),true);
 assert.equal(OFFERS.exam.includes.some(x=>x.includes("50-question exam simulation")),true);
