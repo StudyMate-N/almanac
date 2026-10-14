@@ -1,20 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { SourceMaterialUploader } from "@/components/site/source-material-uploader";
+import { PaymentSteps, type PaymentBank } from "@/components/site/payment-steps";
+import { LearningPlanReview, type LearningPlan } from "@/components/site/learning-plan-review";
 import { ENHANCEMENTS, OFFERS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 
-type Invoice = {
+type Invoice = LearningPlan & {
   id:string; invoiceRef:string; name:string; email:string; subject:string;
   goal:string; kind:string; deliveryMethod:string; speed:string;
   addons:string[]; enhancements?: Record<string,number>; learningPreference?: string;
   units:number; baseUsd:number; addonUsd:number;
   quoteUsd:number; turnaroundDays:number; paymentStatus:string; status:string; createdAt:string;
+ payableCadCents:number|null;rateCadPerUsd:number|null;rateDate:string|null;fxSource:string|null;
 };
-type Bank = { name:string; address:string; institution:string; transit:string;
-  accountType:string; accountNumber:string; beneficiary:string; currency:string };
-type Result = {invoice:Invoice;bank:Bank|null};
+type Result = {invoice:Invoice;bank:PaymentBank|null;whatsappNumber:string|null};
 const money=(v:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(v);
 const label=(s:string)=>s.replaceAll("_"," ").replace(/\b\w/g,ch=>ch.toUpperCase());
 
@@ -22,10 +23,6 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
   const [result,setResult]=useState<Result|null>(null);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
-  const [reference,setReference]=useState("");
-  const [paidOn,setPaidOn]=useState("");
-  const [reporting,setReporting]=useState(false);
-  const [message,setMessage]=useState("");
 
   const refresh=useCallback(async()=>{
     try {
@@ -40,25 +37,9 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
 
   useEffect(()=>{void refresh();},[refresh]);
 
-  async function report(event:FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setReporting(true);setMessage("");
-    try {
-      const response=await fetch("/api/learning-invoices/report-payment", {
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({id,token,reference,paidOn})
-      });
-      const data=await response.json();
-      if(!response.ok) throw new Error(data.error||"Unable to record payment.");
-      setMessage("Transfer details received. Your payment is now awaiting verification.");
-      await refresh();
-    } catch(e) {setMessage(e instanceof Error?e.message:"Unable to record payment.");}
-    finally {setReporting(false);}
-  }
-
   if(loading) return <p role="status" className="rounded-card bg-white p-5">Preparing your invoice…</p>;
   if(error||!result) return <p role="alert" className="rounded-card bg-white p-5">{error||"Invoice not found."}</p>;
-  const {invoice,bank}=result;
+  const {invoice,bank,whatsappNumber}=result;
   const enhanced=(Object.keys(ENHANCEMENTS) as Enhancement[]).filter(key=>(invoice.enhancements?.[key] ?? 0)>0);
   const packageName=OFFERS[invoice.kind as keyof typeof OFFERS]?.title ?? label(invoice.kind);
   const prepLabel=invoice.status==="delivered"?"Delivered":invoice.status==="review"?"Quality review":
@@ -72,6 +53,8 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
           <button type="button" onClick={()=>window.print()} className="rounded-full bg-violet px-5 py-2 font-bold text-white">Print / Save PDF</button>
         </div>
       </div>
+      <PaymentSteps id={id} token={token} invoice={invoice} bank={bank} whatsappNumber={whatsappNumber}
+        onRefresh={refresh}/>
       <article className="rounded-tile bg-white p-5 sm:p-9 print:rounded-none print:p-0 print:shadow-none" aria-label="Almanac invoice">
         <div className="flex flex-wrap items-start justify-between gap-6 border-b border-hairline pb-6">
           <div><p className="font-display text-3xl font-semibold">Almanac</p>
@@ -102,13 +85,17 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
           </div>}
           <div className="flex justify-between gap-3"><dt>Delivery: {label(invoice.speed)} ({invoice.turnaroundDays} calendar days)</dt><dd>{money(invoice.quoteUsd-invoice.baseUsd-invoice.addonUsd)}</dd></div>
           <div className="flex justify-between gap-3 border-t border-hairline pt-4 font-semibold"><dt>Catalog price (USD)</dt><dd className="font-display text-2xl">{money(invoice.quoteUsd)}</dd></div>
+          {invoice.payableCadCents!==null&&<div className="flex justify-between gap-3 border-t border-hairline pt-4 font-semibold">
+            <dt>Total payable by bank transfer (CAD)</dt>
+            <dd className="font-display text-2xl">CA${(invoice.payableCadCents/100).toFixed(2)}</dd>
+          </div>}
         </dl>
         <p className="mt-3 text-xs text-ink-muted">Delivery: {label(invoice.deliveryMethod)} · Study preference: {PREFERENCES[invoice.learningPreference as keyof typeof PREFERENCES] ?? "Balanced mix"}. Work begins when payment and all required materials have been received.</p>
 
-        <section className="mt-8 rounded-card bg-mist p-5 print:border print:border-hairline print:bg-white">
+        <section className="mt-8 hidden rounded-card bg-mist p-5 print:block print:border print:border-hairline print:bg-white">
           <h2 className="font-display text-xl font-semibold">Bank transfer instructions</h2>
-          {bank ? <>
-            <p className="mt-2 text-sm text-ink-body">Make your transfer using the details below. Add your invoice reference to the payment memo so we can identify it quickly.</p>
+          {bank && invoice.payableCadCents!==null ? <>
+            <p className="mt-2 text-sm text-ink-body">Pay the fixed CAD amount above, and include the invoice reference in your transfer memo.</p>
             <dl className="mt-5 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
               {([
                 ["Beneficiary",bank.beneficiary],["Bank",bank.name],["Bank address",bank.address],
@@ -124,7 +111,7 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
               Cross-border transfers may require additional bank instructions from your payment provider.
             </p>
           </> : <p className="mt-3 text-sm text-ink-body">
-            This account receives Canadian dollars. The CAD amount payable and exchange rate must be locked on your invoice before making a transfer. Do not send a payment based on the USD catalog price.
+            Bank instructions are unavailable because this invoice has no locked CAD total. Do not transfer until the payable amount is confirmed.
             Contact <a className="font-semibold text-violet-700 underline" href={`mailto:help@almanac.study?subject=${encodeURIComponent(invoice.invoiceRef)}`}>Almanac support</a> with your invoice reference.
           </p>}
         </section>
@@ -135,30 +122,7 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
         </div>
       </article>
       <SourceMaterialUploader orderId={id} invoiceToken={token}/>
-      {bank && <section className="rounded-tile bg-white p-5 sm:p-7 print:hidden">
-        <h2 className="font-display text-2xl font-semibold">Already made your transfer?</h2>
-        {invoice.paymentStatus==="verified" ? <p className="mt-3 text-ink-body">Your payment has been verified. Your learning access code will be provided using the contact email from your request.</p> : (
-          <>
-            <p className="mt-2 text-sm text-ink-body">Share the bank transaction reference and date. We will verify the transfer before issuing your learning access code.</p>
-            <form onSubmit={report} className="mt-5 grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-semibold">Transaction reference
-                <input className="mt-2 min-h-12 w-full rounded-xl border border-hairline bg-white px-3" required minLength={5} maxLength={120} value={reference} onChange={e=>setReference(e.target.value)} placeholder="Reference from your bank" />
-              </label>
-              <label className="block text-sm font-semibold">Date payment was sent
-                <input className="mt-2 min-h-12 w-full rounded-xl border border-hairline bg-white px-3" type="date" required value={paidOn} onChange={e=>setPaidOn(e.target.value)} />
-              </label>
-              <div className="sm:col-span-2">
-                <button disabled={reporting} className="min-h-12 rounded-full bg-violet px-6 font-semibold text-white disabled:opacity-50">{reporting?"Submitting…":"I have sent the payment →"}</button>
-              </div>
-            </form>
-            {message && <p role="status" className="mt-4 rounded-xl bg-mist p-3 text-sm">{message}</p>}
-          </>
-        )}
-        <p className="mt-5 text-sm text-ink-muted">
-          If the transfer reference is unavailable, you can send a receipt to <a href={`mailto:help@almanac.study?subject=${encodeURIComponent(invoice.invoiceRef+" payment")}`} className="text-violet-700 underline">help@almanac.study</a> with your invoice number.
-          Please omit unnecessary bank account balances or other sensitive details.
-        </p>
-      </section>}
+      <LearningPlanReview id={id} token={token} plan={invoice} onRefresh={refresh}/>
       <style jsx global>{`@media print {
         @page { size: A4; margin: 14mm; }
         body { background: white !important; color: #1b1530 !important; }
