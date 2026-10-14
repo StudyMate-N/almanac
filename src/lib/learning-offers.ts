@@ -5,13 +5,13 @@
  */
 export const OFFERS = {
   resource: {
-    title: "Focused Study Resource",
+    title: "Focused Study Module",
     baseUsd: 49,
     units: 1,
     turnaround: { standard: 5, priority: 3, express: 2 },
-    summary: "Understand or review one defined topic. A complete, focused learning resource.",
+    summary: "One structured module covering a defined part of your course, with explanations, visuals, practice and review.",
     includes: [
-      "One structured topic guide with key concepts",
+      "One structured module guide with clearly defined learning objectives and key concepts",
       "One narrated video overview (approximately 4–6 minutes)",
       "One visual summary: slides, infographic, or mind map",
       "15 practice questions with explanations",
@@ -26,7 +26,7 @@ export const OFFERS = {
     turnaround: { standard: 7, priority: 5, express: 3 },
     summary: "Prepare for an exam with targeted review, practice, and performance feedback.",
     includes: [
-      "Revision guides covering up to 4 defined topics",
+      "Revision guides covering up to 4 defined course modules",
       "Two narrated video overviews (approximately 4–6 minutes each)",
       "Visual revision summaries and one consolidated slide deck",
       "40 practice questions with explanations",
@@ -40,10 +40,10 @@ export const OFFERS = {
     baseUsd: 399,
     units: 8,
     turnaround: { standard: 14, priority: 7, express: 3 },
-    summary: "A complete learning experience for up to eight clearly defined units.",
+    summary: "A complete learning experience for up to eight clearly defined course modules.",
     includes: [
-      "8 structured written lessons",
-      "8 narrated video overviews (one approximately 4–6-minute video per unit)",
+      "8 structured written module lessons",
+      "8 narrated video overviews (one approximately 4–6-minute video per module)",
       "8 slide summaries (approximately 6–10 slides each)",
       "120 practice questions with explanations",
       "120 review flashcards",
@@ -74,8 +74,8 @@ export const ENHANCEMENTS = {
     max: { resource: 0, exam: 2, course: 2 },
   },
   unit: {
-    title: "Additional complete learning unit",
-    explanation: "One additional unit including its written lesson, video overview, slides, 15 explained practice questions and 15 flashcards.",
+    title: "Additional complete learning module",
+    explanation: "One additional module including its written lesson, video overview, slides, 15 explained practice questions and 15 flashcards.",
     unitUsd: 59,
     max: { resource: 0, exam: 0, course: 4 },
   },
