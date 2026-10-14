@@ -920,6 +920,23 @@ export const s6: ASection = {
                 ],
               ],
             },
+            // REVIEW: new diagram (image manifest: built as page diagrams).
+            {
+              t: "diagram",
+              id: "d-dialysis",
+              layout: "membrane",
+              title: "How dialysis cleans the blood",
+              alt: "Blood and dialysate on either side of a semipermeable membrane. Solutes such as potassium and urea diffuse from the blood into the dialysate; a pressure difference pulls excess water across by ultrafiltration.",
+              items: [
+                { label: "Blood", sub: "High potassium, urea and creatinine, and extra water" },
+                { label: "Dialysate", sub: "No urea or creatinine; potassium and other solutes set to target levels" },
+              ],
+              flows: [
+                { label: "Diffusion", sub: "Solutes move from higher to lower concentration" },
+                { label: "Ultrafiltration", sub: "A pressure difference pulls excess water across" },
+              ],
+              note: "Blood cells and proteins are too large to cross the membrane, so they stay in the blood.",
+            },
             {
               t: "callout",
               title: "Medications and the kidneys",

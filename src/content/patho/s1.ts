@@ -112,6 +112,22 @@ export const s1: ASection = {
                 ["Effector", "Carries out the response", "ADH acting on the kidney's collecting ducts"],
               ],
             },
+            // REVIEW: new diagram (image manifest: built as page diagrams). Labels from the table above.
+            {
+              t: "diagram",
+              id: "d-feedback-loop",
+              layout: "loop",
+              title: "Negative feedback: blood osmolality",
+              alt: "A negative feedback loop in five steps: blood osmolality rises, osmoreceptors in the hypothalamus detect it, the hypothalamus responds, ADH acts on the collecting ducts, and the kidneys keep water so osmolality falls back toward the set point.",
+              items: [
+                { label: "Stimulus", sub: "Blood osmolality rises, for example in dehydration" },
+                { label: "Sensor", sub: "Osmoreceptors in the hypothalamus" },
+                { label: "Control center", sub: "The hypothalamus compares the reading with the set point" },
+                { label: "Effector", sub: "ADH acts on the kidney's collecting ducts" },
+                { label: "Response", sub: "The kidneys keep water; osmolality falls" },
+              ],
+              feedback: "The response removes the stimulus, so the signal switches off",
+            },
             {
               t: "p",
               html: "<strong>Negative feedback</strong> pushes a value back toward the set point. Almost all homeostasis works this way. <strong>Positive feedback</strong> amplifies a change until an event finishes, as in the clotting cascade or oxytocin driving contractions during labor. Positive feedback is useful for a short time but harmful when it runs unchecked.",
@@ -367,6 +383,21 @@ export const s1: ASection = {
                 ],
               ],
             },
+            // REVIEW: new diagram (image manifest: built as page diagrams). Primary changes from the table above.
+            {
+              t: "diagram",
+              id: "d-acid-base",
+              layout: "quad",
+              title: "The four primary disorders and how the body compensates",
+              alt: "Four acid–base disorders. Respiratory acidosis: pH down, PaCO2 up; the kidneys keep bicarbonate. Respiratory alkalosis: pH up, PaCO2 down; the kidneys excrete bicarbonate. Metabolic acidosis: pH down, bicarbonate down; the lungs blow off CO2. Metabolic alkalosis: pH up, bicarbonate up; the lungs retain CO2.",
+              items: [
+                { label: "Respiratory acidosis", sub: "pH ↓  PaCO₂ ↑", tag: "Compensation: the kidneys keep HCO₃⁻, so it rises" },
+                { label: "Respiratory alkalosis", sub: "pH ↑  PaCO₂ ↓", tag: "Compensation: the kidneys excrete HCO₃⁻, so it falls" },
+                { label: "Metabolic acidosis", sub: "pH ↓  HCO₃⁻ ↓", tag: "Compensation: faster, deeper breathing blows off CO₂, so PaCO₂ falls" },
+                { label: "Metabolic alkalosis", sub: "pH ↑  HCO₃⁻ ↑", tag: "Compensation: slower breathing keeps CO₂, so PaCO₂ rises" },
+              ],
+              note: "ROME: Respiratory Opposite, Metabolic Equal. Compensation moves the other value in the same direction as the primary change, pushing pH back toward 7.35–7.45.",
+            },
             { t: "h2", text: "The anion gap" },
             {
               t: "p",
@@ -557,6 +588,23 @@ export const s1: ASection = {
                 "<strong>Diffusion</strong> moves solutes such as potassium and urea from where they are more concentrated (the blood) to where they are less concentrated (the dialysate).",
                 "<strong>Ultrafiltration</strong> uses a pressure difference to remove excess fluid.",
               ],
+            },
+            // REVIEW: new diagram (image manifest: built as page diagrams).
+            {
+              t: "diagram",
+              id: "d-dialysis",
+              layout: "membrane",
+              title: "How dialysis cleans the blood",
+              alt: "Blood and dialysate on either side of a semipermeable membrane. Solutes such as potassium and urea diffuse from the blood into the dialysate; a pressure difference pulls excess water across by ultrafiltration.",
+              items: [
+                { label: "Blood", sub: "High potassium, urea and creatinine, and extra water" },
+                { label: "Dialysate", sub: "No urea or creatinine; potassium and other solutes set to target levels" },
+              ],
+              flows: [
+                { label: "Diffusion", sub: "Solutes move from higher to lower concentration" },
+                { label: "Ultrafiltration", sub: "A pressure difference pulls excess water across" },
+              ],
+              note: "Blood cells and proteins are too large to cross the membrane, so they stay in the blood.",
             },
             {
               t: "table",

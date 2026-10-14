@@ -45,6 +45,9 @@ export type PageKind = "reading" | "activity" | "summary" | "quiz" | "test" | "v
 
 export type LabRow = [name: string, unit: string, ...rest: (string | number)[]];
 
+/** One box in a page diagram. `key` places it on a fixed layout (the rule-of-nines body map). */
+export type DiagramItem = { label: string; sub?: string; tag?: string; key?: string };
+
 export type Block =
   | { t: "h2"; text: string }
   | { t: "p"; html: string }
@@ -64,6 +67,22 @@ export type Block =
   | { t: "predict"; id: string; stem: string; options: { id: string; text: string }[]; correct: string; reveal: string }
   /** Course image from /images/patho/{id}.png. Labels are page text, never in the image. */
   | { t: "img"; id: string; alt: string; panels: { label: string; sub?: string }[]; aspect?: "3:1" | "3:2" }
+  /**
+   * A page diagram drawn as HTML/SVG with real text labels (image manifest, "Built as page
+   * diagrams"). Every label lives here, so the page's review hash covers it.
+   */
+  | {
+      t: "diagram";
+      id: string;
+      layout: "loop" | "chain" | "quad" | "columns" | "membrane" | "nines";
+      title: string;
+      alt: string;
+      items: DiagramItem[];
+      columns?: { title: string; steps: string[] }[];
+      flows?: DiagramItem[];
+      feedback?: string;
+      note?: string;
+    }
   /** "Commonly confused" pairs: [a, b, the difference]. */
   | { t: "confused"; rows: [a: string, b: string, difference: string][] }
   /** "Key values": [name, value, note?]. */

@@ -968,6 +968,23 @@ export const s2: ASection = {
                 ["Perineum", "1"],
               ],
             },
+            // REVIEW: new diagram (image manifest: built as page diagrams). Values from the table above.
+            {
+              t: "diagram",
+              id: "d-rule-of-nines",
+              layout: "nines",
+              title: "Adult rule of nines (% of body surface area)",
+              alt: "Adult rule of nines body map. Front: head and neck 9%, each arm 9%, front of trunk 18%, each leg 18%, perineum 1%. Back: back of trunk 18%. Total 100%.",
+              items: [
+                { key: "head", label: "Head and neck", sub: "9" },
+                { key: "arm", label: "Each arm", sub: "9" },
+                { key: "trunk-front", label: "Front of trunk", sub: "18" },
+                { key: "trunk-back", label: "Back of trunk", sub: "18" },
+                { key: "leg", label: "Each leg (front and back)", sub: "18" },
+                { key: "perineum", label: "Perineum", sub: "1" },
+              ],
+              note: "Arms, legs and the head are counted whole on the front figure. Count partial- and full-thickness burns only. In children the head is a larger share.",
+            },
             {
               t: "p",
               html: "For small or scattered burns, the client's palm (including fingers) is about 1% of their body surface.",

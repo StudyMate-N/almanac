@@ -555,6 +555,20 @@ export const s4: ASection = {
                 ],
               ],
             },
+            // REVIEW: new diagram (image manifest: built as page diagrams). From the table above.
+            {
+              t: "diagram",
+              id: "d-heart-failure",
+              layout: "columns",
+              title: "Where the fluid backs up",
+              alt: "Left-sided heart failure: the left ventricle can't pump forward, blood backs up into the lungs, causing breathlessness, orthopnea, crackles, cough and an S3. Right-sided heart failure: the right ventricle can't pump forward, blood backs up into the body's veins, causing jugular vein distension, dependent edema, weight gain, an enlarged liver and ascites.",
+              items: [],
+              columns: [
+                { title: "Left-sided failure", steps: ["The left ventricle can't pump forward", "Blood backs up into the lungs", "Breathlessness, orthopnea, crackles, cough, S3"] },
+                { title: "Right-sided failure", steps: ["The right ventricle can't pump forward", "Blood backs up into the body's veins", "JVD, dependent edema, weight gain, enlarged liver, ascites"] },
+              ],
+              note: "Left-sided failure is the most common cause of right-sided failure.",
+            },
             {
               t: "ul",
               items: [
@@ -880,6 +894,21 @@ export const s4: ASection = {
               title: "Susan, 34",
               html: "Susan cut her left thumb three days ago. It is now red, hot and swollen, with yellow fluid leaking from the cut. A red streak runs up her forearm and there is a tender lump in her armpit. Temperature 38.4 °C (101.1 °F). White cell count 15,800/mm³ with increased neutrophils and bands.",
             },
+            // REVIEW: new diagram (image manifest: built as page diagrams). New clinical claims: sepsis and septic shock definitions.
+            {
+              t: "diagram",
+              id: "d-sepsis",
+              layout: "chain",
+              title: "From local infection to septic shock",
+              alt: "Four stages: local infection with redness, heat, swelling and pain; spread through lymph vessels and nodes with fever and a raised white count; sepsis, a dysregulated response to infection that causes organ dysfunction; septic shock, low blood pressure despite fluids that needs vasopressors, with a rising lactate.",
+              items: [
+                { label: "Local infection", sub: "Redness, heat, swelling and pain at the site" },
+                { label: "Spread", sub: "Lymphangitis and tender nodes; fever and a raised white count" },
+                { label: "Sepsis", sub: "A dysregulated response to infection damages organs" },
+                { label: "Septic shock", sub: "Low blood pressure despite fluids; needs vasopressors; rising lactate" },
+              ],
+              note: "Endotoxin from the gram-negative cell wall is a classic trigger of septic shock.",
+            },
             { t: "h2", text: "Infectious or communicable?" },
             {
               t: "p",
@@ -1049,6 +1078,22 @@ export const s4: ASection = {
                   "The cell makes viral proteins; protease cuts long viral polyproteins into working proteins so new virus particles mature and bud off.",
                 ],
               ],
+            },
+            // REVIEW: new diagram (image manifest: built as page diagrams). Steps from the table above; drug classes are new.
+            {
+              t: "diagram",
+              id: "d-hiv-cycle",
+              layout: "loop",
+              title: "HIV life cycle and the drugs that block it",
+              alt: "Four steps of the HIV life cycle and the drug classes that block each: attachment and entry (entry inhibitors), reverse transcription (NRTIs and NNRTIs), integration (integrase inhibitors), production and maturation (protease inhibitors).",
+              items: [
+                { label: "Attachment and entry", sub: "gp120 binds CD4 and CCR5 or CXCR4; the envelope fuses", tag: "Entry inhibitors" },
+                { label: "Reverse transcription", sub: "Viral RNA is copied into DNA", tag: "NRTIs and NNRTIs" },
+                { label: "Integration", sub: "Integrase inserts viral DNA into the host chromosome", tag: "Integrase inhibitors" },
+                { label: "Production and maturation", sub: "Protease cuts polyproteins; new virus buds off", tag: "Protease inhibitors" },
+              ],
+              feedback: "New virus infects more CD4 cells",
+              note: "Red tags name the drug class that blocks each step. Treatment combines drugs from at least two classes.",
             },
             {
               t: "p",

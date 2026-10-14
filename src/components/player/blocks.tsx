@@ -9,6 +9,7 @@ import { type Clip, clipById } from "@/content/patho";
 import { BOOK } from "@/content/patho/author";
 import type { Block, Card, Question } from "@/content/types";
 import { useStudent } from "@/lib/store";
+import { Diagram } from "./diagram";
 import { CheckGroup } from "./topic-check";
 import { QuizBlock } from "./quiz";
 
@@ -236,6 +237,8 @@ export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete, eq }:
       return <TopicHead eq={eq} items={b.items} />;
     case "predict":
       return <Predict id={b.id} stem={b.stem} options={b.options} correct={b.correct} reveal={b.reveal} />;
+    case "diagram":
+      return <Diagram d={b} />;
     case "img":
       return <Figure id={b.id} alt={b.alt} panels={b.panels} aspect={b.aspect} />;
     case "confused":

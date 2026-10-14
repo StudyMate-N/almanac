@@ -48,6 +48,17 @@ export function blockText(b: Block): string {
       return `Predict: ${b.stem} Answer: ${b.options.find((o) => o.id === b.correct)?.text ?? ""}. ${b.reveal}`;
     case "img":
       return `Image: ${b.alt}`;
+    case "diagram":
+      return [
+        `Diagram: ${b.title}`,
+        ...b.items.map((i) => `- ${i.label}${i.sub ? `: ${i.sub}` : ""}${i.tag ? ` (${i.tag})` : ""}`),
+        ...(b.columns ?? []).map((c) => `- ${c.title}: ${c.steps.join(" → ")}`),
+        ...(b.flows ?? []).map((f) => `- ${f.label}${f.sub ? `: ${f.sub}` : ""}`),
+        b.feedback ? `- Feedback: ${b.feedback}` : "",
+        b.note ?? "",
+      ]
+        .filter(Boolean)
+        .join("\n");
     case "confused":
       return `Commonly confused:\n${b.rows.map(([x, y, d]) => `- ${x} vs ${y}: ${strip(d)}`).join("\n")}`;
     case "values":

@@ -112,6 +112,22 @@ export const s7: ASection = {
                 ["Tertiary: the hypothalamus", "Hypothalamic damage", "Low TRH, low TSH, low T4"],
               ],
             },
+            // REVIEW: new diagram (image manifest: built as page diagrams). From the text and table above.
+            {
+              t: "diagram",
+              id: "d-endocrine-axes",
+              layout: "chain",
+              title: "Hypothalamus → pituitary → target gland",
+              alt: "Endocrine axis: the hypothalamus releases TRH or CRH, the anterior pituitary releases TSH or ACTH, the thyroid or adrenal cortex releases T4 and T3 or cortisol, and the target hormone switches off the hypothalamus and pituitary by negative feedback.",
+              items: [
+                { label: "Hypothalamus", sub: "Releasing hormone: TRH, CRH" },
+                { label: "Anterior pituitary", sub: "Stimulating hormone: TSH, ACTH" },
+                { label: "Target gland", sub: "Thyroid, adrenal cortex" },
+                { label: "Target hormone", sub: "T₄ and T₃, cortisol" },
+              ],
+              feedback: "Negative feedback: the target hormone switches off the hypothalamus and pituitary",
+              note: "Primary failure (the gland): target hormone low, stimulating hormone high. Secondary failure (the pituitary): both low.",
+            },
             {
               t: "p",
               html: "Endocrine disease is either too much hormone, too little, or <strong>resistance</strong>: the hormone is present but the tissue does not respond, as in type 2 diabetes (insulin resistance) and nephrogenic diabetes insipidus (resistance to ADH).",
