@@ -5,6 +5,9 @@ import { SiteHeader, SiteFooter } from "@/components/site/chrome";
 export const metadata: Metadata = { title: "Contact Almanac", description: "Get in touch with Almanac about learning resources, access or a request." };
 
 export default function ContactPage() {
+  const digits=(process.env.ALMANAC_WHATSAPP_NUMBER??"").replace(/[^0-9]/g,"");
+  const whatsApp=/^[1-9][0-9]{7,14}$/.test(digits)?
+    "https://wa.me/"+digits+"?text="+encodeURIComponent("Hello Almanac, I need help with a learning course or request.") : null;
   return <div className="min-h-screen bg-ground text-ink"><SiteHeader/>
     <main className="mx-auto max-w-[880px] px-4 pb-24 pt-8 sm:px-6">
       <p className="text-xs font-bold uppercase tracking-widest text-violet-700">Contact Almanac</p>
@@ -22,6 +25,14 @@ export default function ContactPage() {
           <Link href="/request" className="mt-5 inline-block font-semibold text-violet-700 underline">Request a course or resource →</Link>
         </div>
       </div>
+      {whatsApp&&<div className="mt-4 rounded-tile bg-white p-6">
+        <h2 className="font-display text-xl font-semibold">WhatsApp support</h2>
+        <p className="mt-2 text-sm text-ink-body">Prefer to chat? Start a WhatsApp conversation. For existing orders, include the invoice reference—not the private invoice link.</p>
+        <a href={whatsApp} target="_blank" rel="noreferrer"
+          className="mt-4 inline-flex min-h-12 items-center rounded-full bg-[#186C4C] px-5 font-semibold text-white">
+          Message Almanac on WhatsApp ↗
+        </a>
+      </div>}
       <p className="mt-7 text-sm text-ink-muted">For questions about a course you are already taking, you can also use the support options available inside your learning workspace.</p>
     </main><SiteFooter/></div>;
 }
