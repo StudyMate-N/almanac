@@ -135,7 +135,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
           </label>
           <label className="block text-sm font-semibold">What are you working toward?
             <textarea required minLength={10} maxLength={2000} rows={3} value={goal} onChange={e=>setGoal(e.target.value)}
-              className={inputClass} placeholder="Your course, exam, important topics, syllabus or learning goals"/>
+              className={inputClass} placeholder="Your course, exam, modules, syllabus or learning goals"/>
           </label>
         </div>
         <div className="mt-6 rounded-card border border-violet bg-mist p-4 sm:p-5">
@@ -145,7 +145,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
           </div>
           <p className="mt-2 text-sm leading-relaxed text-ink-body">
             Have a syllabus, lecture slides, notes, or course resources?
-            Share them to help us match your learning materials to your actual topics, objectives, and dates.
+            Share them to help us match your learning materials to your course modules, learning objectives, and dates.
             Personalization is included in your package.
           </p>
           <label className="mt-4 block text-sm font-semibold">Add your course materials
@@ -224,7 +224,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
               </div>;
             })}
           </div>
-          {visibleEnhancements.length===1 && kind==="resource" && <p className="mt-3 text-sm text-ink-muted">Need a broader set of topics or exam simulations? Choose the Exam Preparation Pack or Complete Course above.</p>}
+          {visibleEnhancements.length===1 && kind==="resource" && <p className="mt-3 text-sm text-ink-muted">Need more modules or exam simulations? Choose the Exam Preparation Pack or Complete Course above.</p>}
         </div>
         {kind==="course" && <p className="mt-4 text-xs text-ink-muted">AI tutor access is being verified separately and is not yet a guaranteed inclusion.</p>}
       </section>
@@ -288,7 +288,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
     <aside className="rounded-tile border border-hairline bg-white p-5 lg:sticky lg:top-5" aria-label="Your request summary">
       <p className="text-xs font-bold uppercase tracking-wide text-violet-700">YOUR PACKAGE</p>
       <h2 className="mt-2 font-display text-2xl font-semibold">{offer.title}</h2>
-      <p className="mt-1 text-sm text-ink-muted">{quote.units} learning {quote.units===1?"unit":"units"} · Core materials included</p>
+      <p className="mt-1 text-sm text-ink-muted">{quote.units} learning {quote.units===1?"module":"modules"} · Core materials included</p>
       <dl className="mt-5 space-y-3 text-sm">
         <div className="flex justify-between gap-2"><dt>Package</dt><dd>{usd(quote.baseUsd)}</dd></div>
         {ENHANCEMENT_KEYS.filter(key=>enhancements[key]>0).map(key=><div key={key} className="flex justify-between gap-2">
