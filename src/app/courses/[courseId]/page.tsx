@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader, toneBg } from "@/components/site/chrome";
 import { PathoPage } from "@/components/site/patho-page";
-import { SignupForm } from "@/components/signup-form";
 import { courseById, courses } from "@/content/course";
 
 export const dynamicParams = false;
@@ -30,13 +29,16 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
           · {c.category}
         </p>
         <div className={`mt-4 rounded-tile p-6 sm:p-10 ${toneBg[c.tone]}`}>
-          <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-ink-muted">Coming soon</span>
+          <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-ink-muted">Prepared on request</span>
           <h1 className="mt-4 font-display text-[40px] leading-[1.05] font-semibold sm:text-[52px]">{c.title}</h1>
           <p className="mt-3 max-w-2xl text-lg text-ink-body">{c.blurb}</p>
-          <div className="mt-6 max-w-xl">
-            <p className="mb-2 font-bold">Get an email when it opens.</p>
-            <SignupForm courseId={c.id} kind="notify" label="Tell me" />
-          </div>
+          <p className="mt-4 max-w-2xl text-ink-body">
+            Choose your course materials, delivery method and timeline. We'll prepare a learning package shaped around your goals.
+          </p>
+          <Link href={`/request?course=${encodeURIComponent(c.id)}`}
+            className="mt-6 inline-flex min-h-[52px] items-center rounded-full bg-violet px-6 font-bold text-white hover:bg-violet-600">
+            Request this course →
+          </Link>
         </div>
       </main>
       <SiteFooter />
