@@ -96,7 +96,7 @@ export default function Player() {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-hairline/70 bg-ground/90 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-hairline/70 bg-ground/90 backdrop-blur" style={{ viewTransitionName: "player-header" }}>
         <div className="mx-auto flex h-16 max-w-[1320px] items-center gap-3 px-4 sm:px-6">
           <Link href={`/app/courses/${course.id}`} aria-label="Close the course player" className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white hover:bg-mist">
             <XIcon size={18} />
@@ -202,7 +202,7 @@ export default function Player() {
 
             <div ref={endRef} className="mt-6 grid gap-3 sm:grid-cols-2">
               {prev ? (
-                <Link href={`/app/learn/${prev.id}`} className="flex flex-col rounded-tile bg-white p-5 hover:bg-mist">
+                <Link href={`/app/learn/${prev.id}`} transitionTypes={["nav-back"]} className="flex flex-col rounded-tile bg-white p-5 hover:bg-mist">
                   <span className="text-[12px] font-bold text-ink-muted">Previous</span>
                   <span className="font-display text-[17px] leading-snug font-semibold">{prev.shortTitle ?? prev.title}</span>
                 </Link>
@@ -210,7 +210,7 @@ export default function Player() {
                 <span />
               )}
               {next && (
-                <Link href={`/app/learn/${next.id}`} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} className="flex items-center gap-3 rounded-tile bg-tangerine p-5 text-ink hover:bg-tangerine-700">
+                <Link href={`/app/learn/${next.id}`} transitionTypes={["nav-forward"]} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} className="flex items-center gap-3 rounded-tile bg-tangerine p-5 text-ink hover:bg-tangerine-700">
                   <span className="min-w-0 flex-1">
                     <span className="block text-[12px] font-extrabold">Next</span>
                     <span className="block font-display text-[17px] leading-snug font-semibold">{next.shortTitle ?? next.title}</span>
