@@ -6,6 +6,7 @@ on:
       - "supabase/migrations/**"
       - "scripts/check-learning-offers.mjs"
       - "scripts/check-checkout-health.mjs"
+      - "scripts/check-private-endpoints.mjs"
       - "package*.json"
       - ".github/workflows/learning-orders.yml"
   workflow_dispatch:
@@ -22,5 +23,6 @@ jobs:
       - run: npm ci
       - run: node --experimental-strip-types scripts/check-learning-offers.mjs
       - run: node scripts/check-checkout-health.mjs
+      - run: node scripts/check-private-endpoints.mjs
       - run: npm run typecheck
       - run: npm run build
