@@ -72,6 +72,12 @@ export function StaffDeliveryPanel({orderId,token,paymentStatus,days,startedAt,d
   kind==="exam"?{lesson:Math.min(modules,4),video:2+(enhancements.deep_video||0),slides:1,practice:1,flashcards:1,simulation:1+(enhancements.exam_sim||0),plan:1}:
   {lesson:1,video:1+(enhancements.deep_video||0),slides:1,practice:1,flashcards:1};
  const gaps=Object.entries(required).filter(([key,min])=>issued.filter(r=>r.kind===key).length<min);
+ const requiredEach=kind==="course"?["lesson","video","slides"]:kind==="exam"?["lesson"]:[];
+ const missingByModule=Array.from({length:modules},(_,i)=>i+1).flatMap(n=>
+   requiredEach.filter(category=>!issued.some(x=>x.moduleNumber===n&&x.kind===category))
+     .map(category=>`Module ${n}: ${category}`)
+ );
+
  return <div className="mt-4 rounded-xl border border-hairline bg-white p-4">
   <div className="flex flex-wrap items-center justify-between gap-2">
    <div><h3 className="font-semibold">Course preparation and delivery</h3>
@@ -89,6 +95,9 @@ export function StaffDeliveryPanel({orderId,token,paymentStatus,days,startedAt,d
      {key}: <strong>{issued.filter(r=>r.kind===key).length}/{count}</strong> released</p>)}
    </div>
    {gaps.length>0&&<p className="mt-3 text-xs text-ink-muted">Incomplete release checklist: {gaps.map(([k])=>k).join(", ")}. Check the contents of each file, including the promised number of questions and flashcards.</p>}
+   {missingByModule.length>0&&<p className="mt-3 rounded-xl border border-hairline bg-white p-3 text-xs text-ink-body">
+    To mark this package delivered, each defined module must have its own required released files: {missingByModule.join(" · ")}.
+   </p>}
    {paymentStatus!=="verified"?<p className="mt-3 text-sm text-ink-muted">Verify payment before uploading deliverables.</p>:
     <div className="mt-4 grid gap-3 rounded-xl bg-mist p-4 sm:grid-cols-2">
      <label className="text-sm font-semibold">Resource type
