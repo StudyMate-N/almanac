@@ -5,9 +5,10 @@ import { SUPABASE_URL } from "@/lib/config";
 const endpoint=`${SUPABASE_URL}/functions/v1/learning-deliverables`;
 const KINDS=["lesson","video","slides","practice","flashcards","simulation","plan","other"] as const;
 type Resource={id:string;name:string;kind:string;moduleNumber:number|null;size:number;released:boolean;uploadedAt:string};
-export function StaffDeliveryPanel({orderId,token,paymentStatus,days,startedAt,dueAt,kind,modules}:{
+export function StaffDeliveryPanel({orderId,token,paymentStatus,days,startedAt,dueAt,kind,modules,enhancements={}}:{
  orderId:string;token:string;paymentStatus:string;days:number;
  startedAt:string|null;dueAt:string|null;kind:string;modules:number;
+ enhancements?:Record<string,number>;
 }) {
  const [started,setStarted]=useState(startedAt);
  const [due,setDue]=useState(dueAt);
@@ -67,9 +68,9 @@ export function StaffDeliveryPanel({orderId,token,paymentStatus,days,startedAt,d
  }
  const issued=records.filter(x=>x.released);
  const required:Record<string,number>=kind==="course"?
-  {lesson:modules,video:modules,slides:modules,practice:1,flashcards:1,simulation:1,plan:1}:
-  kind==="exam"?{lesson:Math.min(modules,4),video:2,slides:1,practice:1,flashcards:1,simulation:1,plan:1}:
-  {lesson:1,video:1,slides:1,practice:1,flashcards:1};
+  {lesson:modules,video:modules+(enhancements.deep_video||0),slides:modules,practice:1,flashcards:1,simulation:1+(enhancements.exam_sim||0),plan:1}:
+  kind==="exam"?{lesson:Math.min(modules,4),video:2+(enhancements.deep_video||0),slides:1,practice:1,flashcards:1,simulation:1+(enhancements.exam_sim||0),plan:1}:
+  {lesson:1,video:1+(enhancements.deep_video||0),slides:1,practice:1,flashcards:1};
  const gaps=Object.entries(required).filter(([key,min])=>issued.filter(r=>r.kind===key).length<min);
  return <div className="mt-4 rounded-xl border border-hairline bg-white p-4">
   <div className="flex flex-wrap items-center justify-between gap-2">
