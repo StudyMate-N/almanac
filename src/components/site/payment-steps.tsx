@@ -9,7 +9,7 @@ export type PaymentBank={
 };
 export type PayableInvoice={
  id:string;invoiceRef:string;quoteUsd:number;payableCadCents:number|null;
- rateCadPerUsd:number|null;rateDate:string|null;paymentStatus:string;
+ rateCadPerUsd:number|null;rateDate:string|null;quoteValidUntil:string|null;paymentStatus:string;
  subject:string;
 };
 const cad=(cents:number)=>new Intl.NumberFormat("en-CA",{style:"currency",currency:"CAD"}).format(cents/100);
@@ -26,10 +26,13 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
  const [busy,setBusy]=useState(false);
  const [notice,setNotice]=useState("");
  const [copied,setCopied]=useState("");
- const payable=bank&&invoice.payableCadCents!==null&&invoice.payableCadCents>0;
+ const hasQuote=invoice.payableCadCents!==null&&invoice.payableCadCents>0;
+ const expired=invoice.quoteValidUntil?Date.parse(invoice.quoteValidUntil)<Date.now():false;
+ const canTransfer=Boolean(bank)&&hasQuote&&!expired&&invoice.paymentStatus!=="reported"&&invoice.paymentStatus!=="verified";
+ const reported=invoice.paymentStatus==="reported";
  const completed=invoice.paymentStatus==="verified";
  useEffect(()=>{
-  if(!payable)return;
+  if(!hasQuote)return;
   let cancelled=false;
   void fetch(receiptsUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
    action:"list",orderId:id,invoiceToken:token
@@ -41,7 +44,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
  async function copy(value:string,label:string){
   try{await navigator.clipboard.writeText(value);setCopied(label);}catch{setNotice("Copy isn't available in this browser. You can select the details below.");}
  }
- const instructions=bank&&payable?[
+ const instructions=bank&&canTransfer?[
   `Payment amount: ${cad(invoice.payableCadCents!)}`,
   `Reference: ${invoice.invoiceRef}`,
   `Beneficiary: ${bank.beneficiary}`,
@@ -59,7 +62,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
 
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
-  if(!payable||busy||completed)return;
+  if(!hasQuote||busy||completed)return;
   if(!date){setNotice("Enter the date you sent your payment.");return;}
   if(reference.trim().length<5&&!receipt&&proofs.length===0){
    setNotice("Add a bank transaction reference or a screenshot of your payment.");return;
@@ -96,14 +99,20 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
   <h2 className="mt-2 font-display text-2xl font-semibold">Pay your invoice, then send us the details.</h2>
   <p className="mt-2 text-sm text-ink-body">Everything you need is here. Save your invoice, make a transfer, and report it below. We'll check the bank payment and issue your access code after verification.</p>
 
-  {!payable?<div role="status" className="mt-5 rounded-2xl bg-mist p-5">
-    <h3 className="font-semibold">Your CAD payment amount is not ready yet.</h3>
-    <p className="mt-2 text-sm text-ink-body">We haven't displayed transfer details because this invoice doesn't yet have a locked CAD amount. Please don't make a payment using the USD catalog price. Contact support with your invoice reference.</p>
+  {!canTransfer?<div role="status" className="mt-5 rounded-2xl bg-mist p-5">
+    <h3 className="font-semibold">{completed?"Bank payment verified":reported?"Payment report received":expired?"Your seven-day bank quote has expired":"Your CAD payment amount is not ready yet"}</h3>
+    <p className="mt-2 text-sm text-ink-body">
+     {completed?"Your payment has been confirmed. Do not send a second transfer. Sign in using the learning access code issued by staff.":
+      reported?"We have your payment report. Please do not send another transfer while staff check the receiving bank account.":
+      expired?"The CAD transfer instructions have been hidden to protect you from using an outdated exchange rate. Contact support with your invoice reference to request an updated private invoice. If you already transferred before expiry, you can still report it below.":
+      "This invoice doesn't yet have a fixed CAD payable amount. Please don't transfer the USD catalog price. Contact support with your invoice reference."}
+    </p>
+    {hasQuote&&<p className="mt-3 text-sm text-ink-muted">Recorded invoice total: {cad(invoice.payableCadCents!)} · {invoice.invoiceRef}</p>}
   </div>:<>
    <div className="mt-6 rounded-2xl bg-lilac p-5">
     <p className="text-sm font-semibold">1 · Transfer this amount in CAD</p>
     <p className="mt-2 font-display text-[34px] font-semibold">{cad(invoice.payableCadCents!)}</p>
-    <p className="mt-1 text-xs text-ink-body">Fixed for invoice {invoice.invoiceRef} · USD list price: ${invoice.quoteUsd.toFixed(2)}</p>
+    <p className="mt-1 text-xs text-ink-body">Fixed for invoice {invoice.invoiceRef} · USD list price: ${invoice.quoteUsd.toFixed(2)} · Pay by {invoice.quoteValidUntil?new Date(invoice.quoteValidUntil).toLocaleDateString("en-US"):"the deadline on your invoice"}</p>
     <div className="mt-3 flex flex-wrap gap-2">
      <button type="button" onClick={()=>void copy((invoice.payableCadCents!/100).toFixed(2),"amount")} className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-violet-700">
        {copied==="amount"?"Amount copied ✓":"Copy CAD amount"}
@@ -141,9 +150,10 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
   <div className="mt-5 rounded-2xl border border-hairline p-5">
    <h3 className="font-semibold">3 · Tell us you've paid</h3>
    {completed?<p className="mt-2 text-sm text-ink-body">Your payment has been verified. Access is issued by Almanac staff using the email associated with your invoice.</p>:
-    !payable?<p className="mt-2 text-sm text-ink-muted">This step opens once your CAD amount is confirmed.</p>:
+    reported?<p className="mt-2 text-sm text-ink-body">Your transfer report is recorded. Staff will independently verify the bank receipt and issue access when it matches. Contact support if you need to correct a reference.</p>:
+    !hasQuote?<p className="mt-2 text-sm text-ink-muted">This step opens once your CAD amount is confirmed.</p>:
     <form onSubmit={submit} className="mt-4 space-y-3">
-     <p className="text-sm text-ink-body">Use a bank reference, a screenshot/receipt, or both. A screenshot is optional if you have a transfer reference.</p>
+     <p className="text-sm text-ink-body">Use a bank reference, a screenshot/receipt, or both. A screenshot is optional if you have a transfer reference. {expired?"Only report a transfer that you actually sent before this quote expired. Do not send a new transfer against the expired amount.":""}</p>
      <div className="grid gap-3 sm:grid-cols-2">
       <label className="block text-sm font-semibold">Bank transfer reference (if available)
        <input className="mt-2 w-full rounded-xl border border-hairline px-3 py-3" value={reference} maxLength={120} onChange={e=>setReference(e.target.value)} placeholder="e.g. transfer confirmation number"/>
