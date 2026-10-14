@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { ENHANCEMENTS, OFFERS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 
 type Invoice = {
   id:string; invoiceRef:string; name:string; email:string; subject:string;
   goal:string; kind:string; deliveryMethod:string; speed:string;
-  addons:string[]; units:number; baseUsd:number; addonUsd:number;
+  addons:string[]; enhancements?: Record<string,number>; learningPreference?: string;
+  units:number; baseUsd:number; addonUsd:number;
   quoteUsd:number; turnaroundDays:number; paymentStatus:string; status:string; createdAt:string;
 };
 type Bank = { name:string; address:string; institution:string; transit:string;
@@ -56,6 +58,10 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
   if(loading) return <p role="status" className="rounded-card bg-white p-5">Preparing your invoice…</p>;
   if(error||!result) return <p role="alert" className="rounded-card bg-white p-5">{error||"Invoice not found."}</p>;
   const {invoice,bank}=result;
+  const enhanced=(Object.keys(ENHANCEMENTS) as Enhancement[]).filter(key=>(invoice.enhancements?.[key] ?? 0)>0);
+  const packageName=OFFERS[invoice.kind as keyof typeof OFFERS]?.title ?? label(invoice.kind);
+  const prepLabel=invoice.status==="delivered"?"Delivered":invoice.status==="review"?"Quality review":
+    invoice.status==="in_production"?"In production":invoice.paymentStatus==="verified"?"Payment verified":"Awaiting payment";
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
@@ -81,16 +87,22 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
             <p className="mt-2 font-semibold">{invoice.name}</p><p className="text-sm text-ink-body">{invoice.email}</p></div>
           <div><p className="text-xs font-bold uppercase text-ink-muted">Order summary</p>
             <p className="mt-2 font-semibold">{invoice.subject}</p>
-            <p className="text-sm text-ink-body">{label(invoice.kind)} · Up to {invoice.units} learning units</p>
+            <p className="text-sm text-ink-body">{packageName} · Up to {invoice.units} learning units</p>
           </div>
         </div>
         <dl className="mt-7 space-y-3 border-t border-hairline pt-5 text-sm">
-          <div className="flex justify-between gap-3"><dt>Base package</dt><dd>{money(invoice.baseUsd)}</dd></div>
-          <div className="flex justify-between gap-3"><dt>Additional materials {invoice.addons.length? `(${invoice.addons.map(label).join(", ")})` : ""}</dt><dd>{money(invoice.addonUsd)}</dd></div>
+          <div className="flex justify-between gap-3"><dt>{packageName} (core materials included)</dt><dd>{money(invoice.baseUsd)}</dd></div>
+          {enhanced.map(key=><div className="flex justify-between gap-3" key={key}>
+            <dt>{ENHANCEMENTS[key].title} × {invoice.enhancements?.[key] ?? 0}</dt>
+            <dd>{money(ENHANCEMENTS[key].unitUsd*(invoice.enhancements?.[key] ?? 0))}</dd>
+          </div>)}
+          {enhanced.length===0 && invoice.addons.length>0 && <div className="flex justify-between gap-3">
+            <dt>Previous-format additions ({invoice.addons.map(label).join(", ")})</dt><dd>{money(invoice.addonUsd)}</dd>
+          </div>}
           <div className="flex justify-between gap-3"><dt>Delivery: {label(invoice.speed)} ({invoice.turnaroundDays} calendar days)</dt><dd>{money(invoice.quoteUsd-invoice.baseUsd-invoice.addonUsd)}</dd></div>
           <div className="flex justify-between gap-3 border-t border-hairline pt-4 font-semibold"><dt>Catalog price (USD)</dt><dd className="font-display text-2xl">{money(invoice.quoteUsd)}</dd></div>
         </dl>
-        <p className="mt-3 text-xs text-ink-muted">Delivery method: {label(invoice.deliveryMethod)}. Work begins when payment and all required materials have been received.</p>
+        <p className="mt-3 text-xs text-ink-muted">Delivery: {label(invoice.deliveryMethod)} · Study preference: {PREFERENCES[invoice.learningPreference as keyof typeof PREFERENCES] ?? "Balanced mix"}. Work begins when payment and all required materials have been received.</p>
 
         <section className="mt-8 rounded-card bg-mist p-5 print:border print:border-hairline print:bg-white">
           <h2 className="font-display text-xl font-semibold">Bank transfer instructions</h2>
@@ -116,7 +128,8 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
           </p>}
         </section>
         <div className="mt-6 border-t border-hairline pt-4 text-xs text-ink-muted">
-          <p>Payment status: <strong>{invoice.paymentStatus==="verified"?"Verified":invoice.paymentStatus==="reported"?"Awaiting verification":"Awaiting payment"}</strong></p>
+          <p>Payment status: <strong>{invoice.paymentStatus==="verified"?"Verified":invoice.paymentStatus==="reported"?"Reported · awaiting verification":"Awaiting payment"}</strong></p>
+          <p className="mt-2">Learning package status: <strong>{prepLabel}</strong>. Check this private invoice link for updates recorded by staff.</p>
           <p className="mt-2">This is a payment invoice, not a payment receipt. Access codes are issued only after payment verification. For questions, email help@almanac.study.</p>
         </div>
       </article>
