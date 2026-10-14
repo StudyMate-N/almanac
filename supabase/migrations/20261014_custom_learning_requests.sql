@@ -215,3 +215,36 @@ $function$;
 
 revoke all on function public.learning_requests_list(text) from public;
 grant execute on function public.learning_requests_list(text) to anon, authenticated;
+
+-- Staff-only status updates. Never changes the quoted price or creates payment.
+create or replace function public.learning_request_status_set(
+  p_token text, p_id uuid, p_status text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  v_role text;
+begin
+  select a.role into v_role
+  from app.admin_sessions s
+  join app.admins a on a.id = s.admin_id
+  where s.token_hash = app.hash(p_token) and s.expires_at > now();
+  if v_role not in ('owner','coach') or v_role is null then
+    raise exception 'not_authorized' using errcode='28000';
+  end if;
+  if p_status not in ('received','awaiting_payment','in_production','review','delivered','cancelled') then
+    raise exception 'invalid_status' using errcode='22023';
+  end if;
+  update app.learning_requests
+    set status = p_status, updated_at = now()
+    where id = p_id;
+  if not found then raise exception 'request_not_found' using errcode='22023'; end if;
+  return jsonb_build_object('id',p_id,'status',p_status);
+end
+$function$;
+
+revoke all on function public.learning_request_status_set(text,uuid,text) from public;
+grant execute on function public.learning_request_status_set(text,uuid,text) to anon, authenticated;
