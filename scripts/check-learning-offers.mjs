@@ -34,7 +34,7 @@ const valid={
   courseId:"advanced-pharmacology",subject:"Advanced Pharmacology",
   goal:"Prepare a structured study course with practice.",
   name:"Alex Learner",email:"ALEX@example.com",
-  learningPreference:"video",enhancements:{deep_video:1,exam_sim:2,unit:2},
+  learningPreference:"video",termsAccepted:true,enhancements:{deep_video:1,exam_sim:2,unit:2},
 };
 const parsed=parseLearningRequest(valid);
 assert.deepEqual(parsed.enhancements,{deep_video:1,exam_sim:2,unit:2});
