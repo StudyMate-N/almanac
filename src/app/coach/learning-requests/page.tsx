@@ -8,6 +8,7 @@ import { StaffSourceFiles } from "@/components/site/staff-source-files";
 import { StaffLearningPlan } from "@/components/site/staff-learning-plan";
 import { StaffPaymentProofs } from "@/components/site/staff-payment-proofs";
 import { StaffDeliveryPanel } from "@/components/site/staff-delivery-panel";
+import { StaffRecoveryPanel } from "@/components/site/staff-recovery-panel";
 import { ENHANCEMENTS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 
 type RequestRow = {
@@ -27,6 +28,7 @@ type RequestRow = {
 const statuses = ["received","awaiting_payment","in_production","review","delivered","cancelled"];
 export default function LearningRequestsPage() {
   const [token, setToken] = useState("");
+  const [role,setRole]=useState("");
   const [rows, setRows] = useState<RequestRow[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -34,7 +36,7 @@ export default function LearningRequestsPage() {
   const [issued, setIssued] = useState<{id:string;invoiceRef:string;code:string;email:string}|null>(null);
 
   useEffect(() => {
-    let stored: { token?: string } | null = null;
+    let stored: { token?: string;role?: string } | null = null;
     try { stored = JSON.parse(localStorage.getItem(COACH_KEY) ?? "null"); } catch { /* no staff login */ }
     if (!stored?.token) {
       setError("Sign in to the coach console first.");
@@ -42,6 +44,7 @@ export default function LearningRequestsPage() {
       return;
     }
     setToken(stored.token);
+    setRole(stored.role||"");
     rpc<RequestRow[]>("learning_requests_list", { p_token: stored.token })
       .then(setRows)
       .catch(e => setError(friendlyError(e)))
@@ -149,6 +152,8 @@ export default function LearningRequestsPage() {
               <StaffDeliveryPanel orderId={r.id} token={token} paymentStatus={r.payment_status}
                 days={r.turnaround_days} startedAt={r.production_started_at||null}
                 dueAt={r.delivery_due_at||null} kind={r.kind} modules={r.unit_count}/>
+              <StaffRecoveryPanel orderId={r.id} token={token} role={role} invoiceRef={r.invoice_ref}
+                email={r.email}/>
             </article>
           ))}
         </div>
