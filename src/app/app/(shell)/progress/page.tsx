@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
+import { lessonById } from "@/content/course";
 import { readiness, readinessLabel, readinessTone, topicStats } from "@/lib/progress";
 import { useStudent } from "@/lib/store";
 import { useCourse } from "@/lib/use-course";
 
 export default function Progress() {
   const { answers, state } = useStudent();
-  const { modules, questions, latest } = useCourse();
+  const { modules, questions, latest, scored } = useCourse();
   const seen = questions.filter((q) => latest.has(q.id));
   const right = seen.filter((q) => latest.get(q.id)!.correct).length;
   const missed = seen.length - right;
@@ -28,7 +29,8 @@ export default function Progress() {
         {[
           ["Questions answered", seen.length],
           ["Correct last time", seen.length ? `${Math.round((right / seen.length) * 100)}%` : "–"],
-          ["Pages done", Object.keys(state.lessons).length],
+          // Only pages that still exist: ids retired by the topic restructure stay in history.
+          ["Pages done", Object.keys(state.lessons).filter((id) => lessonById(id)).length],
           ["Cards reviewed", reviewed],
         ].map(([l, v]) => (
           <div key={l} className={stat}>
@@ -43,7 +45,7 @@ export default function Progress() {
           <h2 className="mb-3 font-display text-[19px] font-semibold">Readiness by section</h2>
           <ul className="flex flex-col gap-3">
             {modules.map((m) => {
-              const r = readiness(questions.filter((q) => q.moduleId === m.id), latest);
+              const r = readiness(questions.filter((q) => q.moduleId === m.id), scored);
               if (!r.total) return null;
               return (
                 <li key={m.id} className="flex flex-col gap-1">

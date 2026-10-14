@@ -3,6 +3,7 @@ import type { APage } from "./author";
 /** Kept from the Meridian course: Lesson 3.3. */
 export const l33: APage = {
   id: "s2-l3-3",
+  topic: "Musculoskeletal System Pathophysiology",
   title: "Lesson 3.3: Complications of Musculoskeletal Trauma",
   kind: "activity",
   blocks: [

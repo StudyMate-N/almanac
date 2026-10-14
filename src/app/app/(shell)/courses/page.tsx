@@ -12,7 +12,7 @@ import { useCourse } from "@/lib/use-course";
 
 export default function Courses() {
   const { state } = useStudent();
-  const { questions, latest, lessonOpen } = useCourse();
+  const { questions, scored, lessonOpen } = useCourse();
 
   return (
     <>
@@ -21,7 +21,7 @@ export default function Courses() {
         {openCourses.map((c) => {
           const mods = modulesInCourse(c.id).map((m) => m.id);
           const qs = questions.filter((q) => mods.includes(q.moduleId));
-          const r = readiness(qs, latest);
+          const r = readiness(qs, scored);
           const ls = allLessons.filter((l) => mods.includes(l.moduleId) && lessonOpen(l.id));
           const watched = ls.filter((l) => state.lessons[l.id]).length;
           const plan = planFor(state, c.id);

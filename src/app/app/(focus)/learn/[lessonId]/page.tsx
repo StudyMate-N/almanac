@@ -2,35 +2,25 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LogoMark } from "@/components/brand";
 import { ArrowRightIcon, XIcon } from "@/components/icons";
 import { BlockView } from "@/components/player/blocks";
+import { CheckGroup } from "@/components/player/topic-check";
 import { kindLabel, Outline, Ring } from "@/components/player/outline";
+import { VideoLedTopic, videoLedBlocks } from "@/components/player/video-led";
 import { ReportButton, TutorButton } from "@/components/tutor";
-import { courseById, lessonById, lessons, modulesInCourse, moduleById } from "@/content/course";
+import { courseById, lessonById, lessons, modulesInCourse, moduleById, questionById } from "@/content/course";
 import type { Card, Lesson, Question } from "@/content/types";
 import { REVIEWER } from "@/lib/config";
+import { minutesFor } from "@/lib/minutes";
 import { useStudent } from "@/lib/store";
 
-const SELF_COMPLETING = new Set(["reading", "activity", "summary", "video"]);
-
-function minutesFor(p: Lesson) {
-  let words = 0;
-  let extra = 0;
-  for (const b of p.blocks) {
-    const s = JSON.stringify(b);
-    words += s.split(/\s+/).length;
-    if (b.t === "check") extra += 1.5;
-    if (b.t === "quiz") extra += b.ids.length * 1.2;
-    if (b.t === "video") extra += 6;
-  }
-  return Math.max(2, Math.round(words / 200 + extra));
-}
+const SELF_COMPLETING = new Set(["reading", "activity", "summary", "video", "topic"]);
 
 export default function Player() {
   const { lessonId } = useParams<{ lessonId: string }>();
-  const { state, update, isVisible, isApproved, preview } = useStudent();
+  const { state, answers, update, isVisible, isApproved, preview } = useStudent();
   const [drawer, setDrawer] = useState(false);
   const page = lessonById(lessonId);
   const mod = page ? moduleById(page.moduleId) : undefined;
@@ -46,12 +36,40 @@ export default function Player() {
     if (page && !state.lessons[page.id]) update("lessons", { ...state.lessons, [page.id]: { at: new Date().toISOString() } });
   };
 
+  // A page with learning checks is done only when every visible check has been answered.
+  // Checks still awaiting review aren't rendered, so they can't hold the page back.
+  const checkIds = page
+    ? page.blocks.flatMap((b) => {
+        const q = b.t === "check" ? questionById(b.id) : undefined;
+        return q && visibleQ(q) ? [q.id] : [];
+      })
+    : [];
+  const checksLeft = checkIds.filter((id) => !answers.some((a) => a.questionId === id)).length;
+  const checksAnswered = checksLeft === 0;
+  // Course standard: a page with checks is done when they're answered; one without checks
+  // is done when the student reaches its end (the Previous/Next row scrolls into view).
+  const [reachedEnd, setReachedEnd] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
+  const canSelfComplete = Boolean(page && SELF_COMPLETING.has(page.kind) && checksAnswered && (checkIds.length > 0 || reachedEnd));
+
   useEffect(() => {
-    if (page && open && SELF_COMPLETING.has(page.kind) && !state.lessons[page.id]) markDone();
     window.scrollTo({ top: 0 });
     setDrawer(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page?.id]);
+
+  useEffect(() => {
+    setReachedEnd(false);
+    const el = endRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && setReachedEnd(true));
+    io.observe(el);
+    return () => io.disconnect();
   }, [page?.id, open]);
+
+  useEffect(() => {
+    if (page && open && canSelfComplete && !state.lessons[page.id]) markDone();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page?.id, open, canSelfComplete]);
 
   if (!page || !mod || !course)
     return (
@@ -67,6 +85,10 @@ export default function Player() {
   const next = coursePages.slice(idx + 1).find(isOpen);
   const done = coursePages.filter((p) => isDone(p.id)).length;
   const approved = isApproved(page.id, page);
+  // A topic page with a question-stop clip is video-led; without one (or without media) it reads.
+  const videoClips = videoLedBlocks(page);
+  // Topic pages are titled "5.3 Obstructive disease": the number goes in the breadcrumb.
+  const topicNum = page.kind === "topic" ? page.title.match(/^\d+\.\d+(?=\s)/)?.[0] : undefined;
   const sectionLabel = mod.kind === "section" ? `Section ${mod.number}` : mod.kind === "start" ? "Start here" : "Final review";
   const modules = modulesInCourse(course.id);
 
@@ -117,15 +139,24 @@ export default function Player() {
         <aside className="sticky top-[88px] hidden h-[calc(100dvh-112px)] w-[320px] flex-none overflow-y-auto pr-1 lg:block">{outline}</aside>
 
         <main className="min-w-0 flex-1">
-          <article className="mx-auto max-w-[760px]">
+          <article className="mx-auto max-w-[720px]">
             <nav aria-label="Breadcrumb" className="mb-2 text-[13px] font-semibold text-ink-muted">
-              {mod.kind !== "section" ? sectionLabel : page.groupTitle === page.title ? `${sectionLabel} · ${mod.title}` : `${sectionLabel} · ${page.groupTitle}`}
+              {mod.kind !== "section" ? sectionLabel : topicNum ? `${sectionLabel} · Topic ${topicNum}` : page.groupTitle === page.title ? `${sectionLabel} · ${mod.title}` : `${sectionLabel} · ${page.groupTitle}`}
             </nav>
-            <h1 className="font-display text-[30px] leading-[1.15] font-semibold sm:text-[36px]">{page.title}</h1>
+            <h1 className="font-display text-[clamp(30px,4vw,38px)] leading-[1.12] font-semibold">{topicNum ? page.title.slice(topicNum.length).trim() : page.title}</h1>
             <div className="mt-3 mb-7 flex flex-wrap gap-2 text-[13px] font-bold">
-              <span className="rounded-full bg-white px-3 py-1 text-violet-700">{kindLabel[page.kind]}</span>
+              <span className="rounded-full bg-white px-3 py-1 text-violet-700">{videoClips ? "Video topic" : kindLabel[page.kind]}</span>
               <span className="rounded-full bg-white px-3 py-1 text-ink-muted">About {minutesFor(page)} min</span>
-              {isDone(page.id) && <span className="rounded-full bg-mint px-3 py-1 text-mint-ink">Done</span>}
+              {isDone(page.id) ? (
+                <span className="rounded-full bg-mint px-3 py-1 text-mint-ink">Done</span>
+              ) : (
+                open &&
+                checksLeft > 0 && (
+                  <span className="rounded-full bg-white px-3 py-1 text-ink-muted">
+                    {checksLeft} check{checksLeft === 1 ? "" : "s"} left
+                  </span>
+                )
+              )}
               {preview && <span className={`rounded-full px-3 py-1 ${approved ? "bg-mint text-mint-ink" : "bg-peach text-peach-ink"}`}>{approved ? `Approved by ${REVIEWER.name}` : "Awaiting nurse review (preview)"}</span>}
             </div>
 
@@ -137,11 +168,28 @@ export default function Player() {
                 </p>
               </div>
             ) : (
+              videoClips ? (
+                <VideoLedTopic page={page} videos={videoClips} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} />
+              ) : (
               <div className="flex flex-col gap-6">
-                {page.blocks.map((b, i) => (
-                  <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} />
-                ))}
+                {page.blocks.map((b, i) => {
+                  const prev = page.blocks[i - 1];
+                  if (b.t === "eq" && page.blocks[i + 1]?.t === "keypoints") return null;
+                  // Consecutive learning checks render as one "Learning check n of N" group.
+                  if (b.t === "check") {
+                    if (prev?.t === "check") return null;
+                    const run: Question[] = [];
+                    for (let j = i; page.blocks[j]?.t === "check"; j++) {
+                      const q = questionById((page.blocks[j] as { id: string }).id);
+                      if (q && visibleQ(q)) run.push(q);
+                    }
+                    return <CheckGroup key={i} qs={run} pageId={page.id} onDone={() => document.querySelector('[aria-label="Submit and compare"]')?.scrollIntoView({ behavior: "smooth", block: "start" })} />;
+                  }
+                  const eq = b.t === "keypoints" && prev?.t === "eq" ? prev.text : undefined;
+                  return <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} eq={eq} />;
+                })}
               </div>
+              )
             )}
 
             {open && (
@@ -152,20 +200,20 @@ export default function Player() {
               </div>
             )}
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div ref={endRef} className="mt-6 grid gap-3 sm:grid-cols-2">
               {prev ? (
                 <Link href={`/app/learn/${prev.id}`} className="flex flex-col rounded-tile bg-white p-5 hover:bg-mist">
                   <span className="text-[12px] font-bold text-ink-muted">Previous</span>
-                  <span className="font-display text-[17px] leading-snug font-semibold">{prev.title}</span>
+                  <span className="font-display text-[17px] leading-snug font-semibold">{prev.shortTitle ?? prev.title}</span>
                 </Link>
               ) : (
                 <span />
               )}
               {next && (
-                <Link href={`/app/learn/${next.id}`} onClick={() => SELF_COMPLETING.has(page.kind) && markDone()} className="flex items-center gap-3 rounded-tile bg-tangerine p-5 text-ink hover:bg-tangerine-700">
+                <Link href={`/app/learn/${next.id}`} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} className="flex items-center gap-3 rounded-tile bg-tangerine p-5 text-ink hover:bg-tangerine-700">
                   <span className="min-w-0 flex-1">
                     <span className="block text-[12px] font-extrabold">Next</span>
-                    <span className="block font-display text-[17px] leading-snug font-semibold">{next.title}</span>
+                    <span className="block font-display text-[17px] leading-snug font-semibold">{next.shortTitle ?? next.title}</span>
                   </span>
                   <ArrowRightIcon size={20} />
                 </Link>

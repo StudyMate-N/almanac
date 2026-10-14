@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CheckIcon, LockIcon } from "@/components/icons";
 import { groupsInModule } from "@/content/course";
 import type { Lesson, Module, PageKind } from "@/content/types";
+import { minutesFor } from "@/lib/minutes";
 
 export const kindLabel: Record<PageKind, string> = {
   reading: "Reading",
@@ -13,6 +14,7 @@ export const kindLabel: Record<PageKind, string> = {
   quiz: "Quiz",
   test: "Test",
   video: "Video",
+  topic: "Topic",
 };
 
 export function Ring({ done, total, size = 34, tone = "violet" }: { done: number; total: number; size?: number; tone?: "violet" | "white" }) {
@@ -28,6 +30,9 @@ export function Ring({ done, total, size = 34, tone = "violet" }: { done: number
     </span>
   );
 }
+
+/** Outline label: short title, without the "Section N:" prefix the section heading already shows. */
+const rowLabel = (p: Lesson) => (p.kind === "test" ? "Section test" : (p.shortTitle ?? p.title).replace(/^Section \d+:\s*/, ""));
 
 type Props = {
   modules: Module[];
@@ -56,7 +61,10 @@ export function Outline({ modules, currentId, isDone, isOpen, onNavigate }: Prop
                 {m.kind === "start" ? "★" : m.kind === "final" ? "✓" : m.number}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[11px] font-extrabold tracking-wide text-ink-muted uppercase">{m.kind === "section" ? `Section ${m.number}` : m.kind === "start" ? "Start here" : "Finish"}</span>
+                <span className="block text-[11px] font-extrabold tracking-wide text-ink-muted uppercase">
+                  {m.kind === "section" ? `Section ${m.number}` : m.kind === "start" ? "Start here" : "Finish"}
+                  {pages.length > 0 && ` · about ${pages.reduce((n, p) => n + minutesFor(p), 0)} min`}
+                </span>
                 <span className="block text-[14.5px] leading-snug font-semibold">{m.title}</span>
               </span>
               <Ring done={done} total={pages.length} size={28} />
@@ -77,9 +85,10 @@ export function Outline({ modules, currentId, isDone, isOpen, onNavigate }: Prop
                               aria-hidden="true"
                               className={`grid h-6 w-6 flex-none place-items-center rounded-full text-[10px] font-extrabold ${d ? "bg-correct text-white" : cur ? "bg-violet text-white" : ok ? "border-2 border-hairline bg-white" : "bg-mist text-ink-faint"}`}
                             >
-                              {d ? <CheckIcon size={11} /> : !ok ? <LockIcon size={11} /> : p.kind === "quiz" ? "Q" : p.kind === "test" ? "T" : p.kind === "video" ? "▶" : ""}
+                              {d ? <CheckIcon size={11} /> : !ok ? <LockIcon size={11} /> : p.kind === "quiz" ? "Q" : p.kind === "test" ? "T" : p.kind === "summary" ? "S" : p.kind === "video" ? "▶" : ""}
                             </span>
-                            <span className={`min-w-0 flex-1 text-[13.5px] leading-snug ${cur ? "font-bold text-violet-700" : "font-medium text-ink-body"}`}>{p.shortTitle ?? p.title}</span>
+                            <span className={`min-w-0 flex-1 text-[13.5px] leading-snug ${cur ? "font-bold text-violet-700" : "font-medium text-ink-body"}`}>{rowLabel(p)}</span>
+                            <span className="flex-none text-[12px] text-ink-muted">{minutesFor(p)} min</span>
                           </>
                         );
                         return (

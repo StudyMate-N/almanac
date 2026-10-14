@@ -8,9 +8,12 @@
  * the same item feeds the page, practice, exam simulations and review.
  */
 import type { Block, Card, Lesson, Level, Module, PageKind, Question } from "../types";
+import { clipById } from "./clips";
 
 export const COURSE_ID = "advanced-pathophysiology";
-export const TEXT = "McCance & Huether, Pathophysiology: The Biologic Basis for Disease in Adults and Children";
+export const TEXT = "McCance & Huether, Pathophysiology: The Biologic Basis for Disease in Adults and Children, 10th ed.";
+/** The short citation that opens every "Read in your textbook" line. */
+export const BOOK = "McCance & Huether, 10th ed.";
 
 /** An option: text, whether it is correct, and why. */
 export type AOpt = { t: string; ok: boolean; why: string };
@@ -99,6 +102,7 @@ export type Built = { modules: Module[]; pages: Lesson[]; questions: Question[];
 export function build(sections: ASection[]): Built {
   const out: Built = { modules: [], pages: [], questions: [], cards: [] };
   const seen = new Set<string>();
+  const imgs = new Map<string, string>();
   const unique = (id: string) => {
     if (seen.has(id)) throw new Error(`Duplicate content id: ${id}`);
     seen.add(id);
@@ -112,7 +116,13 @@ export function build(sections: ASection[]): Built {
       for (const p of g.pages) {
         unique(p.id);
         const source = p.source ?? s.source ?? TEXT;
-        const topic = p.topic ?? g.topic ?? g.title.replace(/^Lesson \d+:\s*/, "");
+        // A topic page is its own topic ("5.3 Obstructive disease" → "Obstructive disease"). Other pages
+        // in a "Topics" group set `topic` themselves; lesson quizzes keep their pre-restructure topic.
+        const topic = p.topic ?? (p.kind === "topic" ? (p.shortTitle ?? p.title).replace(/^\d+\.\d+\s+/, "") : undefined) ?? g.topic ?? g.title.replace(/^Lesson \d+:\s*/, "");
+        if (topic === "Topics" && p.blocks.some((b) => b.t === "q" || b.t === "quiz")) console.warn(`[course] ${p.id}: questions get the topic "Topics"; set topic on the page`);
+        // An img id names the image file, and one image can appear on more than one
+        // page (s6-ckd-kidney is in 1.3 and 6.5), so it only has to be unique per page.
+        const pageImgs = new Set<string>();
         const blocks: Block[] = p.blocks.map((b) => {
           if (b.t === "q") {
             unique(b.q.id);
@@ -135,7 +145,16 @@ export function build(sections: ASection[]): Built {
             });
             return { t: "cards", title: b.title, ids };
           }
-          if (b.t === "open") unique(b.id);
+          if (b.t === "open" || b.t === "predict") unique(b.id);
+          if (b.t === "img") {
+            if (pageImgs.has(b.id)) throw new Error(`Duplicate image on page ${p.id}: ${b.id}`);
+            pageImgs.add(b.id);
+            if (!b.alt.trim() || !b.panels.length || b.panels.some((x) => !x.label.trim())) throw new Error(`Image ${b.id} on ${p.id} needs alt text and a label for every panel`);
+            // One image is reviewed once, so every page that shows it must caption it the same way.
+            const sig = JSON.stringify([b.alt, b.panels, b.aspect]);
+            if (imgs.has(b.id) && imgs.get(b.id) !== sig) throw new Error(`Image ${b.id} has different alt text or captions on ${p.id}`);
+            imgs.set(b.id, sig);
+          }
           return b;
         });
         const eq = blocks.find((b) => b.t === "eq") as { text: string } | undefined;
@@ -156,5 +175,77 @@ export function build(sections: ASection[]): Built {
       }
     }
   }
+  lint(sections);
   return out;
+}
+
+const toSeconds = (t: string) => t.split(":").reduce((a, b) => a * 60 + Number(b), 0);
+
+/* Course standard v1 checks. Topic pages must pass; other pages only warn while migrating. */
+const words = (s: string) => stripTags(s).split(/\s+/).filter(Boolean).length;
+
+export function lint(sections: ASection[]) {
+  const problems: { id: string; strict: boolean; msg: string }[] = [];
+  const add = (id: string, strict: boolean, msg: string) => problems.push({ id, strict, msg });
+  if (!TEXT.includes("ed.")) add("TEXT", false, "TEXT has no edition");
+  for (const s of sections) {
+    if (s.kind !== "section") continue;
+    const pages = s.groups.flatMap((g) => g.pages);
+    const topics = pages.filter((p) => p.kind === "topic");
+    if (topics.length < 3 || topics.length > 6) add(s.id, false, `${topics.length} topics (want 3–6)`);
+    if (pages.filter((p) => p.kind === "summary").length !== 1) add(s.id, false, "needs exactly one summary page");
+    for (const p of pages) {
+      const n = (t: ABlock["t"]) => p.blocks.filter((b) => b.t === t).length;
+      if (p.kind === "topic") {
+        const kp = p.blocks.find((b) => b.t === "keypoints") as { items: string[] } | undefined;
+        if (n("eq") !== 1) add(p.id, true, "needs one eq");
+        if (!kp || kp.items.length < 3 || kp.items.length > 5) add(p.id, true, "needs 3–5 key points");
+        if (n("predict") < 1) add(p.id, true, "needs a predict");
+        if (n("q") < 1 || n("q") > 2) add(p.id, true, "needs 1–2 learning checks");
+        if (n("open") !== 1) add(p.id, true, "needs one explain prompt");
+        if (n("read") !== 1) add(p.id, true, "needs one read block");
+        if (n("table") > 4) add(p.id, true, "more than 4 tables");
+        const prose = p.blocks.reduce((sum, b) => {
+          if (b.t === "p") return sum + words(b.html);
+          if (b.t === "ul" || b.t === "ol") return sum + b.items.reduce((x, i) => x + words(i), 0);
+          if (b.t === "table") return sum + [...b.head, ...b.rows.flat()].reduce((x, c) => x + words(c), 0);
+          return sum;
+        }, 0);
+        if (prose > 600) add(p.id, true, `${prose} words (max 600)`);
+        // Video-led topic: every learning check is a stop in the clip, and every stop and
+        // chapter points at a real check and falls inside its clip.
+        const videos = p.blocks.filter((b): b is Extract<ABlock, { t: "video" }> => b.t === "video");
+        if (videos.length) {
+          const checks = p.blocks.flatMap((b) => (b.t === "q" ? [b.q.id] : []));
+          const stopped = new Set(videos.flatMap((v) => (v.stops ?? []).map((st) => st.check)));
+          for (const id of checks) if (!stopped.has(id)) add(p.id, true, `check ${id} is not attached to a video stop`);
+          for (const v of videos) {
+            const clip = clipById(v.clip);
+            if (!clip) {
+              add(p.id, true, `unknown clip ${v.clip}`);
+              continue;
+            }
+            const len = toSeconds(clip.duration);
+            for (const st of v.stops ?? []) {
+              if (!checks.includes(st.check)) add(p.id, true, `stop at ${st.at} in ${v.clip} points at ${st.check}, which is not a check on this page`);
+              if (toSeconds(st.at) <= 0 || toSeconds(st.at) >= len) add(p.id, true, `stop at ${st.at} is outside ${v.clip} (${clip.duration})`);
+            }
+            for (const c of v.chapters ?? []) if (toSeconds(c.at) >= len) add(p.id, true, `chapter "${c.label}" at ${c.at} is outside ${v.clip}`);
+          }
+        }
+      }
+      if (p.kind === "summary" && (n("confused") < 1 || n("values") < 1)) add(p.id, false, "summary needs confused and values blocks");
+      for (const b of p.blocks) {
+        const qs = b.t === "q" ? [b.q] : b.t === "quiz" ? b.qs : [];
+        for (const q of qs) {
+          if (!q.level) add(q.id, p.kind === "topic", "question has no level");
+          if (b.t === "quiz" && b.mode === "test" && /^what is true about/i.test(stripTags(q.stem))) add(q.id, true, "test stem starts with 'What is true about'");
+        }
+      }
+    }
+  }
+  if (!problems.length) return;
+  const strict = problems.filter((x) => x.strict);
+  if (process.env.NODE_ENV !== "production") for (const x of problems) console.warn(`[course lint] ${x.id}: ${x.msg}`);
+  if (strict.length) throw new Error(`Course standard failed:\n${strict.map((x) => `${x.id}: ${x.msg}`).join("\n")}`);
 }

@@ -23,7 +23,7 @@ function Exam() {
   const { kind } = useParams<{ kind: "midterm" | "final" | "check" }>();
   const courseId = courseById(useSearchParams().get("course") ?? "")?.id ?? openCourses[0].id;
   const { state } = useStudent();
-  const { questions, course } = useCourse(courseId);
+  const { questions, course, latest } = useCourse(courseId);
   const [seed] = useState(() => String(Date.now()));
   const spec = EXAMS[kind] ?? EXAMS.check;
 
@@ -44,13 +44,18 @@ function Exam() {
       }
       return out;
     }
-    return shuffled(pool, seed).slice(0, spec.questions);
+    // Questions the student has not answered yet come first, so the score reflects readiness, not memory.
+    const unseen = shuffled(pool.filter((q) => !latest.has(q.id)), seed);
+    const seen = shuffled(pool.filter((q) => latest.has(q.id)), seed);
+    return [...unseen, ...seen].slice(0, spec.questions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind, seed, courseId]);
 
   // Scale the time if the bank cannot fill the full length yet.
   const minutes = Math.max(5, Math.round((spec.minutes * qs.length) / spec.questions));
   const base = `${course?.title ?? ""} · ${spec.label}`;
-  const title = qs.length < spec.questions ? `${base} · ${qs.length} of ${spec.questions} questions available` : base;
+  const repeats = qs.filter((q) => latest.has(q.id)).length;
+  const sized = qs.length < spec.questions ? `${base} · ${qs.length} of ${spec.questions} questions available` : base;
+  const title = kind !== "check" && repeats > 0 ? `${sized} · ${repeats} you have seen before` : sized;
   return <Runner title={title} questions={qs} mode="exam" kind={kind} minutes={minutes} backHref={kind === "check" ? "/app" : "/app/practice"} />;
 }

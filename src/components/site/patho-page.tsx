@@ -18,10 +18,9 @@ const steps = [
 const inside = [
   ["A course player, not a pile of PDFs", "Seven competencies, each in the same pattern: lesson pages, learning checks, a quiz and a section test.", "bg-lilac"],
   ["Questions that teach", "Every option has a rationale, so even a wrong answer teaches you something.", "bg-peach"],
-  ["NGN case studies", "Unfolding cases that move from cues to action, the way clinical judgment is tested.", "bg-sky"],
   ["Flashcards that schedule themselves", "Cards return right before you'd forget them. Five minutes a day keeps earlier sections fresh.", "bg-mint"],
   ["Midterm and final simulations", `${EXAMS.midterm.questions} questions for the midterm and ${EXAMS.final.questions} for the final, timed and mixed-topic, with answers at the end.`, "bg-lilac"],
-  ["Study guides", "One printable page per section: the mechanisms, the key labs, and what students mix up.", "bg-peach"],
+  ["Study guides", "One printable page per section: the key points from every lesson and a self-test from its flashcards.", "bg-peach"],
 ];
 
 const faq = [

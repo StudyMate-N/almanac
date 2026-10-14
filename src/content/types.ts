@@ -41,9 +41,12 @@ export type Module = {
 
 /* Course player content: sections → lessons → pages → blocks. */
 
-export type PageKind = "reading" | "activity" | "summary" | "quiz" | "test" | "video";
+export type PageKind = "reading" | "activity" | "summary" | "quiz" | "test" | "video" | "topic";
 
 export type LabRow = [name: string, unit: string, ...rest: (string | number)[]];
+
+/** One box in a page diagram. `key` places it on a fixed layout (the rule-of-nines body map). */
+export type DiagramItem = { label: string; sub?: string; tag?: string; key?: string };
 
 export type Block =
   | { t: "h2"; text: string }
@@ -56,8 +59,38 @@ export type Block =
   | { t: "labs"; caption?: string; cols: string[]; rows: LabRow[] }
   /** Essential question for the page. */
   | { t: "eq"; text: string }
-  /** One of the course's own video clips, by clip id. */
-  | { t: "video"; clip: string; note?: string }
+  /**
+   * One of the course's own video clips, by clip id. On a topic page, the clip leads
+   * (video-led layout): `chapters` are jump points under the player and `stops` pause
+   * the clip for a learning check on the page. Times are "m:ss" within this clip.
+   */
+  | { t: "video"; clip: string; note?: string; chapters?: { at: string; label: string }[]; stops?: { at: string; check: string }[] }
+  /** 3–5 key points shown with the essential question. HTML allowed. */
+  | { t: "keypoints"; items: string[] }
+  /** Ungraded prediction before reading. Stored in notes, never scored. */
+  | { t: "predict"; id: string; stem: string; options: { id: string; text: string }[]; correct: string; reveal: string }
+  /** Course image from /images/patho/{id}.png. Labels are page text, never in the image. */
+  | { t: "img"; id: string; alt: string; panels: { label: string; sub?: string }[]; aspect?: "3:1" | "3:2" }
+  /**
+   * A page diagram drawn as HTML/SVG with real text labels (image manifest, "Built as page
+   * diagrams"). Every label lives here, so the page's review hash covers it.
+   */
+  | {
+      t: "diagram";
+      id: string;
+      layout: "loop" | "chain" | "quad" | "columns" | "membrane" | "nines";
+      title: string;
+      alt: string;
+      items: DiagramItem[];
+      columns?: { title: string; steps: string[] }[];
+      flows?: DiagramItem[];
+      feedback?: string;
+      note?: string;
+    }
+  /** "Commonly confused" pairs: [a, b, the difference]. */
+  | { t: "confused"; rows: [a: string, b: string, difference: string][] }
+  /** "Key values": [name, value, note?]. */
+  | { t: "values"; rows: ([name: string, value: string] | [name: string, value: string, note: string])[] }
   /** A learning check: one question, answered in place. */
   | { t: "check"; id: string }
   /** A write-then-compare prompt with an expert answer. */

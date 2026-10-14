@@ -5,6 +5,7 @@ import { Suspense, useMemo, useState } from "react";
 import { Runner } from "@/components/runner";
 import { lessonById } from "@/content/course";
 import { shuffled } from "@/lib/hash";
+import { topicStats } from "@/lib/progress";
 import { useStudent } from "@/lib/store";
 import { useCourse } from "@/lib/use-course";
 
@@ -19,6 +20,17 @@ function Session() {
     const lesson = lessonById(setId);
     if (lesson) return { title: lesson.shortTitle ?? lesson.title, qs: questions.filter((q) => q.lessonId === setId), mode: "tutor" as const, minutes: undefined };
     if (setId === "missed") return { title: "Questions you missed", qs: questions.filter((q) => latest.get(q.id)?.correct === false), mode: "tutor" as const, minutes: undefined };
+    if (setId === "weak") {
+      // Weakest topics first (lowest share right last time); within a topic, missed questions first.
+      const n = Number(sp.get("n") ?? 10);
+      const only = sp.get("topic");
+      const ranked = topicStats(questions, latest).filter((t) => !/: Test$/.test(t.topic) && (!only || t.topic === only));
+      const qs = ranked.flatMap((t) => {
+        const pool = shuffled(questions.filter((q) => q.topic === t.topic), seed);
+        return [...pool.filter((q) => latest.get(q.id)?.correct === false), ...pool.filter((q) => latest.get(q.id)?.correct !== false)];
+      });
+      return { title: only ? `Weak spot: ${only}` : "Your weak spots", qs: qs.slice(0, n), mode: "tutor" as const, minutes: undefined };
+    }
     if (setId === "flagged") return { title: "Flagged questions", qs: questions.filter((q) => state.flags[q.id]), mode: "tutor" as const, minutes: undefined };
     // Custom set from the practice builder.
     const mods = (sp.get("m") ?? "").split(",").filter(Boolean);

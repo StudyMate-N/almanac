@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DueTile } from "@/components/due-tile";
 import { ArrowRightIcon } from "@/components/icons";
 import { PageHeader } from "@/components/page-header";
+import { TodaySession } from "@/components/today-session";
 import { lessons as allLessons, modulesInCourse, openCourses } from "@/content/course";
 import type { Course } from "@/content/types";
 import { EXAMS, REVIEWER } from "@/lib/config";
@@ -14,7 +15,7 @@ import { useCourse } from "@/lib/use-course";
 
 function CourseToday({ course, showTitle }: { course: Course; showTitle: boolean }) {
   const { state, answers } = useStudent();
-  const { modules, questions, latest, lessonOpen, cases } = useCourse(course.id);
+  const { modules, questions, scored, lessonOpen, cases } = useCourse(course.id);
   const plan = planFor(state, course.id);
   const week = plan ? weekToday(plan) : 1;
   const weeks = plan ? moduleWeeks(plan, course.id) : null;
@@ -57,7 +58,8 @@ function CourseToday({ course, showTitle }: { course: Course; showTitle: boolean
       )}
       <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
         <div className="flex flex-col gap-5">
-          {nextLesson && (
+          {/* Topics are in Today's session; this picks up summaries, quizzes and tests. */}
+          {nextLesson && nextLesson.kind !== "topic" && (
             <Link href={`/app/learn/${nextLesson.id}`} className="flex flex-col gap-2 rounded-tile bg-lilac p-6 hover:bg-violet-200">
               <p className="text-sm font-bold text-violet-700">Continue · {modulesInCourse(course.id).find((m) => m.id === nextLesson.moduleId)?.title}</p>
               <p className="font-display text-[24px] leading-tight font-semibold">{nextLesson.title}</p>
@@ -97,7 +99,7 @@ function CourseToday({ course, showTitle }: { course: Course; showTitle: boolean
           <h3 className="mb-3 font-display text-[19px] font-semibold">{plan ? `This week (week ${week} of ${plan.courseWeeks})` : "Readiness"}</h3>
           <ul className="flex flex-col gap-3">
             {(thisWeek.length ? thisWeek : modules).filter((m) => m.kind !== "start" && m.kind !== "final").slice(0, thisWeek.length ? undefined : 3).map((m) => {
-              const r = readiness(questions.filter((x) => x.moduleId === m.id), latest);
+              const r = readiness(questions.filter((x) => x.moduleId === m.id), scored);
               return (
                 <li key={m.id} className="flex flex-col gap-1">
                   <div className="flex justify-between gap-2 text-sm">
@@ -126,6 +128,9 @@ export default function Today() {
   return (
     <>
       <PageHeader eyebrow={new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} title={name ? `Hi, ${name}` : "Today"} />
+      {openCourses.map((c) => (
+        <TodaySession key={c.id} course={c} />
+      ))}
       <div className="mb-8 grid gap-5 sm:grid-cols-2">
         <DueTile />
         <Link href="/app/coach" className="rounded-tile bg-mint p-6 hover:brightness-95">

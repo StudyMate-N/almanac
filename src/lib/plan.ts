@@ -1,4 +1,4 @@
-import { modules } from "@/content/course";
+import { lessons, modules } from "@/content/course";
 
 /**
  * A student's plan: modules in textbook order spread across their own course
@@ -12,6 +12,8 @@ export type Plan = {
   setOn: string;
   midterm?: string;
   final?: string;
+  /** Section ids in the order the student's school teaches them. Missing sections follow in textbook order. */
+  order?: string[];
 };
 
 const DAY = 86_400_000;
@@ -51,15 +53,35 @@ export function weekOfDate(plan: Plan, iso: string | undefined): number | null {
   return Math.min(plan.courseWeeks, Math.max(1, w));
 }
 
-/** Course week in which each module is scheduled. Foundations comes first, in week 1. */
-export function moduleWeeks(plan: Pick<Plan, "courseWeeks">, courseId: string): Record<string, number> {
+/** Sections in the student's order: their saved order first, then any others in textbook order. */
+export function orderedSections(plan: Pick<Plan, "order"> | null | undefined, courseId: string) {
+  const sections = modules.filter((m) => m.courseId === courseId && m.kind === "section");
+  const saved = (plan?.order ?? []).map((id) => sections.find((m) => m.id === id)).filter((m): m is (typeof sections)[number] => Boolean(m));
+  return [...saved, ...sections.filter((m) => !saved.includes(m))];
+}
+
+/**
+ * Course week in which each module is scheduled. Start here is week 1. Sections
+ * follow the student's order, each taking a share of the weeks in proportion
+ * to its topic count, so a six-topic section gets more time than a three-topic
+ * one. The final review comes last.
+ */
+export function moduleWeeks(plan: Pick<Plan, "courseWeeks" | "order">, courseId: string): Record<string, number> {
   const mods = modules.filter((m) => m.courseId === courseId);
-  const numbered = mods.filter((m) => m.number > 0);
   const out: Record<string, number> = {};
   mods.filter((m) => m.number === 0).forEach((m) => (out[m.id] = 1));
-  numbered.forEach((m, i) => {
-    out[m.id] = Math.min(plan.courseWeeks, Math.max(1, Math.ceil(((i + 1) * plan.courseWeeks) / numbered.length)));
+  const sections = orderedSections(plan, courseId);
+  const rest = mods.filter((m) => m.number > 0 && m.kind !== "section");
+  const topics = (id: string) => lessons.filter((l) => l.moduleId === id && l.kind === "topic").length;
+  // Sections without topic pages yet count as one topic's worth.
+  const weight = sections.map((m) => Math.max(1, topics(m.id)));
+  const total = weight.reduce((a, b) => a + b, 0);
+  let cum = 0;
+  sections.forEach((m, i) => {
+    cum += weight[i];
+    out[m.id] = Math.min(plan.courseWeeks, Math.max(1, Math.ceil((cum * plan.courseWeeks) / total)));
   });
+  rest.forEach((m) => (out[m.id] = plan.courseWeeks));
   return out;
 }
 

@@ -24,6 +24,29 @@ export function latestByQuestion(answers: Answer[]): Map<string, Answer> {
   return out;
 }
 
+const DAY_MS = 86_400_000;
+
+/**
+ * Answers that count toward readiness. Exam-mode answers (section tests,
+ * midterm and final simulations) always count. A tutor-mode answer counts only
+ * if it came at least 24 hours after the student first opened the page that
+ * teaches the question, so a check answered straight after reading it doesn't
+ * inflate readiness. Starting-check and case answers never count.
+ */
+export function scoredAnswers(answers: Answer[], opened: Record<string, { at: string }>, lessonOf: (questionId: string) => string | undefined): Answer[] {
+  return answers.filter((a) => {
+    if (a.mode === "exam" || a.mode === "midterm" || a.mode === "final") return true;
+    if (a.mode !== "tutor") return false;
+    const times = [lessonOf(a.questionId), a.lessonId]
+      .map((id) => (id ? opened[id]?.at : undefined))
+      .filter((t): t is string => Boolean(t))
+      .map((t) => Date.parse(t));
+    // Never opened the page: this was a cold attempt, so it counts.
+    if (!times.length) return true;
+    return Date.parse(a.at) - Math.min(...times) >= DAY_MS;
+  });
+}
+
 export type Readiness = {
   answered: number;
   total: number;

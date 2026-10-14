@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowRightIcon, PlayIcon } from "@/components/icons";
+import { ArrowRightIcon, CheckIcon, PlayIcon } from "@/components/icons";
 import { Ring } from "@/components/player/outline";
 import { courseById, groupsInModule } from "@/content/course";
 import { EXAMS } from "@/lib/config";
@@ -17,7 +17,7 @@ const inks = ["text-violet-700", "text-peach-ink", "text-mint-ink", "text-sky-in
 export default function CourseOutline() {
   const { courseId } = useParams<{ courseId: string }>();
   const { state } = useStudent();
-  const { modules, lessons, questions, latest } = useCourse(courseId);
+  const { modules, lessons, questions, scored } = useCourse(courseId);
   const course = courseById(courseId);
   const plan = planFor(state, courseId);
   const weeks = plan ? moduleWeeks(plan, courseId) : null;
@@ -104,10 +104,14 @@ export default function CourseOutline() {
           const groups = groupsInModule(m.id);
           const pages = groups.flatMap((g) => g.pages);
           const d = pages.filter((p) => done(p.id)).length;
-          const lessonGroups = groups.filter((g) => /^Lesson \d+:/.test(g.title));
+          // Topic pages (course standard v1); sections not yet restructured list their lessons.
+          const topics = pages.filter((p) => p.kind === "topic");
+          const rows = topics.length
+            ? topics.map((p) => ({ id: p.id, title: p.title, pages: [p] }))
+            : groups.filter((g) => /^Lesson \d+:/.test(g.title));
           const r = readiness(
             questions.filter((q) => q.moduleId === m.id),
-            latest,
+            scored,
           );
           const go = firstOpen(m.id);
           const test = pages.find((p) => p.kind === "test");
@@ -128,17 +132,26 @@ export default function CourseOutline() {
               </div>
               <p className="mb-3 text-sm text-ink-body">{m.blurb}</p>
               <ul className="mb-4 flex flex-col gap-1.5">
-                {lessonGroups.map((g) => {
+                {rows.map((g) => {
                   const gd = g.pages.filter((p) => done(p.id)).length;
                   const gOpen = g.pages.find((p) => open.has(p.id));
+                  const single = g.pages.length === 1;
                   return (
                     <li key={g.id}>
                       {gOpen ? (
                         <Link href={`/app/learn/${gOpen.id}`} className="flex items-center gap-2 rounded-xl bg-mist px-3 py-2 text-[14px] font-semibold hover:bg-lilac">
                           <span className="min-w-0 flex-1">{g.title}</span>
-                          <span className="text-xs font-bold text-ink-muted">
-                            {gd}/{g.pages.length}
-                          </span>
+                          {single ? (
+                            gd > 0 && (
+                              <span className="grid h-5 w-5 place-items-center rounded-full bg-correct text-white" aria-label="Done">
+                                <CheckIcon size={10} />
+                              </span>
+                            )
+                          ) : (
+                            <span className="text-xs font-bold text-ink-muted">
+                              {gd}/{g.pages.length}
+                            </span>
+                          )}
                         </Link>
                       ) : (
                         <span className="flex items-center gap-2 rounded-xl bg-mist px-3 py-2 text-[14px] font-semibold opacity-70">
