@@ -124,6 +124,17 @@ function ItemView({ kind, id, item }: { kind: string; id: string; item: unknown 
   return <pre className="max-h-[60vh] overflow-auto rounded-xl bg-mist p-3 text-xs whitespace-pre-wrap">{JSON.stringify(item, null, 2)}</pre>;
 }
 
+/**
+ * Preview builds share the production database. Approving (or requesting changes on)
+ * an item that already has a review would replace the live approval and hide that
+ * item from students, so on a preview only never-reviewed items can be acted on.
+ */
+function usePreviewBuild() {
+  const [preview, setPreview] = useState(false);
+  useEffect(() => setPreview(process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" || window.location.hostname.includes("-git-")), []);
+  return preview;
+}
+
 function ReviewTab({ admin }: { admin: Admin }) {
   const [reviews, setReviews] = useState<Record<string, Review>>({});
   const [filter, setFilter] = useState<"pending" | "changes" | "approved">("pending");
@@ -132,7 +143,15 @@ function ReviewTab({ admin }: { admin: Admin }) {
   const [bulk, setBulk] = useState("");
   const [section, setSection] = useState("all");
   const items = useMemo(() => reviewables.map((r) => ({ ...r, hash: contentHash(r.item) })), []);
-  const refresh = useCallback(() => rpc<Record<string, Review>>("review_list", { p_token: admin.token }).then(setReviews), [admin.token]);
+  const [loaded, setLoaded] = useState(false);
+  const refresh = useCallback(
+    () =>
+      rpc<Record<string, Review>>("review_list", { p_token: admin.token }).then((r) => {
+        setReviews(r);
+        setLoaded(true);
+      }),
+    [admin.token],
+  );
   useEffect(() => void refresh(), [refresh]);
   const statusOf = (id: string, hash: string) => {
     const r = reviews[id];
@@ -144,6 +163,13 @@ function ReviewTab({ admin }: { admin: Admin }) {
   const counts = { pending: 0, changes: 0, approved: 0 } as Record<string, number>;
   items.forEach((i) => counts[statusOf(i.id, i.hash)]++);
   const canReview = admin.role === "reviewer";
+  const previewBuild = usePreviewBuild();
+  // On a preview, an item with any existing review is live (or was) in another version.
+  const lockedHere = (id: string) => previewBuild && (!loaded || Boolean(reviews[id]));
+  const pendingItems = items.filter((i) => statusOf(i.id, i.hash) === "pending");
+  const lockedPending = pendingItems.filter((i) => lockedHere(i.id)).length;
+  const newPending = pendingItems.length - lockedPending;
+  const bulkCount = previewBuild ? newPending : counts.pending;
 
   const set = async (id: string, hash: string, status: "approved" | "changes") => {
     await rpc("review_set", { p_token: admin.token, p_item_id: id, p_hash: hash, p_status: status, p_note: note || null });
@@ -153,8 +179,8 @@ function ReviewTab({ admin }: { admin: Admin }) {
   };
 
   const approveAll = async () => {
-    const pending = items.filter((i) => statusOf(i.id, i.hash) === "pending");
-    if (!pending.length || !window.confirm(`Approve all ${pending.length} pending items as reviewed? Each one goes live to students in this exact version.`)) return;
+    const pending = items.filter((i) => statusOf(i.id, i.hash) === "pending" && !lockedHere(i.id));
+    if (!pending.length || !window.confirm(`Approve all ${pending.length} ${previewBuild ? "new " : ""}pending items as reviewed? Each one goes live to students in this exact version.`)) return;
     let n = 0;
     for (const i of pending) {
       await rpc("review_set", { p_token: admin.token, p_item_id: i.id, p_hash: i.hash, p_status: "approved", p_note: null });
@@ -166,11 +192,21 @@ function ReviewTab({ admin }: { admin: Admin }) {
 
   return (
     <div>
-      {canReview && counts.pending > 0 && (
+      {previewBuild && loaded && (
+        <div className="mb-4 rounded-2xl bg-peach p-4 text-sm text-peach-ink">
+          <p className="font-bold">This is a preview of the next version.</p>
+          <p>
+            You can approve items that are new in this version ({newPending} waiting). Items already on the live site ({lockedPending} with changes here) can only be approved after this version is published, so students keep seeing them in the meantime.
+          </p>
+        </div>
+      )}
+      {canReview && loaded && bulkCount > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-mint p-4 text-mint-ink">
-          <p className="flex-1 text-sm font-semibold">Reviewed everything in the queue? Approve all {counts.pending} pending items at once. Items with changes requested stay as they are.</p>
+          <p className="flex-1 text-sm font-semibold">
+            Reviewed everything in the queue? Approve all {bulkCount} {previewBuild ? "new " : ""}pending items at once. Items with changes requested stay as they are.
+          </p>
           <button onClick={approveAll} className="rounded-full bg-correct px-5 py-2 font-bold text-white">
-            Approve all pending
+            {previewBuild ? "Approve all new items" : "Approve all pending"}
           </button>
         </div>
       )}
@@ -213,7 +249,12 @@ function ReviewTab({ admin }: { admin: Admin }) {
                     Open as a student sees it (preview)
                   </a>
                 )}
-                {canReview && (
+                {canReview && lockedHere(i.id) && (
+                  <p className="rounded-xl bg-peach p-3 text-sm text-peach-ink">
+                    This item is on the live site in another version. Approve it after this version is published; approving here would hide it from students until then.
+                  </p>
+                )}
+                {canReview && !lockedHere(i.id) && (
                   <>
                     <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note (required for changes)" rows={2} className="rounded-xl border-2 border-hairline p-2" />
                     <div className="flex gap-2">
