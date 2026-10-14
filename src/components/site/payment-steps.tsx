@@ -172,7 +172,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
     {whatsappUrl&&<a href={whatsappUrl} rel="noreferrer" target="_blank" className="inline-flex min-h-12 items-center rounded-full bg-[#186C4C] px-5 font-semibold text-white">
       Continue on WhatsApp ↗</a>}
     <a className="inline-flex min-h-12 items-center rounded-full border border-hairline bg-white px-5 font-semibold text-violet-700"
-     href={`mailto:help@almanac.study?subject=${encodeURIComponent("Almanac invoice "+invoice.invoiceRef)}&body=${encodeURIComponent("Hello, I need help with invoice "+invoice.invoiceRef+".")}`}>
+     href={`mailto:support@unemployedproff.com?subject=${encodeURIComponent("Almanac invoice "+invoice.invoiceRef)}&body=${encodeURIComponent("Hello, I need help with invoice "+invoice.invoiceRef+".")}`}>
       Email support ↗</a>
    </div>
    {whatsappUrl&&<p className="mt-3 text-xs text-ink-muted">WhatsApp opens with your invoice reference filled in. If you choose to send a receipt there, it leaves Almanac's private upload system; the secure form above is recommended.</p>}
