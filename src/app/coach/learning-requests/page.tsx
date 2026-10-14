@@ -10,7 +10,7 @@ type RequestRow = {
   subject: string; goal: string; kind: string; delivery_method: string;
   speed: string; addons: string[]; unit_count: number;
   quote_usd: number; turnaround_days: number;
-  status: string; created_at: string;
+  status: string; payment_status: string; payment_reference: string | null; payment_date: string | null; invoice_ref: string; created_at: string;
 };
 const statuses = ["received","awaiting_payment","in_production","review","delivered","cancelled"];
 export default function LearningRequestsPage() {
@@ -19,6 +19,7 @@ export default function LearningRequestsPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
+  const [issued, setIssued] = useState<{id:string;invoiceRef:string;code:string;email:string}|null>(null);
 
   useEffect(() => {
     let stored: { token?: string } | null = null;
@@ -49,6 +50,21 @@ export default function LearningRequestsPage() {
     }
   }
 
+  async function verifyPayment(id:string) {
+    if(!token || editing || !window.confirm("Have you independently verified this transfer in the bank account? This will create a student access code.")) return;
+    setEditing(id);setError("");
+    try {
+      const result=await rpc<{paymentStatus:string;accessCode?:string;invoiceRef?:string;email?:string;alreadyVerified?:boolean}>(
+        "learning_payment_verify",{p_token:token,p_id:id});
+      if(result.alreadyVerified || !result.accessCode || !result.invoiceRef || !result.email) {
+        throw new Error("Payment was already verified. The access code cannot be displayed again; contact the owner for a reset.");
+      }
+      setIssued({id,invoiceRef:result.invoiceRef,code:result.accessCode,email:result.email});
+      setRows(rows=>rows.map(row=>row.id===id?{...row,payment_status:"verified",status:"in_production"}:row));
+    } catch(e) {setError(e instanceof Error?e.message:friendlyError(e));}
+    finally {setEditing(null);}
+  }
+
   return (
     <main className="mx-auto max-w-[1100px] px-4 pb-24 pt-8 sm:px-6">
       <Link href="/coach" className="text-sm font-semibold text-violet-700">← Coach console</Link>
@@ -61,7 +77,7 @@ export default function LearningRequestsPage() {
             <article key={r.id} className="rounded-card border border-hairline bg-white p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs text-ink-muted">{new Date(r.created_at).toLocaleString()} · {r.id}</p>
+                  <p className="text-xs text-ink-muted">{new Date(r.created_at).toLocaleString()} · {r.invoice_ref}</p>
                   <h2 className="mt-2 font-display text-xl font-semibold">{r.subject}</h2>
                   <p className="text-sm text-ink-body">{r.kind} · {r.unit_count} units · {r.speed} · {r.turnaround_days} days</p>
                 </div>
@@ -77,6 +93,26 @@ export default function LearningRequestsPage() {
                 </div>
               </div>
               <p className="mt-3 whitespace-pre-wrap text-sm text-ink-body">{r.goal}</p>
+              <div className="mt-3 rounded-2xl bg-mist p-4 text-sm">
+                <p><strong>Bank transfer:</strong> {r.payment_status==="verified"?"Verified":r.payment_status==="reported"?"Reported · awaiting verification":"Not yet reported"}</p>
+                {r.payment_reference && <p className="mt-1">Reference: {r.payment_reference}</p>}
+                {r.payment_date && <p className="mt-1">Reported transfer date: {r.payment_date}</p>}
+                {r.payment_status==="reported" && <button disabled={editing===r.id}
+                  type="button" onClick={()=>void verifyPayment(r.id)}
+                  className="mt-3 min-h-11 rounded-full bg-violet px-4 font-semibold text-white disabled:opacity-50">
+                  Verified in bank · Issue access code →
+                </button>}
+                {r.payment_status==="verified" && <p className="mt-2 text-xs text-ink-muted">Access code was issued once. It is not stored in plaintext.</p>}
+                {issued?.id===r.id && <div className="mt-3 rounded-xl border border-hairline bg-white p-4">
+                  <p className="font-semibold">New access code — copy before leaving</p>
+                  <p className="mt-1 break-all font-mono text-lg">{issued.code}</p>
+                  <p className="mt-2 text-xs text-ink-muted">Send this code to the learner using the verified email address. It will not be shown again.</p>
+                  <a className="mt-3 inline-flex font-semibold text-violet-700 underline"
+                    href={`mailto:${encodeURIComponent(issued.email)}?subject=${encodeURIComponent("Almanac access code · "+issued.invoiceRef)}&body=${encodeURIComponent("Your payment has been verified for "+issued.invoiceRef+".\n\nYour Almanac learning access code is: "+issued.code+"\n\nSign in: "+window.location.origin+"/app\n\nYour materials are being prepared. We will update you when they are ready.")}`}>
+                    Prepare access email →
+                  </a>
+                </div>}
+              </div>
               <div className="mt-4 grid gap-2 border-t border-hairline pt-3 text-sm text-ink-body sm:grid-cols-2">
                 <span>Requested by: <strong>{r.name}</strong></span>
                 <a className="font-semibold text-violet-700 underline" href={`mailto:${r.email}`}>{r.email}</a>
