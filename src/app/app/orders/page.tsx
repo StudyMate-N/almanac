@@ -22,6 +22,33 @@ export default function LearningOrdersPage(){
  const [busy,setBusy]=useState(false);
  const [downloading,setDownloading]=useState<string|null>(null);
  const [error,setError]=useState("");
+ const [claim,setClaim]=useState<{id:string;token:string}|null>(null);
+ const [claimBusy,setClaimBusy]=useState(false);
+ const [claimNotice,setClaimNotice]=useState("");
+ useEffect(()=>{
+  const q=new URLSearchParams(window.location.search);
+  const id=q.get("claimId")||"";
+  const invoiceToken=q.get("claimToken")||"";
+  if(/^[a-f0-9-]{36}$/i.test(id)&&/^[a-f0-9]{48}$/i.test(invoiceToken)){
+   setClaim({id,token:invoiceToken});
+  }
+ },[]);
+ async function claimOrder(){
+  if(!claim||!token||claimBusy)return;
+  setClaimBusy(true);setClaimNotice("");
+  try{
+   await rpc("learning_student_claim_order",{
+    p_student_token:token,p_order:claim.id,p_invoice_token:claim.token
+   });
+   setClaim(null);
+   window.history.replaceState(null,"","/app/orders");
+   setClaimNotice("This order is now linked to your existing Almanac account.");
+   await load();
+  }catch{
+   setClaimNotice("We couldn't link this order. You must be signed in with an account using the same email address as the paid invoice. For help, contact support@unemployedproff.com.");
+  }finally{setClaimBusy(false);}
+ }
+
  const load=useCallback(async()=>{
   if(!token)return;
   setBusy(true);setError("");
@@ -74,6 +101,15 @@ export default function LearningOrdersPage(){
    <div className="flex gap-3"><Link className="rounded-full bg-white px-4 py-3 text-sm font-semibold" href="/app">Learning tools →</Link>
     <button type="button" onClick={()=>void load()} disabled={busy} className="rounded-full bg-violet px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">Refresh status</button></div>
   </div>
+  {claim&&<section className="mt-6 rounded-card border border-violet bg-lilac p-5">
+    <h2 className="font-display text-xl font-semibold">Keep your learning in one workspace</h2>
+    <p className="mt-2 text-sm text-ink-body">You opened a verified purchase from a private invoice. Link it to this signed-in Almanac account to keep your learning orders together. For security, the email address on both accounts must match.</p>
+    <button type="button" disabled={claimBusy} onClick={()=>void claimOrder()}
+      className="mt-4 min-h-12 rounded-full bg-violet px-5 font-semibold text-white disabled:opacity-50">
+      {claimBusy?"Linking…":"Link this purchase to my account →"}</button>
+    <p className="mt-2 text-xs text-ink-muted">Any separate access code previously issued just for this purchase will be retired after linking.</p>
+   </section>}
+  {claimNotice&&<p role="status" className="mt-5 rounded-xl bg-mist p-4 text-sm">{claimNotice}</p>}
   {error&&<p role="alert" className="mt-5 rounded-xl bg-rose p-4 text-sm">{error}</p>}
   {orders.length===0&&!busy?<section className="mt-7 rounded-tile bg-white p-7">
    <h2 className="font-display text-2xl font-semibold">No paid orders linked to this code yet.</h2>
