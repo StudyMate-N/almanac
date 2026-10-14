@@ -31,6 +31,26 @@ export default function Guide() {
           Print or save PDF
         </button>
       </div>
+      {ls.some((l) => l.kind === "topic") && (
+        <section className="mb-7">
+          <h2 className="mb-2 font-display text-[21px] font-semibold">Key points by topic</h2>
+          {ls
+            .filter((l) => l.kind === "topic")
+            .map((l) => {
+              const kp = l.blocks.find((b) => b.t === "keypoints");
+              return kp && kp.t === "keypoints" ? (
+                <div key={l.id} className="mb-3 break-inside-avoid-page">
+                  <h3 className="mb-1 text-sm font-bold">{l.title}</h3>
+                  <ul className="list-disc space-y-1 pl-5 text-[15px]">
+                    {kp.items.map((it) => (
+                      <li key={it} dangerouslySetInnerHTML={{ __html: it }} />
+                    ))}
+                  </ul>
+                </div>
+              ) : null;
+            })}
+        </section>
+      )}
       {ls
         .filter((l) => l.kind === "summary")
         .map((l) => (
@@ -45,6 +65,35 @@ export default function Guide() {
                 </ul>
               ) : b.t === "p" ? (
                 <p key={i} className="mb-2 text-[15px]" dangerouslySetInnerHTML={{ __html: b.html }} />
+              ) : b.t === "confused" ? (
+                <div key={i} className="mb-3 break-inside-avoid-page">
+                  <h3 className="mt-3 mb-1 text-sm font-bold">Commonly confused</h3>
+                  <ul className="space-y-1.5 text-[15px]">
+                    {b.rows.map(([x, y, d]) => (
+                      <li key={x + y}>
+                        <strong>
+                          {x} vs {y}:
+                        </strong>{" "}
+                        <span dangerouslySetInnerHTML={{ __html: d }} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : b.t === "values" ? (
+                <div key={i} className="mb-3 break-inside-avoid-page">
+                  <h3 className="mt-3 mb-1 text-sm font-bold">Key values</h3>
+                  <table className="w-full text-left text-[14px]">
+                    <tbody>
+                      {b.rows.map((r) => (
+                        <tr key={r[0]} className="border-t border-hairline align-top">
+                          <th scope="row" className="py-1.5 pr-3 font-semibold">{r[0]}</th>
+                          <td className="py-1.5 pr-3 font-bold">{r[1]}</td>
+                          <td className="py-1.5 text-ink-muted">{r[2] ?? ""}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : b.t === "h2" && b.text !== "Take a moment to review" ? (
                 <h3 key={i} className="mt-3 mb-1 text-sm font-bold">
                   {b.text}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
+import { lessonById } from "@/content/course";
 import { readiness, readinessLabel, readinessTone, topicStats } from "@/lib/progress";
 import { useStudent } from "@/lib/store";
 import { useCourse } from "@/lib/use-course";
@@ -28,7 +29,8 @@ export default function Progress() {
         {[
           ["Questions answered", seen.length],
           ["Correct last time", seen.length ? `${Math.round((right / seen.length) * 100)}%` : "–"],
-          ["Pages done", Object.keys(state.lessons).length],
+          // Only pages that still exist: ids retired by the topic restructure stay in history.
+          ["Pages done", Object.keys(state.lessons).filter((id) => lessonById(id)).length],
           ["Cards reviewed", reviewed],
         ].map(([l, v]) => (
           <div key={l} className={stat}>

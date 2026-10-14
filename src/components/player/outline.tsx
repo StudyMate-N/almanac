@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CheckIcon, LockIcon } from "@/components/icons";
 import { groupsInModule } from "@/content/course";
 import type { Lesson, Module, PageKind } from "@/content/types";
+import { minutesFor } from "@/lib/minutes";
 
 export const kindLabel: Record<PageKind, string> = {
   reading: "Reading",
@@ -57,7 +58,10 @@ export function Outline({ modules, currentId, isDone, isOpen, onNavigate }: Prop
                 {m.kind === "start" ? "★" : m.kind === "final" ? "✓" : m.number}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[11px] font-extrabold tracking-wide text-ink-muted uppercase">{m.kind === "section" ? `Section ${m.number}` : m.kind === "start" ? "Start here" : "Finish"}</span>
+                <span className="block text-[11px] font-extrabold tracking-wide text-ink-muted uppercase">
+                  {m.kind === "section" ? `Section ${m.number}` : m.kind === "start" ? "Start here" : "Finish"}
+                  {pages.length > 0 && ` · about ${pages.reduce((n, p) => n + minutesFor(p), 0)} min`}
+                </span>
                 <span className="block text-[14.5px] leading-snug font-semibold">{m.title}</span>
               </span>
               <Ring done={done} total={pages.length} size={28} />

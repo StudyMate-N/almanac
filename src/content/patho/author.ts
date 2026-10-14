@@ -113,6 +113,9 @@ export function build(sections: ASection[]): Built {
         unique(p.id);
         const source = p.source ?? s.source ?? TEXT;
         const topic = p.topic ?? g.topic ?? g.title.replace(/^Lesson \d+:\s*/, "");
+        // An img id names the image file, and one image can appear on more than one
+        // page (s6-ckd-kidney is in 1.3 and 6.5), so it only has to be unique per page.
+        const pageImgs = new Set<string>();
         const blocks: Block[] = p.blocks.map((b) => {
           if (b.t === "q") {
             unique(b.q.id);
@@ -135,7 +138,11 @@ export function build(sections: ASection[]): Built {
             });
             return { t: "cards", title: b.title, ids };
           }
-          if (b.t === "open" || b.t === "predict" || b.t === "img") unique(b.id);
+          if (b.t === "open" || b.t === "predict") unique(b.id);
+          if (b.t === "img") {
+            if (pageImgs.has(b.id)) throw new Error(`Duplicate image on page ${p.id}: ${b.id}`);
+            pageImgs.add(b.id);
+          }
           return b;
         });
         const eq = blocks.find((b) => b.t === "eq") as { text: string } | undefined;

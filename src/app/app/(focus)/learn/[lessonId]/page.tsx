@@ -8,25 +8,13 @@ import { ArrowRightIcon, XIcon } from "@/components/icons";
 import { BlockView } from "@/components/player/blocks";
 import { kindLabel, Outline, Ring } from "@/components/player/outline";
 import { ReportButton, TutorButton } from "@/components/tutor";
-import { courseById, lessonById, lessons, modulesInCourse, moduleById } from "@/content/course";
+import { courseById, lessonById, lessons, modulesInCourse, moduleById, questionById } from "@/content/course";
 import type { Card, Lesson, Question } from "@/content/types";
 import { REVIEWER } from "@/lib/config";
+import { minutesFor } from "@/lib/minutes";
 import { useStudent } from "@/lib/store";
 
 const SELF_COMPLETING = new Set(["reading", "activity", "summary", "video", "topic"]);
-
-function minutesFor(p: Lesson) {
-  let words = 0;
-  let extra = 0;
-  for (const b of p.blocks) {
-    const s = JSON.stringify(b);
-    words += s.split(/\s+/).length;
-    if (b.t === "check") extra += 1.5;
-    if (b.t === "quiz") extra += b.ids.length * 1.2;
-    if (b.t === "video") extra += 6;
-  }
-  return Math.max(2, Math.round(words / 200 + extra));
-}
 
 export default function Player() {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -47,8 +35,15 @@ export default function Player() {
   };
 
   // A page with learning checks is done only when every visible check has been answered.
-  const checkIds = page ? page.blocks.flatMap((b) => (b.t === "check" ? [b.id] : [])) : [];
-  const checksAnswered = checkIds.every((id) => answers.some((a) => a.questionId === id));
+  // Checks still awaiting review aren't rendered, so they can't hold the page back.
+  const checkIds = page
+    ? page.blocks.flatMap((b) => {
+        const q = b.t === "check" ? questionById(b.id) : undefined;
+        return q && visibleQ(q) ? [q.id] : [];
+      })
+    : [];
+  const checksLeft = checkIds.filter((id) => !answers.some((a) => a.questionId === id)).length;
+  const checksAnswered = checksLeft === 0;
   const canSelfComplete = Boolean(page && SELF_COMPLETING.has(page.kind) && checksAnswered);
 
   useEffect(() => {
@@ -75,6 +70,8 @@ export default function Player() {
   const next = coursePages.slice(idx + 1).find(isOpen);
   const done = coursePages.filter((p) => isDone(p.id)).length;
   const approved = isApproved(page.id, page);
+  // Topic pages are titled "5.3 Obstructive disease": the number goes in the breadcrumb.
+  const topicNum = page.kind === "topic" ? page.title.match(/^\d+\.\d+(?=\s)/)?.[0] : undefined;
   const sectionLabel = mod.kind === "section" ? `Section ${mod.number}` : mod.kind === "start" ? "Start here" : "Final review";
   const modules = modulesInCourse(course.id);
 
@@ -127,13 +124,22 @@ export default function Player() {
         <main className="min-w-0 flex-1">
           <article className="mx-auto max-w-[760px]">
             <nav aria-label="Breadcrumb" className="mb-2 text-[13px] font-semibold text-ink-muted">
-              {mod.kind !== "section" ? sectionLabel : page.groupTitle === page.title ? `${sectionLabel} · ${mod.title}` : `${sectionLabel} · ${page.groupTitle}`}
+              {mod.kind !== "section" ? sectionLabel : topicNum ? `${sectionLabel} · Topic ${topicNum}` : page.groupTitle === page.title ? `${sectionLabel} · ${mod.title}` : `${sectionLabel} · ${page.groupTitle}`}
             </nav>
-            <h1 className="font-display text-[30px] leading-[1.15] font-semibold sm:text-[36px]">{page.title}</h1>
+            <h1 className="font-display text-[30px] leading-[1.15] font-semibold sm:text-[36px]">{topicNum ? page.title.slice(topicNum.length).trim() : page.title}</h1>
             <div className="mt-3 mb-7 flex flex-wrap gap-2 text-[13px] font-bold">
               <span className="rounded-full bg-white px-3 py-1 text-violet-700">{kindLabel[page.kind]}</span>
               <span className="rounded-full bg-white px-3 py-1 text-ink-muted">About {minutesFor(page)} min</span>
-              {isDone(page.id) && <span className="rounded-full bg-mint px-3 py-1 text-mint-ink">Done</span>}
+              {isDone(page.id) ? (
+                <span className="rounded-full bg-mint px-3 py-1 text-mint-ink">Done</span>
+              ) : (
+                open &&
+                checksLeft > 0 && (
+                  <span className="rounded-full bg-white px-3 py-1 text-ink-muted">
+                    {checksLeft} check{checksLeft === 1 ? "" : "s"} left
+                  </span>
+                )
+              )}
               {preview && <span className={`rounded-full px-3 py-1 ${approved ? "bg-mint text-mint-ink" : "bg-peach text-peach-ink"}`}>{approved ? `Approved by ${REVIEWER.name}` : "Awaiting nurse review (preview)"}</span>}
             </div>
 
