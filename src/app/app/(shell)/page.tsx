@@ -14,7 +14,7 @@ import { useCourse } from "@/lib/use-course";
 
 function CourseToday({ course, showTitle }: { course: Course; showTitle: boolean }) {
   const { state, answers } = useStudent();
-  const { modules, questions, latest, lessonOpen, cases } = useCourse(course.id);
+  const { modules, questions, scored, lessonOpen, cases } = useCourse(course.id);
   const plan = planFor(state, course.id);
   const week = plan ? weekToday(plan) : 1;
   const weeks = plan ? moduleWeeks(plan, course.id) : null;
@@ -97,7 +97,7 @@ function CourseToday({ course, showTitle }: { course: Course; showTitle: boolean
           <h3 className="mb-3 font-display text-[19px] font-semibold">{plan ? `This week (week ${week} of ${plan.courseWeeks})` : "Readiness"}</h3>
           <ul className="flex flex-col gap-3">
             {(thisWeek.length ? thisWeek : modules).filter((m) => m.kind !== "start" && m.kind !== "final").slice(0, thisWeek.length ? undefined : 3).map((m) => {
-              const r = readiness(questions.filter((x) => x.moduleId === m.id), latest);
+              const r = readiness(questions.filter((x) => x.moduleId === m.id), scored);
               return (
                 <li key={m.id} className="flex flex-col gap-1">
                   <div className="flex justify-between gap-2 text-sm">

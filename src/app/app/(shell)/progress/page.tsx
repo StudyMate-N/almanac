@@ -9,7 +9,7 @@ import { useCourse } from "@/lib/use-course";
 
 export default function Progress() {
   const { answers, state } = useStudent();
-  const { modules, questions, latest } = useCourse();
+  const { modules, questions, latest, scored } = useCourse();
   const seen = questions.filter((q) => latest.has(q.id));
   const right = seen.filter((q) => latest.get(q.id)!.correct).length;
   const missed = seen.length - right;
@@ -45,7 +45,7 @@ export default function Progress() {
           <h2 className="mb-3 font-display text-[19px] font-semibold">Readiness by section</h2>
           <ul className="flex flex-col gap-3">
             {modules.map((m) => {
-              const r = readiness(questions.filter((q) => q.moduleId === m.id), latest);
+              const r = readiness(questions.filter((q) => q.moduleId === m.id), scored);
               if (!r.total) return null;
               return (
                 <li key={m.id} className="flex flex-col gap-1">
