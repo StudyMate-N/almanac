@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { friendlyError, rpc } from "@/lib/api";
 import { COACH_KEY } from "@/lib/store";
 import { StaffSourceFiles } from "@/components/site/staff-source-files";
+import { StaffLearningPlan } from "@/components/site/staff-learning-plan";
+import { StaffPaymentProofs } from "@/components/site/staff-payment-proofs";
 import { ENHANCEMENTS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 
 type RequestRow = {
@@ -12,7 +14,13 @@ type RequestRow = {
   subject: string; goal: string; kind: string; delivery_method: string;
   speed: string; addons: string[]; enhancements?: Record<string,number>; learning_preference?: string; unit_count: number;
   quote_usd: number; turnaround_days: number;
-  status: string; payment_status: string; payment_reference: string | null; payment_date: string | null; invoice_ref: string; created_at: string;
+  status: string; payment_status: string; payment_reference: string | null;
+ payment_date: string | null; invoice_ref: string; created_at: string;
+ payable_cad_cents: number|null; fx_rate_date: string|null;
+ learning_plan_title?:string|null;learning_plan_summary?:string|null;
+ learning_plan_topics?:string[];learning_plan_objectives?:string[];
+ learning_plan_dates?:string[];learning_plan_status?:string;
+ learning_plan_feedback?:string|null;
 };
 const statuses = ["received","awaiting_payment","in_production","review","delivered","cancelled"];
 export default function LearningRequestsPage() {
@@ -53,7 +61,12 @@ export default function LearningRequestsPage() {
   }
 
   async function verifyPayment(id:string) {
-    if(!token || editing || !window.confirm("Have you independently verified this transfer in the bank account? This will create a student access code.")) return;
+    const row=rows.find(r=>r.id===id);
+    const cad=row?.payable_cad_cents ? new Intl.NumberFormat("en-CA",{style:"currency",currency:"CAD"}).format(row.payable_cad_cents/100) : "CAD amount not recorded";
+    if(!token || editing || !row?.payable_cad_cents || !window.confirm(
+      "Confirm you independently checked your bank account and received "+cad+
+      " for invoice "+row.invoice_ref+". Do not rely on the customer's screenshot alone. This will issue a one-time access code."
+    )) return;
     setEditing(id);setError("");
     try {
       const result=await rpc<{paymentStatus:string;accessCode?:string;invoiceRef?:string;email?:string;alreadyVerified?:boolean}>(
@@ -84,7 +97,10 @@ export default function LearningRequestsPage() {
                   <p className="text-sm text-ink-body">{r.kind} · {r.unit_count} units · {r.speed} · {r.turnaround_days} days</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-display text-2xl font-semibold">${r.quote_usd}</p>
+                  <p className="font-display text-2xl font-semibold">US${r.quote_usd}</p>
+                  {r.payable_cad_cents!==null&&<p className="mt-1 text-xs font-bold text-violet-700">
+                    CAD {(r.payable_cad_cents/100).toFixed(2)}
+                  </p>}
                   <label className="mt-2 block text-xs font-semibold">Status
                     <select aria-label={`Status for ${r.subject}`} disabled={editing === r.id}
                       className="mt-1 rounded-lg border border-hairline bg-mist px-3 py-2 text-sm"
@@ -99,6 +115,7 @@ export default function LearningRequestsPage() {
                 <p><strong>Bank transfer:</strong> {r.payment_status==="verified"?"Verified":r.payment_status==="reported"?"Reported · awaiting verification":"Not yet reported"}</p>
                 {r.payment_reference && <p className="mt-1">Reference: {r.payment_reference}</p>}
                 {r.payment_date && <p className="mt-1">Reported transfer date: {r.payment_date}</p>}
+                <StaffPaymentProofs orderId={r.id} staffToken={token}/>
                 {r.payment_status==="reported" && <button disabled={editing===r.id}
                   type="button" onClick={()=>void verifyPayment(r.id)}
                   className="mt-3 min-h-11 rounded-full bg-violet px-4 font-semibold text-white disabled:opacity-50">
@@ -126,6 +143,7 @@ export default function LearningRequestsPage() {
                 <span>Study preference: {PREFERENCES[r.learning_preference as keyof typeof PREFERENCES] ?? "Balanced"}</span>
                 <div className="sm:col-span-2"><StaffSourceFiles orderId={r.id} staffToken={token}/></div>
               </div>
+              <StaffLearningPlan id={r.id} token={token} plan={r}/>
             </article>
           ))}
         </div>
