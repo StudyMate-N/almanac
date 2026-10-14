@@ -24,12 +24,6 @@ async function bankRate():Promise<{value:number;date:string}>{
  }finally{clearTimeout(timeout);}
 }
 Deno.serve(async req=>{
- if(req.method==="GET" && new URL(req.url).searchParams.get("diagnostic")==="preflight"){
-  let bankStatus="unavailable";
-  try { const fx=await bankRate(); bankStatus=fx.value>0?"available":"invalid"; }
-  catch(error) { bankStatus=error instanceof Error?error.message.replace(/[^a-zA-Z0-9_ -]/g,"").slice(0,70):"unavailable"; }
-  return respond({serviceConfigured:Boolean(SUPABASE_URL&&SERVICE),bankRate:bankStatus});
- }
  if(req.method==="OPTIONS")return new Response(null,{headers});
  if(req.method!=="POST")return respond({error:"Method not allowed"},405);
  if(!SUPABASE_URL||!SERVICE)return respond({error:"Invoice service unavailable"},503);
@@ -39,7 +33,9 @@ Deno.serve(async req=>{
   const data=JSON.parse(raw);
   if(!data||typeof data!=="object"||Array.isArray(data))return respond({error:"Invalid request"},400);
   // Exchange rate comes only from the Bank of Canada, never from the customer.
-  const rate=await bankRate();
+  let rate:{value:number;date:string};
+  try { rate=await bankRate(); }
+  catch { return respond({error:"fx_rate_unavailable"},503); }
   const result=await fetch(`${SUPABASE_URL}/rest/v1/rpc/learning_request_create_cad`,{
    method:"POST",
    headers:{"Content-Type":"application/json",apikey:SERVICE,Authorization:`Bearer ${SERVICE}`},
