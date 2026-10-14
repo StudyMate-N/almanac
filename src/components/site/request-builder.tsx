@@ -77,10 +77,17 @@ export function RequestBuilder({ initialCourseId, initialSubject }: {
         <div className="flex justify-between"><dt>Turnaround</dt><dd className="font-semibold">{submitted.turnaroundDays} calendar days</dd></div>
         <div className="flex justify-between"><dt>Request status</dt><dd className="font-semibold">Awaiting payment</dd></div>
       </dl>
-      <Link href={`/invoice?id=${encodeURIComponent(submitted.id)}&token=${encodeURIComponent(submitted.invoiceToken)}`}
-        className="mt-6 inline-flex min-h-14 items-center rounded-full bg-violet px-6 font-bold text-white hover:bg-violet-600">
-        View and print your invoice →
-      </Link>
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <Link href={`/invoice?id=${encodeURIComponent(submitted.id)}&token=${encodeURIComponent(submitted.invoiceToken)}`}
+          className="inline-flex min-h-14 items-center rounded-full bg-violet px-6 font-bold text-white hover:bg-violet-600">
+          View and print your invoice →
+        </Link>
+        <button type="button" onClick={()=>void navigator.clipboard.writeText(
+          window.location.origin+`/invoice?id=${encodeURIComponent(submitted.id)}&token=${encodeURIComponent(submitted.invoiceToken)}`
+        )} className="min-h-12 rounded-full border border-hairline px-5 font-semibold text-violet-700">
+          Copy invoice link
+        </button>
+      </div>
       <p className="mt-4 text-sm text-ink-muted">
         No payment has been collected. Keep your private invoice link to track verification.
         Your delivery window starts once payment and required materials are received.
