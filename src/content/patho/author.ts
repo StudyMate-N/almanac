@@ -10,7 +10,7 @@
 import type { Block, Card, Lesson, Level, Module, PageKind, Question } from "../types";
 
 export const COURSE_ID = "advanced-pathophysiology";
-export const TEXT = "McCance & Huether, Pathophysiology: The Biologic Basis for Disease in Adults and Children, ___ ed."; // TODO(owner): edition number
+export const TEXT = "McCance & Huether, Pathophysiology: The Biologic Basis for Disease in Adults and Children, 10th ed.";
 
 /** An option: text, whether it is correct, and why. */
 export type AOpt = { t: string; ok: boolean; why: string };
