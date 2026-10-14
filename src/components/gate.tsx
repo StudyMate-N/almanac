@@ -16,7 +16,16 @@ export function Gate({ children }: { children: React.ReactNode }) {
       </div>
     );
   if (status === "signed-out") return <SignIn />;
-  return <>{children}</>;
+  return <>
+    <div className="border-b border-hairline bg-white px-4 py-3 text-sm">
+      <nav className="mx-auto flex max-w-[1200px] flex-wrap gap-5 font-semibold" aria-label="Learning workspace">
+        <Link href="/app">Learning tools</Link>
+        <Link href="/app/orders" className="text-violet-700">My orders &amp; delivered files</Link>
+        <Link href="/contact">Support</Link>
+      </nav>
+    </div>
+    {children}
+  </>;
 }
 
 function SignIn() {
