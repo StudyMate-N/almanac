@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { courseById, openCourses } from "@/content/course";
 import { PageHeader } from "@/components/page-header";
-import { planFor, toIsoDate, weekToday } from "@/lib/plan";
+import { moduleWeeks, orderedSections, planFor, toIsoDate, weekToday } from "@/lib/plan";
 import { useStudent } from "@/lib/store";
 
 export default function SetupPage() {
@@ -24,6 +24,14 @@ function Setup() {
   const [currentWeek, setCurrentWeek] = useState(p ? weekToday(p) : 1);
   const [midterm, setMidterm] = useState(p?.midterm ?? "");
   const [final, setFinal] = useState(p?.final ?? "");
+  const [order, setOrder] = useState(() => orderedSections(p, course.id).map((m) => m.id));
+  const sections = orderedSections({ order }, course.id);
+  const weeks = moduleWeeks({ courseWeeks, order }, course.id);
+  const move = (i: number, by: -1 | 1) => {
+    const next = order.slice();
+    [next[i], next[i + by]] = [next[i + by], next[i]];
+    setOrder(next);
+  };
   const field = "min-h-12 w-full rounded-2xl border-2 border-hairline bg-white px-4 outline-none focus:border-violet";
 
   return (
@@ -33,7 +41,7 @@ function Setup() {
         className="flex max-w-xl flex-col gap-4 rounded-tile bg-white p-6"
         onSubmit={(e) => {
           e.preventDefault();
-          update("plans", { ...state.plans, [course.id]: { courseWeeks, currentWeek: Math.min(currentWeek, courseWeeks), setOn: toIsoDate(new Date()), midterm: midterm || undefined, final: final || undefined } });
+          update("plans", { ...state.plans, [course.id]: { courseWeeks, currentWeek: Math.min(currentWeek, courseWeeks), setOn: toIsoDate(new Date()), midterm: midterm || undefined, final: final || undefined, order } });
           router.push("/app");
         }}
       >
@@ -59,7 +67,28 @@ function Setup() {
           Final exam date
           <input className={field} type="date" value={final} onChange={(e) => setFinal(e.target.value)} />
         </label>
-        <p className="text-sm text-ink-muted">Modules follow the standard textbook order, spread across your weeks. Foundations comes first. You can change this any time.</p>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-sm font-semibold">Section order</legend>
+          <p className="mb-1 text-sm text-ink-muted">Move sections to match the order your school teaches them. Sections with more topics get more time. You can change this any time.</p>
+          <ol className="flex flex-col gap-2">
+            {sections.map((m, i) => (
+              <li key={m.id} className="flex min-h-14 items-center gap-3 rounded-2xl bg-mist py-2 pr-2 pl-4">
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-semibold">
+                    Section {m.number}: {m.title}
+                  </span>
+                  <span className="block text-[13px] text-ink-muted">Week {weeks[m.id]}</span>
+                </span>
+                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move ${m.title} earlier`} className="grid h-11 w-11 place-items-center rounded-full bg-white font-bold text-violet-700 disabled:opacity-30">
+                  ↑
+                </button>
+                <button type="button" onClick={() => move(i, 1)} disabled={i === sections.length - 1} aria-label={`Move ${m.title} later`} className="grid h-11 w-11 place-items-center rounded-full bg-white font-bold text-violet-700 disabled:opacity-30">
+                  ↓
+                </button>
+              </li>
+            ))}
+          </ol>
+        </fieldset>
         <button className="min-h-[52px] rounded-full bg-violet font-bold text-white hover:bg-violet-600">Save my plan</button>
       </form>
     </>
