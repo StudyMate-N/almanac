@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Logo } from "@/components/brand";
 import { friendlyError } from "@/lib/api";
 import { useStudent } from "@/lib/store";
