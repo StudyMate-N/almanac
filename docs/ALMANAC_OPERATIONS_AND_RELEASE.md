@@ -85,6 +85,15 @@ The development Vercel project stores bank details and WhatsApp number as sensit
 - `ALMANAC_EMAIL_FROM`: a sender at a domain verified with the provider.
 - `ALMANAC_OPERATIONS_EMAIL`: staff mailbox for new order and reported-payment alerts (default support@unemployedproff.com).
 
+### October 15 Netlify / Resend integration status
+
+- Domain `unemployedproff.com` is VERIFIED in Resend (DKIM, SPF TXT/MX, return-path CNAME).
+- Transactional sender: `Almanac <support@unemployedproff.com>`; operations email: `support@unemployedproff.com`.
+- A sending-only API key restricted to this domain has been generated and submitted to Netlify as the secret `ALMANAC_RESEND_API_KEY`. Never store the key or its plaintext in this repository.
+- Netlify environment variables require a fresh deployment and then a real delivery test to establish runtime readiness.
+- Real bank details must be supplied from the confirmed protected configuration separately. Do not mark a payment verified or email access until bank settlement has been independently confirmed.
+- Preview currently has team-login protection; keep it until the final acceptance tests are approved.
+
 **Never use the support email as a sending identity without verified domain authorization.** Email failures never invalidate an accepted order; staff must monitor the inbox/dashboard and send invoices/access emails manually until sending is configured.
 
 ## Tests performed
