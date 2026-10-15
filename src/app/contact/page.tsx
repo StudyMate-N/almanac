@@ -8,7 +8,7 @@ export default function ContactPage() {
   const digits=(process.env.ALMANAC_WHATSAPP_NUMBER??"").replace(/[^0-9]/g,"");
   const whatsApp=/^[1-9][0-9]{7,14}$/.test(digits)?
     "https://wa.me/"+digits+"?text="+encodeURIComponent("Hello Almanac, I need help with a learning course or request.") : null;
-  return <div className="min-h-screen bg-ground text-ink"><SiteHeader/>
+  return <div className="alm-public min-h-screen"><SiteHeader/>
     <main className="mx-auto max-w-[880px] px-4 pb-24 pt-8 sm:px-6">
       <p className="text-xs font-bold uppercase tracking-widest text-violet-700">Contact Almanac</p>
       <h1 className="mt-3 font-display text-[42px] font-semibold">We're here to help you move forward.</h1>
