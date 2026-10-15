@@ -22,7 +22,7 @@ export default function ExamPage() {
 function Exam() {
   const { kind } = useParams<{ kind: "midterm" | "final" | "check" }>();
   const courseId = courseById(useSearchParams().get("course") ?? "")?.id ?? openCourses[0].id;
-  const { state } = useStudent();
+  const { state, authorizedCourses } = useStudent();
   const { questions, course, latest } = useCourse(courseId);
   const [seed] = useState(() => String(Date.now()));
   const spec = EXAMS[kind] ?? EXAMS.check;
@@ -57,5 +57,6 @@ function Exam() {
   const repeats = qs.filter((q) => latest.has(q.id)).length;
   const sized = qs.length < spec.questions ? `${base} · ${qs.length} of ${spec.questions} questions available` : base;
   const title = kind !== "check" && repeats > 0 ? `${sized} · ${repeats} you have seen before` : sized;
+  if (!authorizedCourses.includes(courseId)) return <section className="alm-desk-card mx-auto mt-8 max-w-xl p-6"><h1 className="text-[24px] font-bold">Exam practice requires course access.</h1><p className="mt-3 text-sm text-ink-body">Choose a course included in your approved enrollment.</p></section>;
   return <Runner title={title} questions={qs} mode="exam" kind={kind} minutes={minutes} backHref={kind === "check" ? "/app" : "/app/practice"} />;
 }
