@@ -12,7 +12,7 @@ export default async function InvoicePage({searchParams}:{
   searchParams:Promise<{id?:string;token?:string}>;
 }) {
   const {id="",token=""}=await searchParams;
-  return <div className="min-h-screen bg-ground text-ink">
+  return <div className="alm-public min-h-screen">
     <div className="print:hidden"><SiteHeader/></div>
     <main className="mx-auto max-w-[980px] px-4 pb-16 pt-6 sm:px-6 print:max-w-none print:px-0 print:py-0">
       <PrintableInvoice id={id} token={token}/>
