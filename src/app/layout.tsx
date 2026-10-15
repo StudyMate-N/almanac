@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   },
   description:
     "Almanac brings learning modules, clear lessons, video overviews, exam practice, flashcards, schedules and progress into one place. Browse courses or request a personalized learning companion.",
+  icons: { icon: "/almanac-art/favicon.svg" },
+  openGraph: {
+    type: "website",
+    siteName: "Almanac",
+    title: "Almanac — Everything you need to make sense of your course & exams",
+    description: "Study materials, modules, video overviews, practice, flashcards and progress — organized around you.",
+    images: [{url:"/almanac-art/og-default.png",width:1200,height:630,alt:"Almanac learning, organized around you"}]
+  },
 };
 
 export const viewport: Viewport = {
