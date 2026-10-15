@@ -132,7 +132,7 @@ export function Predict({ id, stem, options, correct, reveal, eyebrow = "Predict
         {options.map((o) => {
           const tone = !pick ? "border-hairline bg-white hover:border-violet hover:bg-[#FBFAFE]" : o.id === correct ? "border-correct bg-mint" : o.id === pick ? "border-[#F2711C] bg-[#FFE9DC]" : "border-hairline bg-white text-ink-muted";
           return (
-            <button key={o.id} onClick={() => choose(o.id)} disabled={Boolean(pick)} aria-pressed={pick === o.id} className={`min-h-12 flex-[1_1_160px] rounded-[12px] border-[1.5px] px-5 text-[15px] font-bold text-ink ${tone}`}>
+            <button key={o.id} onClick={() => choose(o.id)} disabled={Boolean(pick)} aria-pressed={pick === o.id} className={`min-h-12 flex-[1_1_120px] rounded-[12px] border-[1.5px] px-5 text-[15px] font-bold text-ink ${tone}`}>
               {o.text}
             </button>
           );

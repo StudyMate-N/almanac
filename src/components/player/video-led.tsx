@@ -188,6 +188,9 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
                 Play the video ▶
               </button>
             )}
+          </Predict>
+        </div>
+      )}
       <section aria-label="Course video" className="flex flex-col gap-2.5">
         <div className="relative aspect-video w-full overflow-hidden rounded-3xl bg-violet-deep text-white">
           <video
@@ -222,11 +225,11 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
                   onClick={toggle}
                   disabled={!predictDone || Boolean(active)}
                   aria-label={ended ? "Play again" : "Play"}
-                  className="pointer-events-auto grid h-[76px] w-[76px] place-items-center rounded-full bg-[#EA6512] text-[26px] text-white shadow-[0_0_0_6px_#FFE9DC] disabled:opacity-60"
+                  className="pointer-events-auto grid h-[76px] w-[76px] place-items-center rounded-full bg-[#EA6512] text-[26px] text-white shadow-[0_0_0_6px_#FFE9DC] disabled:cursor-not-allowed max-sm:h-16 max-sm:w-16"
                 >
                   {ended ? "↺" : "▶"}
                 </button>
-                <p className="rounded-full bg-white px-3 py-1.5 text-center text-[13px] font-bold text-violet-deep">{message}</p>
+                <p className="rounded-full bg-white px-3 py-1.5 text-center text-[13px] font-bold text-violet-deep max-sm:hidden">{message}</p>
               </div>
             )}
             <div className="flex flex-col gap-2">
@@ -301,10 +304,6 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
           </p>
           <CheckCard key={active.check.id} q={active.check} pageId={page.id} action={{ label: "Continue the video ▶", onClick: resume }} />
         </section>
-      )}
-
-          </Predict>
-        </div>
       )}
 
       {keypoints?.t === "keypoints" && <TopicHead items={keypoints.items} />}
