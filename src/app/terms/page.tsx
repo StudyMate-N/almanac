@@ -2,7 +2,7 @@ import type {Metadata} from "next";
 import {SiteHeader,SiteFooter} from "@/components/site/chrome";
 export const metadata:Metadata={title:"Terms of Service | Almanac",description:"Almanac learning package, delivery, academic integrity and payment terms."};
 export default function TermsPage(){
- return <div className="min-h-screen bg-ground text-ink"><SiteHeader/>
+ return <div className="alm-public min-h-screen"><SiteHeader/>
  <main className="mx-auto max-w-[850px] px-5 pb-20 pt-8">
   <p className="text-xs font-bold uppercase tracking-widest text-violet-700">TERMS</p>
   <h1 className="mt-3 font-display text-4xl font-semibold">Learning service terms</h1>
