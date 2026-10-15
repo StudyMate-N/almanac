@@ -1,173 +1,166 @@
 import Link from "next/link";
-import { SiteFooter, SiteHeader } from "@/components/site/chrome";
+import { SiteHeader,SiteFooter } from "@/components/site/chrome";
+import { LogoMark } from "@/components/brand";
 
-const primary = "inline-flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-violet px-6 py-3 text-center font-bold text-white transition-colors hover:bg-violet-600";
-const secondary = "inline-flex min-h-[48px] items-center font-semibold text-violet-700 hover:underline";
-const steps = [
-  ["01", "Choose what you're learning.", "Browse an existing course or resource, or send us a request for something you can't find."],
-  ["02", "Set your goals and your pace.", "Bring in your schedule, learning priorities, and important dates to shape a study plan that works for you."],
-  ["03", "Everything in one place.", "Work through lessons, practice what you've learned, return to topics that need review, and keep track of how far you've come."],
+const action="alm-action";
+const secondary="alm-action alm-action-secondary";
+const resources=[
+ ["Structured lessons","Clear explanations, in a useful order.","01"],
+ ["Video overviews","See the big ideas before you go deeper.","02"],
+ ["Practice questions","Check understanding with worked explanations.","03"],
+ ["Flashcards","Return to essential concepts as you learn.","04"],
+ ["Exam simulations","Practise applying what you have learned.","05"],
+ ["Study plans","Know what to cover and what comes next.","06"]
+] as const;
+const steps=[
+ ["01","Choose","Start with an available course or request exactly what you need.","/almanac-art/step-1-choose.png"],
+ ["02","Your invoice","See the package, delivery choice, and payable amount before transferring.","/almanac-art/step-invoice.png"],
+ ["03","Your plan","Share your syllabus if you have one, then review your proposed modules.","/almanac-art/step-2-plan.png"],
+ ["04","Your workspace","Find released lessons, practice, flashcards and progress in one place.","/almanac-art/step-3-workspace.png"]
 ] as const;
 
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-ground text-ink">
-      <SiteHeader />
-      <main>
-        <section className="mx-auto grid max-w-[1200px] items-center gap-10 px-4 pb-20 pt-12 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:pt-20" aria-labelledby="hero-h">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.13em] text-violet-700">Learning, organized around you</p>
-            <h1 id="hero-h" className="mt-5 max-w-2xl font-display text-[40px] font-semibold leading-[1.08] tracking-tight sm:text-[54px]">Everything you need to make sense of your course &amp; exams.</h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-body">
-              Almanac brings your study materials, learning plan, and progress together in one organized experience.
-              Start with a ready-made course or resource, shape it around your goals, or request something built for what you want to learn.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Link href="/courses" className={primary}>Browse courses &amp; resources <span aria-hidden="true">→</span></Link>
-              <Link href="/request" className={secondary}>Request a course or resource ↗</Link>
-            </div>
-            <p className="mt-5 text-sm text-ink-muted">For coursework, exam preparation, independent study, and more.</p>
-          </div>
-          <div className="rounded-[32px] bg-lilac p-4 shadow-[0_20px_50px_-32px_rgba(65,40,140,0.35)] sm:p-6" aria-label="Illustrative view of the Almanac learning space">
-            <div className="rounded-card bg-white p-5 sm:p-6">
-              <div className="flex items-center justify-between border-b border-hairline pb-4">
-                <p className="font-display text-lg font-semibold">Your learning space</p>
-                <span className="text-xs font-medium text-violet-700">ALMANAC</span>
-              </div>
-              <p className="mt-5 text-xs font-bold uppercase tracking-wide text-ink-muted">Your course</p>
-              <h2 className="mt-1 font-display text-2xl font-semibold">Advanced Pathophysiology</h2>
-              <div className="mt-5 rounded-card bg-mist p-5">
-                <p className="text-xs font-bold text-violet-700">CONTINUE LEARNING</p>
-                <p className="mt-2 font-display text-lg font-semibold">Understand the mechanisms</p>
-                <p className="mt-1 text-sm text-ink-body">Your next lesson and learning checks, ready when you are.</p>
-                <p className="mt-4 font-semibold text-violet-700">Your next lesson, in view</p>
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-hairline p-4"><p aria-hidden="true" className="text-2xl text-violet">◫</p><p className="mt-2 font-semibold">Practice</p><p className="mt-1 text-xs text-ink-muted">Check your understanding</p></div>
-                <div className="rounded-2xl border border-hairline p-4"><p aria-hidden="true" className="text-2xl text-violet">▤</p><p className="mt-2 font-semibold">Flashcards</p><p className="mt-1 text-xs text-ink-muted">Review what matters</p></div>
-              </div>
-              <div className="mt-4 rounded-2xl border border-hairline p-4">
-                <p className="font-semibold">Your study plan</p>
-                <p className="mt-1 text-xs text-ink-muted">Keep your next session and progress in view.</p>
-              </div>
-            </div>
-            <p className="mt-3 text-center text-xs text-ink-muted">Illustrative learning-space composition</p>
-          </div>
-        </section>
+function DeskArt(){
+ return <div className="relative mx-auto aspect-[1.22] w-full max-w-[520px]" aria-label="Illustration of books and study objects">
+   <div className="absolute inset-[8%] rounded-full bg-[radial-gradient(circle,#ECE7FF_0%,transparent_73%)]"/>
+   <svg className="alm-hero-art relative h-full w-full" viewBox="0 0 520 430" role="img" aria-label="Books, papers, writing pen, molecule and study objects">
+    <defs><linearGradient id="alm-cover" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#E7E0FB"/><stop offset="1" stopColor="#A89AE5"/></linearGradient><filter id="alm-shadow"><feDropShadow dx="0" dy="14" stdDeviation="13" floodOpacity=".13"/></filter></defs>
+    <g filter="url(#alm-shadow)">
+      <path d="M95 286L328 238 440 297 200 348Z" fill="#DDD5F8"/>
+      <path d="M95 286v17l105 45v-18z" fill="#8171B5"/>
+      <path d="M200 348v-18l240-33v14z" fill="#B5A9DF"/>
+      <path d="M82 242L320 202 431 261 185 309Z" fill="#FAF7EE" stroke="#D7D0C3" strokeWidth="2"/>
+      <path d="M82 242v22l103 45v-20z" fill="#F1EBDD"/>
+      <path d="M185 309v-20l246-28v17z" fill="#D4CEC5"/>
+      <path d="M120 221L317 189 421 239 206 269Z" fill="url(#alm-cover)"/>
+      <path d="M120 221v18l86 38v-17z" fill="#8074B5"/>
+      <path d="M206 269v8l215-26v-12z" fill="#C4BAE6"/>
+      <path d="M142 198L307 170 399 218 226 245Z" fill="#FEFEFD"/>
+      <path d="M142 198v11l84 36v-11z" fill="#DBD7E4"/>
+      <path d="M226 245v-11l173-16v9z" fill="#F4F3F7"/>
+    </g>
+    <circle cx="341" cy="175" r="40" fill="#F2711C"/><circle cx="328" cy="162" r="13" fill="#F9B27B" opacity=".7"/>
+    <g stroke="#5B3DF5" strokeWidth="4"><path d="M165 137L213 103 262 137 225 180 165 137M213 103l12 77M165 137l97 0" fill="none"/>
+    <g fill="#ECE7FF"><circle cx="165" cy="137" r="13"/><circle cx="213" cy="103" r="16"/><circle cx="262" cy="137" r="13"/><circle cx="225" cy="180" r="12"/></g></g>
+    <path d="M296 130l37-62 38 62z" fill="#D8B86D" stroke="#B68B42" strokeWidth="3"/><path d="M333 68v62h38z" fill="#BFA058"/>
+    <circle cx="291" cy="201" r="19" fill="#D5E5EA" stroke="#A6B3C0" strokeWidth="2"/><circle cx="295" cy="191" r="7" fill="#F7FAFA" opacity=".8"/>
+    <path d="M129 245L366 167" stroke="#30234D" strokeWidth="7" strokeLinecap="round"/><path d="M358 168l17-8-8 19z" fill="#EACB94"/><path d="M131 247l-12 4" stroke="#BE9D58" strokeWidth="8" strokeLinecap="round"/>
+   </svg>
+   <div className="pointer-events-none absolute inset-0 bg-[url('/almanac-art/hero-still-life.png')] bg-contain bg-center bg-no-repeat" aria-hidden="true"/>
+  </div>;
+}
+function CourseVisual({variant}:{variant:"patho"|"request"}){
+ return <div className="alm-course-media relative grid h-[165px] place-items-center">
+   {variant==="patho"?<svg viewBox="0 0 350 160" className="h-full w-full" aria-hidden="true"><ellipse cx="170" cy="145" rx="115" ry="10" fill="#CEC5EB"/><g fill="none" stroke="#5B3DF5" strokeWidth="4"><circle cx="145" cy="80" r="41"/><path d="M122 40L188 110M117 106l77-56"/><circle cx="210" cy="80" r="29"/></g><g fill="#F2711C"><circle cx="121" cy="43" r="10"/><circle cx="184" cy="117" r="9"/><circle cx="205" cy="65" r="8"/></g><g fill="#ECE7FF"><circle cx="142" cy="84" r="20"/><circle cx="209" cy="97" r="11"/></g></svg>:
+   <div className="grid grid-cols-3 gap-3"><span className="grid h-16 w-16 place-items-center rounded-xl bg-white text-violet">▤</span><span className="grid h-16 w-16 place-items-center rounded-xl bg-white text-violet">✧</span><span className="grid h-16 w-16 place-items-center rounded-xl bg-white text-violet">▦</span></div>}
+   <div className={`pointer-events-none absolute inset-0 bg-cover bg-center ${variant==="patho"?"bg-[url('/almanac-art/cover-pathophysiology.png')]":"bg-[url('/almanac-art/cover-on-request.png')]"}`}/>
+ </div>;
+}
 
-        <section id="courses" className="mx-auto max-w-[1200px] px-4 pb-24 sm:px-6" aria-labelledby="discover-h">
-          <p className="text-xs font-bold uppercase tracking-[0.13em] text-violet-700">Courses &amp; Resources</p>
-          <h2 id="discover-h" className="mt-3 max-w-2xl font-display text-[36px] font-semibold leading-tight sm:text-[44px]">Start with what you're learning.</h2>
-          <p className="mt-4 max-w-2xl text-lg text-ink-body">Explore what's available, or tell us what you'd like to learn. Whether it's a complete course, exam preparation, or a particular study resource, there's a place to start.</p>
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            <article className="flex flex-col rounded-tile bg-lilac p-6 sm:p-8">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-violet-700"><span>GRADUATE NURSING</span><span className="rounded-full bg-white px-3 py-1.5">PILOT OPEN</span></div>
-              <div className="relative mt-5 flex min-h-[160px] items-center justify-center overflow-hidden rounded-card bg-white/60">
-                <div className="absolute left-[15%] top-[15%] h-24 w-24 rounded-full border-[14px] border-violet-200 bg-violet-300/30 sm:h-32 sm:w-32" />
-                <div className="absolute right-[18%] top-[25%] h-20 w-20 rounded-full border-[12px] border-violet-300 bg-white sm:h-28 sm:w-28" />
-                <p className="relative rounded-full bg-white px-4 py-2 text-sm font-semibold text-violet-deep shadow-sm">Mechanisms → Understanding → Practice</p>
-              </div>
-              <h3 className="mt-6 font-display text-2xl font-semibold">Advanced Pathophysiology</h3>
-              <p className="mt-3 flex-1 text-ink-body">Understand disease mechanisms through structured lessons, practice questions, flashcards, and exam preparation.</p>
-              <Link className={`${secondary} mt-4`} href="/courses/advanced-pathophysiology">View course ↗</Link>
-            </article>
-            <article className="flex flex-col rounded-tile border border-hairline bg-white p-6 sm:p-8">
-              <p className="text-xs font-bold text-ink-muted">CUSTOM LEARNING</p>
-              <div className="mt-5 flex min-h-[160px] items-center justify-center rounded-card bg-mist">
-                <div className="grid grid-cols-3 gap-3" aria-hidden="true">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-2xl text-violet">◫</div>
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-2xl text-violet">▤</div>
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-2xl text-violet">✦</div>
-                </div>
-              </div>
-              <h3 className="mt-6 font-display text-2xl font-semibold">Don't see what you need?</h3>
-              <p className="mt-3 flex-1 text-ink-body">Tell us what you're studying and what you'd like us to create. Choose your materials and timeline to get started.</p>
-              <Link className={`${secondary} mt-4`} href="/request">Request a course or resource ↗</Link>
-            </article>
-          </div>
-          <p className="mt-5 text-sm text-ink-muted">
-            Also available on request: Advanced Pharmacology · Practical AI Skills · Editing &amp; Proofreading
-          </p>
-          <Link href="/courses" className={`${secondary} mt-3`}>Browse all courses &amp; resources →</Link>
-        </section>
-
-        <section id="how" className="bg-white/65 py-20" aria-labelledby="how-h">
-          <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
-            <p className="text-xs font-bold uppercase tracking-[0.13em] text-violet-700">How Almanac works</p>
-            <h2 id="how-h" className="mt-3 max-w-2xl font-display text-[36px] font-semibold leading-tight sm:text-[44px]">Start where you are. Know where to go next.</h2>
-            <p className="mt-4 max-w-2xl text-lg text-ink-body">Whether you're following a course or preparing for something specific, Almanac helps turn your materials and goals into a learning experience you can follow.</p>
-            <ol className="mt-9 max-w-3xl space-y-5">
-              {steps.map(([n,t,d]) => <li key={n} className="flex items-start gap-5">
-                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-lilac font-display text-xl font-semibold text-violet">{n}</span>
-                <div className="pt-1"><h3 className="font-display text-xl font-semibold">{t}</h3><p className="mt-1 text-ink-body">{d}</p></div>
-              </li>)}
-            </ol>
-            <Link href="/how-it-works" className={`${secondary} mt-6`}>See how Almanac works →</Link>
-          </div>
-        </section>
-
-        <section className="mx-auto grid max-w-[1200px] items-center gap-10 px-4 py-24 sm:px-6 lg:grid-cols-2" aria-labelledby="workspace-h">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.13em] text-violet-700">Your learning space</p>
-            <h2 id="workspace-h" className="mt-3 font-display text-[36px] font-semibold leading-tight sm:text-[44px]">Pick up where you left off.</h2>
-            <p className="mt-4 text-lg text-ink-body">Your lessons, practice, flashcards, and study plan stay together. Find what you need, revisit what you've learned, and see what's next without starting over each time.</p>
-          </div>
-          <div className="rounded-tile bg-lilac p-5 sm:p-7">
-            <div className="rounded-card bg-white p-5">
-              <div className="flex items-center justify-between"><span className="font-semibold">Continue learning</span><span className="text-sm text-violet-700">Your course</span></div>
-              <p className="mt-4 rounded-xl bg-mist p-4 font-semibold">Lessons &amp; learning checks <span className="float-right text-violet">→</span></p>
-              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                <p className="rounded-xl border border-hairline p-4">Practice questions</p>
-                <p className="rounded-xl border border-hairline p-4">Smart flashcards</p>
-                <p className="rounded-xl border border-hairline p-4">Study plan</p>
-                <p className="rounded-xl border border-hairline p-4">Progress tracking</p>
-              </div>
-            </div>
-            <p className="mt-3 text-center text-xs text-ink-muted">Conceptual representation of the existing learning workspace</p>
-          </div>
-        </section>
-
-        <section className="bg-white/65 py-20" aria-labelledby="request-h">
-          <div className="mx-auto grid max-w-[1200px] items-center gap-8 px-4 sm:px-6 lg:grid-cols-2">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.13em] text-violet-700">Custom Learning Requests</p>
-              <h2 id="request-h" className="mt-3 font-display text-[36px] font-semibold leading-tight sm:text-[44px]">Your needs don't have to fit our catalog.</h2>
-              <p className="mt-4 text-lg text-ink-body">A course we haven't covered. An exam you're preparing for. A complete study module for a particular part of your course. Tell us what you're working toward, and we'll see what we can create for you.</p>
-              <Link href="/request" className={`${primary} mt-7`}>Request a course or resource →</Link>
-              <p className="mt-4 text-sm text-ink-muted">We'll review your request and explain what's possible and what happens next.</p>
-            </div>
-            <div className="rounded-tile border border-hairline bg-white p-6 sm:p-8">
-              <p className="font-display text-xl font-semibold">Your request, your goals</p>
-              <p className="mt-1 text-sm text-ink-muted">A few details help us get started.</p>
-              <ol className="mt-5 space-y-5">
-                {[
-                  ["What are you learning?", "A subject, course, exam, or module"],
-                  ["What would help?", "A full course, study guide, practice, or something else"],
-                  ["When do you need it?", "Select a delivery timeline and price"],
-                ].map(([h,d],i)=>(
-                  <li key={h} className="flex gap-4 border-t border-hairline pt-4">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lilac font-semibold text-violet">{i+1}</span>
-                    <div><p className="font-semibold">{h}</p><p className="mt-1 text-sm text-ink-muted">{d}</p></div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-[1200px] px-4 py-20 text-center sm:px-6" aria-labelledby="final-h">
-          <div className="rounded-tile bg-lilac px-5 py-14 sm:px-12">
-            <p className="text-xs font-bold uppercase tracking-[0.13em] text-violet-700">Your next step</p>
-            <h2 id="final-h" className="mx-auto mt-4 max-w-2xl font-display text-[36px] font-semibold leading-tight sm:text-[44px]">There's more than one way to begin.</h2>
-            <p className="mx-auto mt-4 max-w-xl text-lg text-ink-body">Find something ready to use, or tell us what you'd like to learn. We'll help you take it from there.</p>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-x-7 gap-y-3">
-              <Link href="/courses" className={primary}>Browse courses &amp; resources →</Link>
-              <Link href="/request" className={secondary}>Request a course or resource ↗</Link>
-            </div>
-          </div>
-        </section>
-      </main>
-      <SiteFooter />
+export default function Home(){
+ return <div className="alm-public min-h-screen">
+  <SiteHeader/>
+  <main>
+   <section className="alm-gradient-hero">
+    <div className="alm-wrap grid items-center gap-9 pb-9 pt-12 lg:grid-cols-[1fr_.96fr] lg:gap-14 lg:pt-16">
+     <div>
+      <p className="alm-eyebrow">Learning, organized around you</p>
+      <h1 className="mt-4 max-w-[590px] text-[35px] leading-[1.05] sm:text-[45px] lg:text-[52px]">Everything you need to make sense of your course &amp; exams.</h1>
+      <p className="mt-4 max-w-[490px] text-[15.5px] leading-[1.65] text-ink-body">Almanac brings your study materials, learning plan, and progress together in one organized experience. Start with a ready-made course or resource, shape it around your goals, or request something built for what you want to learn.</p>
+      <div className="mt-6 flex flex-wrap gap-2">
+       <Link href="/courses" className={action}>Browse courses &amp; resources <span aria-hidden="true">→</span></Link>
+       <Link href="/request" className={secondary}>Request a course or resource</Link>
+      </div>
+      <p className="mt-4 text-[12.5px] text-ink-muted">For coursework, exam preparation, independent study, and more.</p>
+     </div>
+     <DeskArt/>
     </div>
-  );
+    <div className="alm-wrap grid grid-cols-2 gap-2 border-t border-[#E9E5F5] py-4 sm:grid-cols-3 lg:grid-cols-6">
+     {resources.map(([heading,body,num])=><div key={num} className="rounded-xl border border-[#E4DFF5] bg-white/85 px-3 py-3">
+      <p className="text-[11px] font-extrabold text-violet-700">{num}</p>
+      <p className="mt-1 text-[12px] font-bold">{heading}</p>
+      <p className="mt-1 text-[11px] leading-[1.4] text-ink-muted">{body}</p>
+     </div>)}
+    </div>
+   </section>
+   <section className="alm-section">
+    <div className="alm-wrap">
+      <p className="alm-eyebrow">Courses &amp; resources</p>
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+       <div><h2 className="alm-section-title">Start with what you&apos;re learning.</h2>
+        <p className="mt-3 max-w-[640px] text-[15px] text-ink-body">Explore what&apos;s available, or tell us what you&apos;d like to learn. Whether it&apos;s a complete course, exam preparation, or a particular study resource, there&apos;s a place to start.</p></div>
+       <Link href="/courses" className={secondary}>Browse the catalog →</Link>
+      </div>
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+       <article className="alm-card alm-card-hover overflow-hidden">
+        <div className="relative bg-[#E6E0F8] p-4"><CourseVisual variant="patho"/>
+         <span className="alm-pill alm-pill-mint absolute right-6 top-6">● Pilot open</span></div>
+        <div className="p-5"><p className="alm-eyebrow">Graduate nursing</p><h3 className="mt-2 text-[23px] font-bold">Advanced Pathophysiology</h3>
+         <p className="mt-2 text-[14px] text-ink-body">Understand disease mechanisms through structured lessons, practice questions, flashcards, and exam preparation.</p>
+         <Link href="/courses/advanced-pathophysiology" className="mt-4 inline-flex text-[13px] font-bold text-violet-700">Explore the course →</Link></div>
+       </article>
+       <article className="alm-card alm-card-hover overflow-hidden">
+        <div className="bg-[#F6F4FB] p-4"><CourseVisual variant="request"/></div>
+        <div className="p-5"><p className="alm-eyebrow">Custom learning</p><h3 className="mt-2 text-[23px] font-bold">Don&apos;t see what you need?</h3>
+         <p className="mt-2 text-[14px] text-ink-body">Tell us what you&apos;re studying and what you&apos;d like us to create. Choose your materials and timeline to get started.</p>
+         <Link href="/request" className="mt-4 inline-flex text-[13px] font-bold text-violet-700">Request a course or resource →</Link></div>
+       </article>
+      </div>
+      <p className="mt-4 text-[12px] text-ink-muted">Also available on request: Advanced Pharmacology · Practical AI Skills · Editing &amp; Proofreading</p>
+    </div>
+   </section>
+   <section className="alm-section border-y border-[#EEEBF7] bg-[#FBFAFE]">
+    <div className="alm-wrap">
+     <p className="alm-eyebrow">How Almanac works</p><h2 className="alm-section-title mt-2">Start where you are. Know where to go next.</h2>
+     <p className="mt-3 max-w-[680px] text-[15px] text-ink-body">Whether you&apos;re following a course or preparing for something specific, Almanac helps turn your materials and goals into a learning experience you can follow.</p>
+     <div className="mt-6 grid gap-3 md:grid-cols-4">
+      {steps.map(([n,title,body,img])=><div key={n} className="alm-card overflow-hidden">
+       <div className="grid h-[125px] place-items-center bg-[#F4F1FE] bg-center bg-contain bg-no-repeat" style={{backgroundImage:`url("${img}")`}}>
+        <span className="grid h-10 w-10 place-items-center rounded-full bg-white font-display text-lg font-bold text-violet-700 shadow-sm">{n}</span>
+       </div>
+       <div className="p-4"><h3 className="text-[18px] font-bold">{title}</h3><p className="mt-2 text-[12.5px] text-ink-body">{body}</p></div>
+      </div>)}
+     </div>
+     <Link href="/how-it-works" className={`${secondary} mt-6`}>Understand each step →</Link>
+    </div>
+   </section>
+   <section className="alm-section">
+    <div className="alm-wrap grid items-center gap-9 md:grid-cols-2">
+     <div><p className="alm-eyebrow">Your learning space</p><h2 className="alm-section-title mt-2">Pick up where you left off.</h2>
+      <p className="mt-3 text-[15px] text-ink-body">Your lessons, practice, flashcards, and study plan stay together. Find what you need, revisit what you&apos;ve learned, and see what&apos;s next without starting over each time.</p>
+      <Link href="/app" className={`${secondary} mt-5`}>Open your workspace →</Link>
+     </div>
+     <div className="alm-card overflow-hidden bg-[#F4F1FE] p-5">
+      <div className="alm-frame rounded-xl bg-white p-5">
+       <div className="flex items-center justify-between border-b border-hairline pb-3"><strong className="text-[14px]">Your learning space</strong><span className="alm-pill">Module progress</span></div>
+       <p className="mt-4 text-[12px] text-ink-muted">Advanced Pathophysiology · Module 02</p>
+       <h3 className="mt-1 text-[19px] font-bold">Understand the mechanisms</h3>
+       <div className="mt-4 h-2 rounded-full bg-[#EEEBF7]"><div className="h-full w-[42%] rounded-full bg-violet"/></div>
+       <div className="mt-4 grid grid-cols-2 gap-2">{["Lessons","Practice","Flashcards","Study plan"].map(x=><div key={x} className="rounded-lg border border-hairline p-3 text-[12px] font-semibold">{x} <span className="float-right text-violet-700">↗</span></div>)}</div>
+      </div><p className="mt-3 text-center text-[11px] text-ink-muted">Illustrative workspace layout</p>
+     </div>
+    </div>
+   </section>
+   <section className="alm-section border-y border-[#EEEBF7] bg-[#FBFAFE]">
+    <div className="alm-wrap grid items-center gap-8 md:grid-cols-[1fr_.9fr]">
+     <div><p className="alm-eyebrow">Custom learning requests</p><h2 className="alm-section-title mt-2">Your needs don&apos;t have to fit our catalog.</h2>
+      <p className="mt-4 text-[15px] text-ink-body">A course we haven&apos;t covered. An exam you&apos;re preparing for. A complete study module for a particular part of your course. Tell us what you&apos;re working toward, and we&apos;ll see what we can create for you.</p>
+      <Link href="/request" className={`${action} mt-5`}>Request a course or resource →</Link>
+      <p className="mt-3 text-[12px] text-ink-muted">We&apos;ll review your request and explain what&apos;s possible and what happens next.</p>
+     </div>
+     <div className="alm-plum-panel p-6">
+      <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#CFC7FF]">Your request, your goals</p><h3 className="mt-3 text-[23px] font-bold">A few details help us get started.</h3>
+      <div className="mt-5 space-y-4">{[["01","What are you learning?","A subject, course, exam, or module"],["02","What would help?","A full course, study guide, practice, or something else"],["03","When do you need it?","Select a delivery timeline and see your price"]].map(([n,h,d])=><div key={n} className="flex gap-3 border-t border-white/20 pt-4"><span className="text-[13px] font-extrabold text-[#CEBBFF]">{n}</span><div><p className="text-[13px] font-bold">{h}</p><p className="mt-1 text-[12px] text-white/75">{d}</p></div></div>)}</div>
+     </div>
+    </div>
+   </section>
+   <section className="alm-section">
+    <div className="alm-wrap rounded-[20px] bg-[#ECE7FF] px-6 py-10 text-center sm:px-10">
+     <p className="alm-eyebrow">Your next step</p><h2 className="alm-section-title mt-3">There&apos;s more than one way to begin.</h2>
+     <p className="mx-auto mt-3 max-w-[570px] text-[15px] text-ink-body">Find something ready to use, or tell us what you&apos;d like to learn. We&apos;ll help you take it from there.</p>
+     <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/courses" className={action}>Browse courses &amp; resources →</Link><Link href="/request" className={secondary}>Request a course or resource</Link></div>
+    </div>
+   </section>
+  </main>
+  <SiteFooter/>
+ </div>;
 }
