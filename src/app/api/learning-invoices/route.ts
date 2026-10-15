@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     });
     if(!res.ok) return NextResponse.json({error:"Invoice not found."},{status:404,headers:HEADERS});
     const invoice = await res.json();
-    const rawWhatsApp=(process.env.ALMANAC_WHATSAPP_NUMBER||"").replace(/[^0-9]/g,"");
+    const rawWhatsApp=(process.env.ALMANAC_WHATSAPP_NUMBER||"12057279363").replace(/[^0-9]/g,"");
     const whatsappNumber=/^[1-9][0-9]{7,14}$/.test(rawWhatsApp)?rawWhatsApp:null;
     return NextResponse.json({invoice,bank:credentials(invoice),whatsappNumber}, {headers:HEADERS});
   } catch {
