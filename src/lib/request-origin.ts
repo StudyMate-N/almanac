@@ -27,7 +27,7 @@ function permittedOrigins(request: IncomingRequest) {
   // Local developer workflows should continue to work without production secrets.
   try {
     const requestUrl = new URL(request.url);
-    if (["localhost", "127.0.0.1"].includes(requestUrl.hostname)) {
+    if (process.env.NODE_ENV !== "production" && ["localhost", "127.0.0.1"].includes(requestUrl.hostname)) {
       allowed.add(requestUrl.origin);
     }
   } catch { /* The caller's URL should be valid; invalid URLs are not trusted. */ }
