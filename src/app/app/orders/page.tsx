@@ -34,7 +34,7 @@ const chip=(r:Order)=>{
 };
 
 export default function LearningOrdersPage(){
- const {token,status}=useStudent();
+ const {token,status,authorizedCourses}=useStudent();
  const [orders,setOrders]=useState<Order[]>([]);
  const [selected,setSelected]=useState<string|null>(null);
  const [files,setFiles]=useState<Resource[]>([]);
@@ -130,7 +130,12 @@ export default function LearningOrdersPage(){
    </section>}
   {claimNotice&&<p role="status" className="mt-5 rounded-xl bg-mist p-4 text-sm">{claimNotice}</p>}
   {error&&<p role="alert" className="mt-5 rounded-xl bg-rose p-4 text-sm">{error}</p>}
-  {orders.length===0&&!busy?<section className="mt-7 rounded-tile bg-white p-7">
+  {orders.length===0&&!busy&&authorizedCourses.length>0?<section className="mt-7 rounded-tile bg-white p-7">
+   <h2 className="font-display text-2xl font-semibold">Your learning access is active.</h2>
+   <p className="mt-3 text-sm text-ink-body">Your enrollment was approved outside Almanac checkout, so there is no invoice or payment request to complete here. You can begin with your enrolled course.</p>
+   <div className="mt-4 flex flex-wrap gap-3">{authorizedCourses.map(id=><Link key={id} href={`/app/courses/${encodeURIComponent(id)}`} className="alm-desk-btn alm-desk-btn-secondary">Open your course →</Link>)}</div>
+  </section>:null}
+  {orders.length===0&&!busy&&authorizedCourses.length===0?<section className="mt-7 rounded-tile bg-white p-7">
    <h2 className="font-display text-2xl font-semibold">No paid orders linked to this code yet.</h2>
    <p className="mt-3 text-sm text-ink-body">If you're waiting on payment confirmation, check your private invoice. Your course order will appear here once staff verify your transfer.</p>
    <Link href="/courses" className="mt-4 inline-block font-semibold text-violet-700 underline">Browse courses →</Link>
