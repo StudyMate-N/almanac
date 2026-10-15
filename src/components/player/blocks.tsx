@@ -46,7 +46,7 @@ export function Corrections({ clip, seek }: { clip: Clip; seek: (at: string) => 
   );
 }
 
-function ClipBlock({ clip: id, note }: { clip: string; note?: string }) {
+function ClipBlock({ clip: id, note, groupedCorrections = false }: { clip: string; note?: string; groupedCorrections?: boolean }) {
   const clip = clipById(id);
   const video = useRef<HTMLVideoElement>(null);
   if (!clip) return null;
@@ -57,15 +57,58 @@ function ClipBlock({ clip: id, note }: { clip: string; note?: string }) {
     }
   };
   return (
-    <figure className="flex flex-col gap-3">
+    <figure data-patho-clip={clip.id} className="flex flex-col gap-3">
       <VideoPlayer ref={video} video={clip.id} title={clip.title} label={`Video: ${clip.title}`} />
       <figcaption className="flex flex-wrap items-baseline justify-between gap-2 px-1">
         <span className="font-display text-[17px] font-semibold">{clip.title}</span>
         <span className="rounded-full bg-white px-3 py-0.5 text-[13px] font-semibold text-ink-muted">Course video · {clip.duration}</span>
       </figcaption>
       {note && <p className="px-1 text-[15px] text-ink-body">{note}</p>}
-      <Corrections clip={clip} seek={seek} />
+      {!groupedCorrections && <Corrections clip={clip} seek={seek} />}
     </figure>
+  );
+}
+
+/** One review-note panel for pages containing several related lecture clips. */
+export function VideoReviewNotes({ clipIds }: { clipIds: string[] }) {
+  const clips = clipIds.map((id) => clipById(id)).filter((clip): clip is Clip => Boolean(clip && clip.corrections.length));
+  if (!clips.length) return null;
+  const jump = (id: string, at: string) => {
+    const holder = document.querySelector<HTMLElement>(`[data-patho-clip="${id}"]`);
+    const el = holder?.querySelector<HTMLVideoElement>("video");
+    holder?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (el) {
+      el.currentTime = toSec(at);
+      void el.play().catch(() => undefined);
+    }
+  };
+  const total = clips.reduce((count, clip) => count + clip.corrections.length, 0);
+  return (
+    <details className="rounded-[16px] border border-hairline bg-white px-4 py-4">
+      <summary className="cursor-pointer text-[14px] font-bold text-violet-700">Video review notes · {total} timestamped corrections</summary>
+      <p className="mt-3 text-[13px] leading-6 text-ink-muted">
+        Corrections to statements in the original recordings. Use each timestamp to return to that clip.
+      </p>
+      <div className="mt-4 flex flex-col gap-5">
+        {clips.map((clip) => (
+          <section key={clip.id} className="border-t border-hairline pt-3">
+            <p className="text-[14px] font-bold">{clip.shortTitle ?? clip.title}</p>
+            <ul className="mt-3 flex flex-col gap-3">
+              {clip.corrections.map((correction) => (
+                <li key={correction.at} className="rounded-xl bg-mist p-3.5 text-[13px] leading-6">
+                  <button type="button" onClick={() => jump(clip.id, correction.at)}
+                    className="mb-2 min-h-10 rounded-full bg-white px-3 text-xs font-bold text-violet-700">
+                    Jump to {correction.at} ↗
+                  </button>
+                  <p className="text-ink-muted line-through">{correction.said}</p>
+                  <p className="mt-1 text-ink">{correction.correct}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </details>
   );
 }
 
@@ -249,7 +292,7 @@ export function OpenPrompt({ id, stem, expert }: { id: string; stem: string; exp
   );
 }
 
-export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete, eq }: { b: Block; pageId: string; visibleQ: (q: Question) => boolean; visibleCards: (c: Card) => boolean; onComplete: () => void; eq?: string }) {
+export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete, eq, groupVideoCorrections = false }: { b: Block; pageId: string; visibleQ: (q: Question) => boolean; visibleCards: (c: Card) => boolean; onComplete: () => void; eq?: string; groupVideoCorrections?: boolean }) {
   switch (b.t) {
     case "keypoints":
       return <TopicHead eq={eq} items={b.items} />;
@@ -417,7 +460,7 @@ export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete, eq }:
         </div>
       );
     case "video":
-      return <ClipBlock clip={b.clip} note={b.note} />;
+      return <ClipBlock clip={b.clip} note={b.note} groupedCorrections={groupVideoCorrections} />;
     case "check": {
       const q = questionById(b.id);
       return q && visibleQ(q) ? <CheckGroup qs={[q]} pageId={pageId} /> : null;

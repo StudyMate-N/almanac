@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LogoMark } from "@/components/brand";
 import { ArrowRightIcon, XIcon } from "@/components/icons";
-import { BlockView } from "@/components/player/blocks";
+import { BlockView, VideoReviewNotes } from "@/components/player/blocks";
 import { CheckGroup } from "@/components/player/topic-check";
 import { FocusProgress } from "@/components/focus-bar";
 import { kindLabel, Outline } from "@/components/player/outline";
@@ -100,7 +100,8 @@ export default function Player() {
   const approved = isApproved(page.id, page);
   // A topic page with a question-stop clip is video-led; without one (or without media) it reads.
   const videoClips = videoLedBlocks(page);
-  const containsVideo = page.blocks.some((b) => b.t === "video");
+  const clipIds = page.blocks.filter((b) => b.t === "video").map((b) => b.t === "video" ? b.clip : "");
+  const containsVideo = clipIds.length > 0;
   // Topic pages are titled "5.3 Obstructive disease": the number goes in the breadcrumb.
   const topicNum = page.kind === "topic" ? page.title.match(/^\d+\.\d+(?=\s)/)?.[0] : undefined;
   const sectionLabel = mod.kind === "section" ? `Section ${mod.number}` : mod.kind === "start" ? "Start here" : "Final review";
@@ -216,8 +217,9 @@ export default function Player() {
                     return <CheckGroup key={i} qs={run} pageId={page.id} onDone={() => document.querySelector('[aria-label="Submit and compare"]')?.scrollIntoView({ behavior: "smooth", block: "start" })} />;
                   }
                   const eq = b.t === "keypoints" && prev?.t === "eq" ? prev.text : undefined;
-                  return <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} eq={eq} />;
+                  return <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} eq={eq} groupVideoCorrections={clipIds.length > 1} />;
                 })}
+                {clipIds.length > 1 && <VideoReviewNotes clipIds={clipIds} />}
               </div>
               )
             )}
