@@ -296,11 +296,11 @@ export default function CoachConsole() {
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({staffToken:admin.token})
       });
-      const result=await response.json() as {sent?:boolean;configured?:boolean;error?:string};
+      const result=await response.json() as {sent?:boolean;configured?:boolean;error?:string;missing?:string[]};
       setEmailTestResult(result.sent
         ?"Resend accepted the email from Almanac. Check the destination inbox and provider delivery status."
         :result.configured===false
-        ?"The runtime sender or Resend key is not configured. Check the Netlify environment variables and redeploy."
+        ?`Almanac could not detect: ${result.missing?.join(", ")||"required mail settings"}. Check these settings in Netlify, then redeploy.`
         :"Almanac could not send the email. Check Resend and Netlify runtime logs before retrying.");
     }catch{setEmailTestResult("The email check could not reach Almanac. Retry when the server is available.");}
     finally{setEmailTestBusy(false);}
