@@ -35,7 +35,7 @@ export default function PracticePage() {
 }
 
 function Practice() {
-  const { state } = useStudent();
+  const { state, authorizedCourses } = useStudent();
   const sp = useSearchParams();
   const [courseId, setCourseId] = useState(() => courseById(sp.get("course") ?? "")?.id ?? openCourses[0].id);
   const { modules, questions, latest, cases, course } = useCourse(courseId);
@@ -97,12 +97,12 @@ function Practice() {
   return (
     <>
       <PageHeader eyebrow={`${course?.title ?? ""} · ${questions.length} questions available`} title="Practice" />
-      {openCourses.length > 1 && (
+      {openCourses.filter(c => authorizedCourses.includes(c.id)).length > 1 && (
         <div className="mb-5">
-          <Chips label="Course" value={courseId} onChange={(v) => { setCourseId(v); setMods([]); }} options={openCourses.map((c) => [c.id, c.title] as [string, string])} />
+          <Chips label="Course" value={courseId} onChange={(v) => { setCourseId(v); setMods([]); }} options={openCourses.filter(c => authorizedCourses.includes(c.id)).map((c) => [c.id, c.title] as [string, string])} />
         </div>
       )}
-      {questions.length === 0 && <p className="mb-5 rounded-tile bg-white p-6 text-ink-body">Questions appear here once our nurse reviewer approves them.</p>}
+      {questions.length === 0 && <p className="alm-desk-card mb-5 p-6 text-ink-body">{authorizedCourses.length ? "Practice questions appear once our reviewer approves them." : "Practice becomes available with an approved paid enrollment."}</p>}
 
       {questions.length > 0 && (
         <section aria-label="Quick sets" className="mb-5 grid gap-3 sm:grid-cols-3">
