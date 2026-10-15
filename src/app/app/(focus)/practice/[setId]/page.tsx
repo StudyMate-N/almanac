@@ -3,7 +3,7 @@
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { Runner } from "@/components/runner";
-import { lessonById } from "@/content/course";
+import { courseById, lessonById, modules } from "@/content/course";
 import { shuffled } from "@/lib/hash";
 import { topicStats } from "@/lib/progress";
 import { useStudent } from "@/lib/store";
@@ -55,7 +55,9 @@ function Session() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setId, seed]);
 
-  return <Runner title={cfg.title} questions={cfg.qs} mode={cfg.mode} kind={cfg.mode === "exam" ? "exam" : "tutor"} minutes={cfg.minutes} />;
+  const courseId = modules.find((m) => m.id === cfg.qs[0]?.moduleId)?.courseId;
+  const eyebrow = courseId ? courseById(courseId)?.title : undefined;
+  return <Runner eyebrow={eyebrow} title={cfg.title} questions={cfg.qs} mode={cfg.mode} kind={cfg.mode === "exam" ? "exam" : "tutor"} minutes={cfg.minutes} />;
 }
 
 export default function PracticeSession() {

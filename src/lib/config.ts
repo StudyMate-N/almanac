@@ -11,6 +11,9 @@ export const MEDIA_BASE = process.env.NEXT_PUBLIC_MEDIA_BASE ?? "";
 
 export const REVIEWER = { name: "Emily Carter", credentials: "MSN, RN, CCRN" };
 
+/** Pass mark shown on simulation pre-start and results (design 15a/10c). Confirm with the course lead (handoff open item 15). */
+export const PASS_MARK = 75;
+
 export const EXAMS = {
   midterm: { label: "Midterm simulation", questions: 50, minutes: 60 },
   final: { label: "Final simulation", questions: 100, minutes: 120 },
