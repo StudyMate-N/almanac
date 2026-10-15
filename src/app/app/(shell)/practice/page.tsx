@@ -105,16 +105,16 @@ function Practice() {
       {questions.length === 0 && <p className="mb-5 rounded-tile bg-white p-6 text-ink-body">Questions appear here once our nurse reviewer approves them.</p>}
 
       {questions.length > 0 && (
-        <section aria-label="Quick sets" className="mb-5 grid gap-4 sm:grid-cols-3">
+        <section aria-label="Quick sets" className="mb-5 grid gap-3 sm:grid-cols-3">
           {presets.map((p) =>
             p.href ? (
-              <Link key={p.key} href={p.href} className="flex min-h-[120px] flex-col gap-1 rounded-tile bg-lilac p-5 hover:bg-violet-200">
+              <Link key={p.key} href={p.href} className="alm-desk-card flex min-h-[115px] flex-col gap-1 p-4 hover:bg-[#F3F0FD]">
                 <span className="font-display text-[19px] font-semibold text-violet-deep">{p.title}</span>
                 <span className="text-sm text-ink-body">{p.sub}</span>
                 <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-sm font-bold text-violet-700">Start</span>
               </Link>
             ) : (
-              <div key={p.key} className="flex min-h-[120px] flex-col gap-1 rounded-tile bg-white p-5 opacity-70">
+              <div key={p.key} className="alm-desk-card flex min-h-[115px] flex-col gap-1 p-4 opacity-70">
                 <span className="font-display text-[19px] font-semibold">{p.title}</span>
                 <span className="text-sm text-ink-muted">{p.sub}</span>
               </div>
@@ -125,7 +125,7 @@ function Practice() {
 
       <section className="mb-5 grid gap-4 sm:grid-cols-3">
         {(["midterm", "final"] as const).map((k) => (
-          <Link key={k} href={`/app/exam/${k}${cq}`} className="rounded-tile bg-sky p-5 text-sky-ink hover:brightness-95">
+          <Link key={k} href={`/app/exam/${k}${cq}`} className="rounded-[17px] bg-[#2A1B78] p-5 text-white hover:bg-[#3E25C9]">
             <p className="text-xs font-bold">Exam simulation</p>
             <p className="font-display text-lg font-semibold">{EXAMS[k].label}</p>
             <p className="text-sm">
@@ -134,7 +134,7 @@ function Practice() {
           </Link>
         ))}
         {cases.map((c) => (
-          <Link key={c.id} href={`/app/case/${c.id}`} className="rounded-tile bg-mint p-5 text-mint-ink hover:brightness-95">
+          <Link key={c.id} href={`/app/case/${c.id}`} className="alm-desk-card p-5 hover:bg-mint">
             <p className="text-xs font-bold">NGN case study</p>
             <p className="font-display text-lg font-semibold">{c.title}</p>
             <p className="text-sm">Six items, from cues to outcomes</p>
@@ -142,7 +142,7 @@ function Practice() {
         ))}
       </section>
 
-      <details className="group mb-5 rounded-tile bg-white">
+      <details className="group alm-desk-card mb-5">
         <summary className="flex min-h-[64px] cursor-pointer list-none items-center justify-between gap-3 px-6 font-display text-[21px] font-semibold [&::-webkit-details-marker]:hidden">
           Customize a set
           <span aria-hidden="true" className="text-[18px] text-violet-600 transition-transform group-open:rotate-180">
@@ -182,7 +182,7 @@ function Practice() {
       </details>
 
       {lessonSets.length > 0 && (
-        <section className="rounded-tile bg-white p-6">
+        <section className="alm-desk-card p-5">
           <h2 className="mb-3 font-display text-[21px] font-semibold">By lesson</h2>
           <ul className="grid gap-2 sm:grid-cols-2">
             {lessonSets.map((l) => {
@@ -200,7 +200,7 @@ function Practice() {
             })}
           </ul>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href="/app/practice/missed" className="rounded-full bg-peach px-4 py-2 text-sm font-bold text-peach-ink">
+            <Link href="/app/practice/missed" className="alm-desk-btn">
               Redo everything I missed
             </Link>
             <Link href="/app/practice/flagged" className="rounded-full bg-mist px-4 py-2 text-sm font-bold text-ink-muted">
