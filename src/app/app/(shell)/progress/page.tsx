@@ -20,12 +20,12 @@ export default function Progress() {
     return { id: a.sessionId, mode: a.mode, at: a.at, n: rows.length, right: rows.filter((r) => r.correct).length };
   });
   const reviewed = Object.values(state.deck?.log ?? {}).reduce((a, b) => a + b, 0);
-  const stat = "rounded-tile bg-white p-5";
+  const stat = "alm-desk-card p-5";
 
   return (
     <>
       <PageHeader eyebrow="Your progress" title="Where you stand" />
-      <div className="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           ["Questions answered", seen.length],
           ["Correct last time", seen.length ? `${Math.round((right / seen.length) * 100)}%` : "–"],
