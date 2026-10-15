@@ -17,7 +17,7 @@ const questions = [
  ["What if I sent payment but it hasn't appeared?", "Use the invoice's payment-report form, or contact support with your invoice reference. Do not transfer twice without checking; international bank settlement can take time."],
 ] as const;
 export default function HelpPage() {
-  return <div className="min-h-screen bg-ground text-ink"><SiteHeader/>
+  return <div className="alm-public min-h-screen"><SiteHeader/>
     <main className="mx-auto max-w-[980px] px-4 pb-24 pt-8 sm:px-6">
       <p className="text-xs font-bold uppercase tracking-widest text-violet-700">Almanac Help</p>
       <h1 className="mt-3 font-display text-[42px] font-semibold">Answers and next steps.</h1>
