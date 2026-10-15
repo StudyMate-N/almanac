@@ -286,6 +286,7 @@ export default function CoachConsole() {
   const [err, setErr] = useState("");
   const [emailTestBusy,setEmailTestBusy]=useState(false);
   const [emailTestResult,setEmailTestResult]=useState("");
+  const [pendingPaymentCount,setPendingPaymentCount]=useState<number|null>(null);
 
   const runEmailTest=async()=>{
     if(!admin||admin.role!=="owner"||emailTestBusy)return;
@@ -331,6 +332,11 @@ export default function CoachConsole() {
         setAdmin(null);
       } else setErr(friendlyError(e));
     });
+    if (admin.role !== "reviewer") {
+      void rpc<Array<{ payment_status: string }>>("learning_requests_list", { p_token: admin.token })
+        .then(rows => setPendingPaymentCount(rows.filter(r => r.payment_status === "reported").length))
+        .catch(() => setPendingPaymentCount(null));
+    }
   }, [admin]);
   useEffect(() => {
     refresh();
@@ -384,6 +390,19 @@ export default function CoachConsole() {
           </button>
         ))}
       </nav>
+      {admin.role !== "reviewer" && <a href="/coach/learning-requests"
+        className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-hairline bg-white p-4 hover:border-violet">
+        <div>
+          <p className="font-bold text-ink">Learning orders &amp; payments</p>
+          <p className="mt-1 text-sm text-ink-body">
+            {pendingPaymentCount === null ? "Checking new payment reports…" :
+              pendingPaymentCount === 0 ? "No payment reports awaiting verification." :
+              `${pendingPaymentCount} payment ${pendingPaymentCount === 1 ? "report" : "reports"} awaiting bank verification.`}
+          </p>
+          <p className="mt-1 text-xs text-ink-muted">Payment reports are separate from the Reports tab. Verify money received in your bank before granting learning access.</p>
+        </div>
+        <span className="rounded-full bg-lilac px-4 py-2 text-sm font-bold text-violet-700">Open payment queue →</span>
+      </a>}
       {admin.role==="owner"&&
         <details className="mb-5 rounded-2xl border border-hairline bg-white p-4">
           <summary className="cursor-pointer text-[13px] font-bold text-violet-700">System QA · Email delivery</summary>
