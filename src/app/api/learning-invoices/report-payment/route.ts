@@ -1,13 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/config";
 import { paymentReportEmail } from "@/lib/learning-mail";
+import { approvedRequestOrigin } from "@/lib/request-origin";
 
 const uuid=/^[0-9a-f-]{36}$/i;
 const tokenPattern=/^[0-9a-f]{48}$/i;
 
 export async function POST(request:NextRequest) {
-  const origin=request.headers.get("origin");
-  if (origin && origin!==new URL(request.url).origin) return NextResponse.json({error:"Invalid request origin."},{status:403});
+  if (!approvedRequestOrigin(request)) return NextResponse.json({error:"Invalid request origin."},{status:403});
   let payload: unknown;
   try {
     const raw=await request.text();
