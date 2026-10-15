@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRightIcon, CheckIcon, XIcon } from "@/components/icons";
 import { ReportButton, TutorButton } from "@/components/tutor";
-import { moduleById, modules, questionById, questions } from "@/content/course";
+import { lessonById, moduleById, modules, questionById, questions } from "@/content/course";
 import type { Question } from "@/content/types";
 import { shuffled } from "@/lib/hash";
 import { isCorrect, latestByQuestion, type Answer } from "@/lib/progress";
@@ -125,10 +126,59 @@ export function QuizBlock({ qs: pageQs, mode, pageId, onComplete }: Props) {
 
   if (mode === "test") {
     const answered = qs.filter((q) => (picks[q.id] ?? []).length).length;
+    const missed = submitted ? qs.filter((q) => !isCorrect(q, picks[q.id] ?? [])) : [];
+    const reviewTopics = [...missed.reduce((acc, q) => {
+      const lesson = q.lessonId ? lessonById(q.lessonId) : undefined;
+      const topic = q.topic && q.topic !== "Topics" ? q.topic : (lesson?.shortTitle ?? lesson?.title ?? "Related concept");
+      const key = lesson?.id ?? topic;
+      const existing = acc.get(key);
+      acc.set(key, {
+        label: existing?.label ?? topic,
+        lessonId: lesson && isVisible(lesson.id, lesson) ? lesson.id : undefined,
+        count: (existing?.count ?? 0) + 1,
+      });
+      return acc;
+    }, new Map<string, { label: string; lessonId?: string; count: number }>()).values()]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 4);
     return (
       <div className="flex flex-col gap-4">
         {submitted && <ScoreTile right={right} total={qs.length} mode="test" onRetake={retake} />}
-        <ol className="flex flex-col gap-4">
+        {submitted && missed.length > 0 && (
+          <section aria-label="Your targeted review plan" className="rounded-[18px] border border-[#D9D2F3] bg-white p-5 sm:p-6">
+            <p className="text-[11px] font-extrabold uppercase tracking-[.12em] text-violet-700">Your next study steps</p>
+            <h2 className="mt-2 font-display text-[21px] font-bold">Review these concepts before retaking the test</h2>
+            <p className="mt-2 text-[14px] leading-6 text-ink-body">
+              {missed.length} missed or unanswered question{missed.length === 1 ? "" : "s"}.
+              Follow a related lesson, then revisit the explanations below. You can practise missed questions before trying the full section test again.
+            </p>
+            <ol className="mt-4 space-y-2">
+              {reviewTopics.map((topic, i) => (
+                <li key={topic.label + i} className="flex flex-wrap items-center gap-3 rounded-xl bg-mist p-3.5">
+                  <span aria-hidden="true" className="grid h-8 w-8 flex-none place-items-center rounded-lg bg-[#ECE7FF] text-[13px] font-bold text-violet-deep">{i + 1}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px] font-semibold">{topic.label}</p>
+                    <p className="text-[12px] text-ink-muted">{topic.count} question{topic.count === 1 ? "" : "s"} to revisit</p>
+                  </div>
+                  {topic.lessonId && <Link href={`/app/learn/${topic.lessonId}`}
+                    className="inline-flex min-h-11 items-center rounded-full border border-[#D9D2F3] bg-white px-4 text-[12px] font-bold text-violet-700">
+                    Review lesson →
+                  </Link>}
+                </li>
+              ))}
+            </ol>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href="/app/practice?course=advanced-pathophysiology"
+                className="inline-flex min-h-11 items-center rounded-full bg-violet px-5 text-[13px] font-bold text-white">
+                Practise weak areas →
+              </Link>
+              <a href="#section-test-explanations" className="inline-flex min-h-11 items-center rounded-full border border-hairline bg-white px-4 text-[13px] font-bold text-violet-700">
+                Review answer explanations ↓
+              </a>
+            </div>
+          </section>
+        )}
+        <ol id="section-test-explanations" className="flex scroll-mt-24 flex-col gap-4">
           {qs.map((q, i) => (
             <li key={q.id} className="rounded-tile bg-white p-5 sm:p-6">
               <QuestionCard q={q} number={`Question ${i + 1} of ${qs.length}${fromSection(q) ? ` · From Section ${fromSection(q)}` : ""}${q.type === "multiple" ? " · Select all that apply" : ""}`} picks={picks[q.id] ?? []} onPick={(p) => setPicks((x) => ({ ...x, [q.id]: p }))} revealed={submitted} locked={submitted} />

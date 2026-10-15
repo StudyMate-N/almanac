@@ -13,7 +13,6 @@ import { VideoLedTopic, videoLedBlocks } from "@/components/player/video-led";
 import { ReportButton, TutorButton } from "@/components/tutor";
 import { courseById, lessonById, lessons, modulesInCourse, moduleById, questionById } from "@/content/course";
 import type { Card, Lesson, Question } from "@/content/types";
-import { REVIEWER } from "@/lib/config";
 import { minutesFor } from "@/lib/minutes";
 import { useStudent } from "@/lib/store";
 
@@ -24,6 +23,12 @@ export default function Player() {
   const { state, answers, update, isVisible, isApproved, preview, authorizedCourses } = useStudent();
   const [drawer, setDrawer] = useState(false);
   const [videoFocus, setVideoFocus] = useState(false);
+  const scrollToVideo = () => {
+    const target = document.querySelector<HTMLElement>("[data-patho-video-anchor]");
+    if (!target) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: reduceMotion ? "instant" : "smooth", block: "start" });
+  };
   const page = lessonById(lessonId);
   const mod = page ? moduleById(page.moduleId) : undefined;
   const course = mod ? courseById(mod.courseId) : undefined;
@@ -60,6 +65,14 @@ export default function Player() {
     setDrawer(false);
     setVideoFocus(false);
   }, [page?.id]);
+
+  useEffect(() => {
+    if (!videoFocus || !open) return;
+    const frame = requestAnimationFrame(() => scrollToVideo());
+    return () => cancelAnimationFrame(frame);
+    // Scroll only when switching into focus, not on playback or progress changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoFocus, page?.id, open]);
 
   useEffect(() => {
     setReachedEnd(false);
@@ -162,6 +175,12 @@ export default function Player() {
         </div>
       )}
 
+      {videoFocus && containsVideo && open && (
+        <button type="button" onClick={scrollToVideo} aria-label="Return to the current video"
+          className="fixed bottom-5 right-5 z-30 min-h-12 rounded-full border border-white/30 bg-violet-deep px-5 text-[13px] font-bold text-white shadow-lg hover:bg-violet focus-visible:outline-offset-4">
+          ↑ Return to video
+        </button>
+      )}
       <div className={`mx-auto grid gap-5 px-4 pb-16 pt-5 sm:px-6 ${videoFocus ? "max-w-[1060px] grid-cols-1" : "max-w-[1440px] lg:grid-cols-[268px_minmax(0,1fr)] xl:grid-cols-[288px_minmax(0,1fr)_272px] xl:gap-7"}`}>
         {!videoFocus && <aside data-outline-scroll className="sticky top-[80px] hidden h-[calc(100dvh-96px)] overflow-y-auto pr-1 lg:block">{outline}</aside>}
 
@@ -188,14 +207,14 @@ export default function Player() {
                   </span>
                 )
               )}
-              {preview && <span className={`rounded-full px-3 py-1 ${approved ? "bg-mint text-correct" : "bg-[#FFE9DC] text-[#A8430A]"}`}>{approved ? `Approved by ${REVIEWER.name}` : "Awaiting nurse review (preview)"}</span>}
+              {preview && <span className={`rounded-full px-3 py-1 ${approved ? "bg-mint text-correct" : "bg-[#FFE9DC] text-[#A8430A]"}`}>{approved ? "Approved for release (preview)" : "Awaiting content review (preview)"}</span>}
             </div>
 
             {!open ? (
               <div className="rounded-[16px] border border-hairline bg-white p-6 text-ink-body">
                 <p className="font-display text-xl font-semibold text-ink">This page opens once it&apos;s approved</p>
                 <p className="mt-1">
-                  Every page is checked by {REVIEWER.name}, {REVIEWER.credentials}, before students see it.
+                  This lesson is awaiting its content approval before it can be released to learners.
                 </p>
               </div>
             ) : (

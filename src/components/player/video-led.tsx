@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { questionById } from "@/content/course";
 import { type Clip, clipById } from "@/content/patho";
 import type { Block, Card, Lesson, Question } from "@/content/types";
-import { MEDIA_BASE, REVIEWER } from "@/lib/config";
+import { MEDIA_BASE } from "@/lib/config";
 import { readingWords } from "@/lib/minutes";
 import { useStudent } from "@/lib/store";
 import { BlockView, OpenPrompt, Predict, TopicHead, toSec } from "./blocks";
@@ -42,6 +42,7 @@ const NOTE_KINDS = new Set<Block["t"]>(["h2", "p", "ul", "ol", "table", "img", "
 export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete, focusMode = false }: { page: Lesson; videos: VideoBlock[]; visibleQ: (q: Question) => boolean; visibleCards: (c: Card) => boolean; onComplete: () => void; focusMode?: boolean }) {
   const { state, answers } = useStudent();
   const video = useRef<HTMLVideoElement>(null);
+  const notesRef = useRef<HTMLElement>(null);
   const pending = useRef<{ local: number; play: boolean } | null>(null);
   const [seg, setSeg] = useState(0);
   const [t, setT] = useState(0);
@@ -177,6 +178,15 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
   const cur = segs[seg];
   const base = `${MEDIA_BASE.replace(/\/$/, "")}/${cur.clip.id}`;
   const message = !predictDone ? "Choose an answer above to unlock play" : active ? "Paused for a learning check below" : ended ? "Video complete · review your checks" : "Your prediction is saved · ready to watch";
+  const revealNotes = () => {
+    setNotesOpen(true);
+    requestAnimationFrame(() => {
+      notesRef.current?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        block: "start",
+      });
+    });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -191,7 +201,7 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
           </Predict>
         </div>
       )}
-      <section aria-label="Course video" className="flex flex-col gap-2.5">
+      <section data-patho-video-anchor aria-label="Course video" className="flex scroll-mt-20 flex-col gap-2.5 sm:scroll-mt-24">
         <div className="relative aspect-video w-full overflow-hidden rounded-3xl bg-violet-deep text-white">
           <video
             key={cur.clip.id}
@@ -290,7 +300,7 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
             railEl,
           )}
         <p className="text-[13px] text-ink-muted">
-          Course video · {fmt(total)} · {stops.length} stop{stops.length === 1 ? "" : "s"} for questions · Script approved by {REVIEWER.name}, {REVIEWER.credentials}
+          Course video · {fmt(total)} · {stops.length} stop{stops.length === 1 ? "" : "s"} for questions · English captions and correction notes available
         </p>
         {segs.some((s) => s.clip.corrections.length > 0) && (
           <details className="rounded-[16px] border border-hairline bg-white px-4 py-3.5">
@@ -330,11 +340,22 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
         </section>
       )}
 
-      {keypoints?.t === "keypoints" && <TopicHead items={keypoints.items} />}
+      {(keypoints?.t === "keypoints" || notes.length > 0) && (
+        <section className="rounded-[16px] border border-[#D9D2F3] bg-white p-4 sm:p-5" aria-label="Readable video revision aids">
+          <p className="text-[11px] font-extrabold uppercase tracking-[.12em] text-violet-700">Video clarity aid</p>
+          <h3 className="mt-1 font-display text-[19px] font-bold">What to remember</h3>
+          <p className="mt-2 text-[13px] leading-6 text-ink-body">The original video is 360p. Use captions while watching, then read these key ideas and the full notes for clearer diagrams and explanations.</p>
+          {keypoints?.t === "keypoints" && <div className="mt-4"><TopicHead items={keypoints.items} /></div>}
+          {notes.length > 0 && <button type="button" onClick={revealNotes}
+            className="mt-4 min-h-11 rounded-full bg-violet px-5 text-[13px] font-bold text-white">
+            Open readable notes & diagrams →
+          </button>}
+        </section>
+      )}
       {open?.t === "open" && <OpenPrompt id={open.id} stem={open.stem} expert={open.expert} />}
 
       {notes.length > 0 && (
-        <section className="flex flex-col gap-6">
+        <section ref={notesRef} className="flex scroll-mt-24 flex-col gap-6">
           <button onClick={() => setNotesOpen(!notesOpen)} aria-expanded={notesOpen} className="flex w-full items-center gap-3 rounded-card bg-white p-[16px_18px] text-left">
             <span className="min-w-0 flex-1">
               <span className="block font-display text-[18px] font-semibold">Full notes</span>

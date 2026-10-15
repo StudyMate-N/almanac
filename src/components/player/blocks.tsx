@@ -29,7 +29,7 @@ export function Corrections({ clip, seek }: { clip: Clip; seek: (at: string) => 
   return (
     <details className="rounded-[14px] border border-hairline bg-white px-4 py-3 text-[14px]">
       <summary className="cursor-pointer font-bold text-violet-700">
-        <span className="text-ink">Updated after nurse review.</span> <span className="font-semibold text-ink-body">{clip.corrections.length} statement{clip.corrections.length > 1 ? "s" : ""} in this clip {clip.corrections.length > 1 ? "were" : "was"} corrected</span>
+        <span className="text-ink">Video correction notes.</span> <span className="font-semibold text-ink-body">{clip.corrections.length} statement{clip.corrections.length > 1 ? "s" : ""} in this clip {clip.corrections.length > 1 ? "were" : "was"} corrected</span>
       </summary>
       <ul className="mt-3 flex flex-col gap-2.5">
         {clip.corrections.map((c) => (
@@ -57,13 +57,16 @@ function ClipBlock({ clip: id, note, groupedCorrections = false }: { clip: strin
     }
   };
   return (
-    <figure data-patho-clip={clip.id} className="flex flex-col gap-3">
+    <figure data-patho-video-anchor data-patho-clip={clip.id} className="flex scroll-mt-20 flex-col gap-3 sm:scroll-mt-24">
       <VideoPlayer ref={video} video={clip.id} title={clip.title} label={`Video: ${clip.title}`} />
       <figcaption className="flex flex-wrap items-baseline justify-between gap-2 px-1">
         <span className="font-display text-[17px] font-semibold">{clip.title}</span>
         <span className="rounded-full bg-white px-3 py-0.5 text-[13px] font-semibold text-ink-muted">Course video · {clip.duration}</span>
       </figcaption>
       {note && <p className="px-1 text-[15px] text-ink-body">{note}</p>}
+      <p className="px-1 text-[12.5px] leading-5 text-ink-muted">
+        360p original · Turn on captions to follow the narration. Use the written explanation and diagrams on this lesson page for clearer detail.
+      </p>
       {!groupedCorrections && <Corrections clip={clip} seek={seek} />}
     </figure>
   );
