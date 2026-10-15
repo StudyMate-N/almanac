@@ -10,14 +10,14 @@ export const metadata: Metadata = {
 
 export default function CoursesPage() {
   return (
-    <div className="min-h-screen bg-ground text-ink">
+    <div className="alm-public min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-[1100px] px-4 pb-24 pt-8 sm:px-6">
-        <p className="text-sm font-semibold text-violet-700">EXPLORE ALMANAC</p>
-        <h1 className="mt-3 max-w-3xl font-display text-[40px] font-semibold leading-tight sm:text-[52px]">
+        <p className="alm-eyebrow">Explore Almanac</p>
+        <h1 className="mt-3 max-w-3xl font-display text-[36px] font-bold leading-[1.06] sm:text-[46px]">
           What would you like to learn?
         </h1>
-        <p className="mt-4 max-w-2xl text-lg text-ink-body">
+        <p className="mt-4 max-w-2xl text-[15px] text-ink-body">
           Find a course, prepare for an exam, or explore resources for something you're working on.
         </p>
         <CourseCatalog courses={courses} />
