@@ -102,10 +102,11 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
             <p className="mt-2 text-sm text-ink-body">Pay the fixed CAD amount above, and include the invoice reference in your transfer memo.</p>
             <dl className="mt-5 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
               {([
-                ["Beneficiary",bank.beneficiary],["Bank",bank.name],["Bank address",bank.address],
+                ["Beneficiary name",bank.beneficiary],["Bank name",bank.name],
+                ["Account number",bank.accountNumber],["Account type",bank.accountType],
                 ["Institution number",bank.institution],["Transit number",bank.transit],
-                ["Account type",bank.accountType],["Account number",bank.accountNumber],
-                ["Account currency",bank.currency],["Payment reference",invoice.invoiceRef],
+                ["Bank address",bank.address],["Account currency",bank.currency],
+                ["Payment reference",invoice.invoiceRef],
               ] as const).map(([key,value])=><div key={key} className="min-w-0">
                 <dt className="text-xs font-medium text-ink-muted">{key}</dt><dd className="mt-1 break-words font-semibold">{value}</dd>
               </div>)}
