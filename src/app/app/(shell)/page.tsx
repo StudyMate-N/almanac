@@ -67,6 +67,14 @@ export default function Today() {
  return <div className="mx-auto max-w-[1110px]">
   <PageHeader eyebrow={new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})} title={name?`Hi, ${name}`:"Today"}/>
   <p className="-mt-2 mb-6 text-[13px] text-ink-muted">A clearer view of what to learn and what comes next.</p>
+  {authorizedCourses.includes("advanced-pharmacology")&&<section className="alm-desk-card mb-5 flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
+    <div>
+      <p className="alm-desk-eyebrow">Your Advanced Pharmacology enrollment</p>
+      <h2 className="mt-2 text-[22px] font-bold">NUR-635 Midterm Study Sprint</h2>
+      <p className="mt-2 max-w-[600px] text-[13px] text-ink-body">Review Topics 1–8, practise clinical decisions and get ready for the October midterm.</p>
+    </div>
+    <Link href="/app/midterm/nur635" className="alm-desk-btn">Continue midterm prep →</Link>
+  </section>}
   <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_294px]">
     <div className="space-y-5">
       {availableCourses.map(course=><section key={course.id}>
