@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import {WorkspaceShell} from "@/components/workspace-shell";
+import {markOrdersSeen} from "@/components/app-nav";
 import {StudentPlanReview} from "@/components/site/student-plan-review";
 import { useCallback, useEffect, useState } from "react";
 import { rpc } from "@/lib/api";
@@ -74,6 +75,7 @@ export default function LearningOrdersPage(){
   try{
    const rows=await rpc<Order[]>("learning_student_orders",{p_token:token});
    setOrders(rows);
+   markOrdersSeen(rows);
    const current=selected&&rows.some(r=>r.id===selected)?selected:rows[0]?.id||null;
    setSelected(current);
    if(current){
