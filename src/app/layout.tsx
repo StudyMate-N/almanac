@@ -3,6 +3,7 @@ import "@fontsource-variable/outfit";
 import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 import "./almanac-public.css";
+import "./almanac-workspace.css";
 
 export const metadata: Metadata = {
   title: {
