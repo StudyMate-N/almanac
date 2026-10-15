@@ -3,6 +3,7 @@ import Link from "next/link";
 import {useEffect,useState} from "react";
 import {rpc,friendlyError} from "@/lib/api";
 import {COACH_KEY} from "@/lib/store";
+import {nur635VideoUrl} from "@/lib/nur635-video";
 
 type Question={stem:string;options:string[];correctIndex:number;explanation:string};
 type Flashcard={front:string;back:string};
@@ -13,6 +14,10 @@ type Mode="lesson"|"practice"|"flashcards"|"rehearsal"|"video";
 
 export default function OwnerMidtermPreview(){
  const [pack,setPack]=useState<Pack|null>(null);
+ const [ownerToken,setOwnerToken]=useState("");
+ const [videoUrl,setVideoUrl]=useState<string|null>(null);
+ const [videoBusy,setVideoBusy]=useState(false);
+ const [videoError,setVideoError]=useState("");
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState("");
  const [topic,setTopic]=useState(0);
@@ -32,13 +37,25 @@ export default function OwnerMidtermPreview(){
     setError("Please sign in as Almanac Owner before opening this private preview.");
     setLoading(false);return;
    }
-   void rpc<{content:Pack|null;published:boolean}>("learning_curated_staff_pack_get",{p_token:admin.token,p_course:"advanced-pharmacology"})
+   setOwnerToken(admin.token);
+    void rpc<{content:Pack|null;published:boolean}>("learning_curated_staff_pack_get",{p_token:admin.token,p_course:"advanced-pharmacology"})
     .then(res=>{if(!active)return;setPack(res.content||null);if(!res.content)setError("The reviewed study pack has not been imported yet.");})
     .catch(e=>{if(active)setError(friendlyError(e));})
     .finally(()=>{if(active)setLoading(false);});
   }catch{setError("Owner session unavailable. Sign in again.");setLoading(false);}
   return()=>{active=false};
  },[]);
+ useEffect(()=>{
+  if(mode!=="video"||!ownerToken)return;
+  let active=true;setVideoUrl(null);setVideoError("");
+  if(topic===3){setVideoBusy(false);return;}
+  setVideoBusy(true);
+  void nur635VideoUrl(ownerToken,topic+1)
+   .then(url=>{if(active)setVideoUrl(url);})
+   .catch(e=>{if(active)setVideoError(e instanceof Error?e.message:"Unable to play video.");})
+   .finally(()=>{if(active)setVideoBusy(false);});
+  return()=>{active=false};
+ },[mode,ownerToken,topic]);
  const current=pack?.modules[topic];
  const practice=current?.practice[questionIdx];
  const flashcard=current?.flashcards[cardIdx];
@@ -83,7 +100,7 @@ export default function OwnerMidtermPreview(){
     </div>
     <h2 className="mt-3 font-display text-[27px] font-bold leading-tight">{current?.title}</h2>
     <nav className="mt-6 flex flex-wrap gap-2" aria-label="Preview activities">
-     {([["lesson","Read lesson"],["practice","Practice"],["flashcards","Flashcards"],["rehearsal","Exam rehearsal"],["video","Video status"]] as [Mode,string][]).map(([k,l])=>
+     {([["lesson","Read lesson"],["practice","Practice"],["flashcards","Flashcards"],["rehearsal","Exam rehearsal"],["video","Watch video"]] as [Mode,string][]).map(([k,l])=>
       <button key={k} type="button" onClick={()=>switchMode(k)} aria-pressed={mode===k}
        className={`min-h-11 rounded-full px-4 text-[12px] font-bold ${mode===k?"bg-[#2A1B78] text-white":"border border-hairline bg-white text-violet-700"}`}>{l}</button>)}
     </nav>
@@ -140,10 +157,16 @@ export default function OwnerMidtermPreview(){
       <button type="button" disabled={!simulation||simQuestion>=simulation.questions.length-1} onClick={()=>{setSimQuestion(i=>i+1);setSimAnswer(null)}} className="min-h-11 rounded-full bg-violet px-4 text-sm text-white disabled:opacity-40">Next question →</button>
      </div>
     </div>}
-    {mode==="video"&&<div className="mt-7 rounded-[16px] border border-[#E6D3B7] bg-[#FFF7EE] p-6">
-     <h3 className="font-display text-[23px] font-bold">Instructional videos pending integration</h3>
-     <p className="mt-3 text-[14px] leading-7 text-ink-body">The supplied narrations have not yet been incorporated into the course player. Video-by-video clinical, sequence, sound and rights checks remain part of your final acceptance review. This preview does not claim those assets are published.</p>
-     <p className="mt-4 text-xs font-bold text-[#A8430A]">Student invitation remains on hold until you approve the completed course.</p>
+    {mode==="video"&&<div className="mt-7 rounded-[16px] border border-hairline bg-[#F7F6FB] p-5 sm:p-6">
+     <h3 className="font-display text-[23px] font-bold">Topic {topic+1} · Video overview</h3>
+     <p className="mt-2 text-[14px] leading-6 text-ink-body">This recording streams from Almanac's private course storage. The original source link is not exposed in the public catalog.</p>
+     {topic===3?<div className="mt-5 rounded-xl bg-[#FFF3E8] p-5 text-sm text-[#8B491B]"><strong>No dedicated Topic 4 recording was supplied.</strong> The topic's lesson, practice and cards remain available.</div>:
+       videoBusy?<div className="mt-5 rounded-xl bg-white p-6 text-sm">Preparing secure video playback…</div>:
+       videoError?<p role="alert" className="mt-5 rounded-xl bg-[#FDEBEF] p-4 text-sm text-[#8A1C37]">{videoError}</p>:
+       videoUrl?<video key={videoUrl} className="mt-5 aspect-video w-full rounded-xl bg-black" controls playsInline preload="metadata" controlsList="nodownload">
+         <source src={videoUrl} type="video/mp4"/>Your browser cannot play this recording.
+       </video>:<p className="mt-5 rounded-xl bg-white p-4 text-sm">This recording is not available yet.</p>}
+     <p className="mt-4 text-xs text-ink-muted">Check narration accuracy, slide-to-audio sync, readability and reuse rights before final learner release. Jocelyne's invitation remains on hold.</p>
     </div>}
     <footer className="mt-9 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-5">
      <button type="button" disabled={topic===0} onClick={()=>selectTopic(topic-1)} className="min-h-11 rounded-full border border-hairline px-5 text-sm disabled:opacity-40">← Previous topic</button>
