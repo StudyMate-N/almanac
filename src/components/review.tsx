@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CheckIcon, UndoIcon, XIcon } from "@/components/icons";
-import { modules } from "@/content/course";
+import { courseById, modules } from "@/content/course";
 import { BOOK } from "@/content/patho/author";
 import { dayKey, formatInterval, gradeCard, grades, isNew, nextDueDate, previewIntervals, ROUND, storeDeck, type Deck } from "@/lib/deck";
 import { useStudent } from "@/lib/store";
@@ -145,46 +145,53 @@ export function Review() {
   }, [currentId, flipped, flip, grade, resting, nextRound, undo]);
 
   const left = session?.queue.length ?? 0;
+  const contentModule = content ? modules.find((m) => m.id === content.moduleId) : undefined;
+  const courseTitle = courseById(contentModule?.courseId ?? "")?.title ?? "Your cards";
+  const here = contentModule ? (contentModule.kind === "section" ? `Section ${contentModule.number}` : contentModule.title) : "";
   const roundSize = session ? Math.min(ROUND, session.inRound + left) : ROUND;
 
   return (
-    <div className="alm-focus mx-auto flex min-h-dvh w-full max-w-[680px] flex-col px-4 sm:px-6">
-      <header className="flex flex-col gap-3 border-b border-hairline pb-4 pt-3.5">
-        <div className="flex items-center gap-3">
-          <Link href="/app" aria-label="End review" className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white text-ink hover:bg-mist">
-            <XIcon size={18} />
-          </Link>
-          <div className="min-w-0 flex-1">
-            <p className="alm-desk-eyebrow">{session && session.graded + left > ROUND ? `Cards · Round ${session.round}` : "Cards"}</p>
-            <p className="font-display text-[18px] font-bold" aria-live="polite">
-              {!session ? "Loading…" : left === 0 ? "Done for today" : `${left} left · about ${minutes(left)} min`}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={undo}
-            disabled={history.length === 0}
-            aria-label="Undo last answer"
-            title="Undo (U)"
-            className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white text-ink-muted hover:bg-mist disabled:opacity-40"
-          >
-            <UndoIcon size={18} />
-          </button>
+    <div className="alm-focus flex min-h-dvh w-full flex-col">
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-[#EEEBF7] bg-white px-4 sm:h-[60px] sm:gap-3.5 sm:px-6" style={{ viewTransitionName: "focus-bar" }}>
+        <Link href="/app" aria-label="End review" className="grid h-11 w-11 flex-none place-items-center rounded-full border border-hairline text-ink hover:bg-mist sm:h-10 sm:w-10">
+          <XIcon size={16} />
+        </Link>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="hidden truncate text-[11.5px] font-bold text-violet-700 sm:block">{courseTitle}{session && session.graded + left > ROUND ? ` · Round ${session.round}` : ""}</span>
+          <span className="truncate font-display text-[15px] font-bold text-ink" aria-live="polite">
+            {!session ? "Loading…" : left === 0 ? "Flashcards · done for today" : `Flashcards${here ? ` · ${here}` : ""}`}
+          </span>
         </div>
-        {session && <div className="flex flex-wrap items-center gap-2">
-          <span className="alm-desk-chip alm-chip-due">{left} due</span>
-          <span className="alm-desk-chip alm-chip-ready">{state.deck?.log?.[dayKey()] ?? 0} reviewed today</span>
-        </div>}
-        {session && left > 0 && (
-          <div aria-hidden="true" className="flex gap-1">
-            {Array.from({ length: roundSize }, (_, i) => (
-              <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i < session.inRound ? "bg-violet" : i === session.inRound && !resting ? "bg-violet-300" : "bg-hairline"}`} />
-            ))}
+        {session && (
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-[#FFE9DC] px-2.5 py-1 text-[12px] font-bold whitespace-nowrap text-[#A8430A]">{left} due</span>
+            <span className="hidden rounded-full bg-mint px-2.5 py-1 text-[12px] font-bold whitespace-nowrap text-correct sm:inline">{state.deck?.log?.[dayKey()] ?? 0} reviewed today</span>
           </div>
         )}
+        <button
+          type="button"
+          onClick={undo}
+          disabled={history.length === 0}
+          aria-label="Undo last answer"
+          title="Undo (U)"
+          className="grid h-10 w-10 flex-none place-items-center rounded-full text-ink-muted hover:bg-mist disabled:opacity-30"
+        >
+          <UndoIcon size={17} />
+        </button>
       </header>
 
-      <main className="flex flex-1 flex-col gap-3 pb-[max(16px,env(safe-area-inset-bottom))]">
+      <div className="mx-auto flex w-full max-w-[720px] flex-1 flex-col px-4 pt-4 sm:px-0 sm:pt-8">
+      {session && left > 0 && (
+        <div className="mb-3 flex items-center gap-3">
+          <div aria-hidden="true" className="flex flex-1 gap-1">
+            {Array.from({ length: roundSize }, (_, i) => (
+              <span key={i} className={`h-[5px] flex-1 rounded-full transition-colors duration-300 ${i < session.inRound ? "bg-violet" : i === session.inRound && !resting ? "bg-violet-300" : "bg-[#EFEDF5]"}`} />
+            ))}
+          </div>
+          <span className="text-[12px] font-bold whitespace-nowrap text-ink-muted">{left} left · about {minutes(left)} min</span>
+        </div>
+      )}
+      <main className="flex flex-1 flex-col gap-3 pb-[max(16px,env(safe-area-inset-bottom))] sm:justify-center sm:pb-16">
         {!session || !deck ? null : resting ? (
           <Breather session={session} onContinue={nextRound} />
         ) : !content ? (
@@ -204,7 +211,7 @@ export function Review() {
             />
 
             {/* One action spot: the same place before and after the flip, so the hand never travels. */}
-            <div className="flex min-h-[90px] flex-col justify-end gap-2">
+            <div className="flex min-h-[90px] flex-col justify-start gap-2 pt-1">
               {flipped && intervals ? (
                 <>
                   <div className="grid grid-cols-4 gap-2 motion-safe:animate-[fade-in_200ms_ease-out]" role="group" aria-label="How well did you recall it?">
@@ -214,10 +221,10 @@ export function Review() {
                         type="button"
                         onClick={() => grade(g.grade)}
                         aria-keyshortcuts={String(g.grade)}
-                        className={`flex min-h-[62px] flex-col items-center justify-center gap-0.5 rounded-[14px] border border-hairline ${g.tone} hover:brightness-95 ${g.grade === Rating.Good ? "ring-2 ring-violet/30" : ""}`}
+                        className={`flex h-14 flex-col items-center justify-center gap-0.5 rounded-[12px] sm:h-[60px] sm:rounded-[14px] ${g.tone} hover:brightness-[.96] ${g.grade === Rating.Good ? "ring-2 ring-violet/25" : ""}`}
                       >
                         <span className="text-[15px] font-bold">{g.label}</span>
-                        <span className="text-xs font-semibold opacity-80">{intervals[g.grade]}</span>
+                        <span className="text-[11.5px] font-semibold opacity-85">{intervals[g.grade]}</span>
                       </button>
                     ))}
                   </div>
@@ -228,16 +235,16 @@ export function Review() {
                 </>
               ) : (
                 <>
-                  <button type="button" onClick={flip} className="min-h-[60px] rounded-full bg-violet text-[16px] font-bold text-white hover:bg-violet-600">
+                  <button type="button" onClick={flip} className="h-[52px] rounded-[12px] bg-violet text-[15px] font-bold text-white hover:bg-[#4A2DE6] sm:mx-auto sm:h-12 sm:w-[240px]">
                     Show answer
                   </button>
-                  <p className="hidden text-center text-xs text-ink-muted sm:block">Space to show</p>
                 </>
               )}
             </div>
           </>
         )}
       </main>
+      </div>
     </div>
   );
 }
@@ -302,7 +309,7 @@ function FlashCard({
       onPointerUp={onUp}
       onPointerCancel={onUp}
       style={{ transform: dx ? `translateX(${dx}px) rotate(${dx / 30}deg)` : undefined, touchAction: flipped ? "pan-y" : undefined }}
-      className={`relative flex max-h-[580px] min-h-[310px] flex-1 flex-col overflow-hidden rounded-[20px] border border-hairline bg-white shadow-[0_8px_25px_rgba(42,27,120,.05)] motion-safe:animate-card-in ${dx ? "" : "transition-transform duration-200"} ${flipped ? "" : "cursor-pointer"}`}
+      className={`relative flex max-h-[580px] min-h-[310px] flex-1 flex-col overflow-hidden rounded-[20px] border border-hairline bg-white shadow-[0_18px_40px_rgba(42,27,120,.08)] motion-safe:animate-card-in sm:min-h-[380px] sm:flex-none ${dx ? "" : "transition-transform duration-200"} ${flipped ? "" : "cursor-pointer"}`}
     >
       {dx !== 0 && (
         <>
@@ -317,8 +324,9 @@ function FlashCard({
         </>
       )}
 
-      <div className="relative flex items-center justify-between gap-3 px-[22px] pt-5">
-        <span className="min-w-0 truncate rounded-full bg-lilac px-3 py-1 text-xs font-bold text-violet-700">{section}</span>
+      <div className="relative flex items-center justify-between gap-3 px-[22px] pt-5 sm:px-11 sm:pt-10">
+        <span className="text-[11px] font-extrabold tracking-[.14em] text-ink-muted">{flipped ? "ANSWER" : "QUESTION"}</span>
+        <span className="hidden min-w-0 truncate text-[11px] font-extrabold tracking-[.12em] text-ink-muted uppercase sm:block">{section}</span>
       </div>
 
       {/*
@@ -326,9 +334,9 @@ function FlashCard({
         fills it; on the flip the question shrinks and the answer opens directly beneath it,
         so the eye moves a few lines down, not across the card. Left-aligned in both states.
       */}
-      <div className="relative flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-[22px] py-5">
+      <div className="relative flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-[22px] py-5 sm:px-11">
         <h2
-          className={`font-display transition-[font-size,line-height,color] duration-300 ease-out motion-reduce:transition-none ${flipped ? "text-[17px] leading-snug font-semibold text-ink-muted" : `${frontSize(front)} font-medium text-ink`}`}
+          className={`font-display transition-[font-size,line-height,color] duration-300 ease-out motion-reduce:transition-none ${flipped ? "text-[17px] leading-snug font-semibold text-ink-muted" : `${frontSize(front)} font-bold tracking-[-.02em] text-ink`}`}
         >
           {front}
         </h2>
@@ -345,11 +353,12 @@ function FlashCard({
             </div>
           </div>
         </div>
-        <p aria-hidden={flipped} className={`mt-6 text-[13px] font-semibold text-ink-faint transition-opacity duration-150 ${flipped ? "opacity-0" : "opacity-100"}`}>
-          {flipped ? "\u00a0" : "Tap the card or press Space"}
-        </p>
       </div>
-      <p className={`relative px-[22px] pb-5 text-xs text-ink-muted transition-opacity duration-300 ${flipped && source ? "opacity-100" : "opacity-0"}`}>{source || "\u00a0"}</p>
+      <p aria-hidden={flipped} className={`relative px-[22px] text-center text-[12.5px] text-ink-muted ${flipped ? "hidden" : "pb-5 sm:pb-9"}`}>
+        <span className="sm:hidden">Tap the card or press Space to show the answer</span>
+        <span className="hidden sm:inline">Click the card or press Space to show the answer</span>
+      </p>
+      {flipped && <p className={`relative px-[22px] pb-5 text-xs text-ink-muted transition-opacity duration-300 sm:px-11 sm:pb-8 ${source ? "opacity-100" : "opacity-0"}`}>{source || "\u00a0"}</p>}
     </section>
   );
 }
@@ -357,8 +366,8 @@ function FlashCard({
 function Breather({ session, onContinue }: { session: Session; onContinue: () => void }) {
   const left = session.queue.length;
   return (
-    <section className="flex max-h-[560px] flex-1 flex-col justify-center gap-5 rounded-tile bg-white p-7 motion-safe:animate-card-in" aria-live="polite">
-      <p className="text-xs font-extrabold tracking-[.06em] text-violet-600 uppercase">Round {session.round} done</p>
+    <section className="flex max-h-[560px] flex-1 flex-col justify-center gap-5 rounded-[20px] border border-hairline bg-white p-7 shadow-[0_18px_40px_rgba(42,27,120,.08)] motion-safe:animate-card-in sm:flex-none sm:p-11" aria-live="polite">
+      <p className="text-[11px] font-extrabold tracking-[.14em] text-violet-700 uppercase">Round {session.round} done</p>
       <h1 className="font-display text-[30px] leading-tight font-semibold">Good place for a breath.</h1>
       <p className="text-ink-body">
         {session.firsts > 0 && `You recalled ${session.recalled} of ${session.firsts} on the first try. `}
@@ -368,10 +377,10 @@ function Breather({ session, onContinue }: { session: Session; onContinue: () =>
         {left} left · about {minutes(left)} min
       </p>
       <div className="flex flex-col gap-2.5 sm:flex-row">
-        <button type="button" onClick={onContinue} className="min-h-[56px] rounded-full bg-violet px-7 font-bold text-white hover:bg-violet-600">
+        <button type="button" onClick={onContinue} className="h-12 rounded-[12px] bg-violet px-7 font-bold text-white hover:bg-[#4A2DE6]">
           Keep going
         </button>
-        <Link href="/app" className="inline-flex min-h-[56px] items-center justify-center rounded-full bg-mist px-7 font-bold text-ink hover:bg-hairline">
+        <Link href="/app" className="inline-flex h-12 items-center justify-center rounded-[12px] border-[1.5px] border-[#D9D2F3] bg-white px-7 font-bold text-violet-deep hover:bg-mist">
           Stop for now
         </Link>
       </div>
@@ -384,7 +393,7 @@ function Finished({ deck, session }: { deck: Deck; session: Session }) {
   const now = new Date();
   const reviewed = session.seen.length;
   return (
-    <section className="mt-2 flex flex-col items-start gap-4 rounded-tile bg-white p-7 motion-safe:animate-card-in">
+    <section className="mt-2 flex flex-col items-start gap-4 rounded-[20px] border border-hairline bg-white p-7 shadow-[0_18px_40px_rgba(42,27,120,.08)] motion-safe:animate-card-in sm:p-11">
       <span className="grid h-14 w-14 place-items-center rounded-2xl bg-mint text-correct" aria-hidden="true">
         <CheckIcon size={26} />
       </span>
@@ -408,7 +417,7 @@ function Finished({ deck, session }: { deck: Deck; session: Session }) {
         </ul>
       )}
       <div className="flex flex-wrap gap-2.5">
-        <Link href="/app" className="inline-flex min-h-[52px] items-center rounded-full bg-violet px-6 font-bold text-white hover:bg-violet-600">
+        <Link href="/app" className="inline-flex h-12 items-center rounded-[12px] bg-violet px-6 font-bold text-white hover:bg-[#4A2DE6]">
           Back to Today
         </Link>
       </div>

@@ -76,10 +76,10 @@ export function formatInterval(due: Date, now: Date): string {
 }
 
 export const grades: { grade: Grade; label: string; tone: string }[] = [
-  { grade: Rating.Again, label: "Again", tone: "bg-rose text-rose-ink" },
-  { grade: Rating.Hard, label: "Hard", tone: "bg-peach text-peach-ink" },
-  { grade: Rating.Good, label: "Good", tone: "bg-mint text-mint-ink" },
-  { grade: Rating.Easy, label: "Easy", tone: "bg-lilac text-violet-700" },
+  { grade: Rating.Again, label: "Again", tone: "bg-[#FFE9DC] text-[#A8430A]" },
+  { grade: Rating.Hard, label: "Hard", tone: "border border-hairline bg-white text-violet-deep" },
+  { grade: Rating.Good, label: "Good", tone: "bg-lilac text-violet-deep" },
+  { grade: Rating.Easy, label: "Easy", tone: "bg-mint text-correct" },
 ];
 
 export function previewIntervals(card: FsrsCard, now: Date): Record<number, string> {
