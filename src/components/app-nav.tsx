@@ -23,7 +23,7 @@ export { useDueCount };
 export function Sidebar() {
   const pathname = usePathname();
   const due = useDueCount();
-  const { state } = useStudent();
+  const { state, authorizedCourses } = useStudent();
   return (
     <aside className="sticky top-0 hidden h-dvh w-[232px] flex-none flex-col gap-7 border-r border-hairline bg-white px-4 py-5 lg:flex">
       <div className="px-2">
@@ -52,7 +52,7 @@ export function Sidebar() {
         </Link>
       </nav>
       <div className="mt-auto flex flex-col gap-2">
-        {openCourses.map((c) => {
+        {openCourses.filter(c => authorizedCourses.includes(c.id)).map((c) => {
           const plan = planFor(state, c.id);
           return (
             <Link key={c.id} href={`/app/courses/${c.id}`} className="rounded-[14px] border border-hairline bg-[#F6F4FB] p-4 hover:bg-lilac">
@@ -70,9 +70,10 @@ export function Sidebar() {
 export function TabBar() {
   const pathname = usePathname();
   const due = useDueCount();
+  const mobileItems = items.filter(item => item.label !== "Orders");
   return (
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 gap-1 rounded-t-3xl bg-surface px-2 pt-2 pb-[max(env(safe-area-inset-bottom),14px)] shadow-[0_-1px_0_var(--color-hairline)] lg:hidden">
-      {items.map(({ href, label, Icon, match }) => {
+      {mobileItems.map(({ href, label, Icon, match }) => {
         const active = match(pathname);
         return (
           <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`flex min-h-[52px] flex-col items-center justify-center gap-0.5 text-xs ${active ? "font-bold text-violet-700" : "font-semibold text-ink-muted"}`}>
