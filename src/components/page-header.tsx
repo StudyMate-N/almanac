@@ -25,12 +25,12 @@ export function Avatar() {
  * Page header (design "Uniformity rules"): an eyebrow that carries information
  * (course name, count, step; never the brand) above a 32px / 26px H1.
  */
-export function PageHeader({ eyebrow, title, right, avatar = true }: { eyebrow?: string; title: string; right?: React.ReactNode; avatar?: boolean }) {
+export function PageHeader({ eyebrow, title, right, avatar = true, large = false }: { eyebrow?: string; title: string; right?: React.ReactNode; avatar?: boolean; large?: boolean }) {
   return (
     <div className="mb-5 flex items-end justify-between gap-4 sm:mb-6">
       <div className="flex min-w-0 flex-col gap-1">
         {eyebrow && <p className="text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">{eyebrow}</p>}
-        <h1 className="font-display text-[26px] leading-[1.05] font-bold tracking-[-.035em] sm:text-[32px]">{title}</h1>
+        <h1 className={`font-display text-[26px] leading-[1.05] font-bold tracking-[-.035em] ${large ? "sm:text-[40px]" : "sm:text-[32px]"}`}>{title}</h1>
       </div>
       <div className="flex flex-none items-center gap-2.5">
         {right}
