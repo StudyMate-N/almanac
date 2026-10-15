@@ -8,7 +8,7 @@ import type { Block, Card, Lesson, Question } from "@/content/types";
 import { MEDIA_BASE, REVIEWER } from "@/lib/config";
 import { readingWords } from "@/lib/minutes";
 import { useStudent } from "@/lib/store";
-import { BlockView, Corrections, OpenPrompt, Predict, TopicHead, toSec } from "./blocks";
+import { BlockView, OpenPrompt, Predict, TopicHead, toSec } from "./blocks";
 import { CheckCard } from "./topic-check";
 
 type VideoBlock = Extract<Block, { t: "video" }>;
@@ -39,7 +39,7 @@ const NOTE_KINDS = new Set<Block["t"]>(["h2", "p", "ul", "ol", "table", "img", "
  * visible, and the full notes open on request. The page completes through the
  * learn page's checksLeft rule once every stop is answered.
  */
-export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete }: { page: Lesson; videos: VideoBlock[]; visibleQ: (q: Question) => boolean; visibleCards: (c: Card) => boolean; onComplete: () => void }) {
+export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete, focusMode = false }: { page: Lesson; videos: VideoBlock[]; visibleQ: (q: Question) => boolean; visibleCards: (c: Card) => boolean; onComplete: () => void; focusMode?: boolean }) {
   const { state, answers } = useStudent();
   const video = useRef<HTMLVideoElement>(null);
   const pending = useRef<{ local: number; play: boolean } | null>(null);
@@ -176,7 +176,7 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
   const chapterNow = [...chapters].reverse().find((c) => c.pos <= t + 0.05) ?? chapters[0];
   const cur = segs[seg];
   const base = `${MEDIA_BASE.replace(/\/$/, "")}/${cur.clip.id}`;
-  const message = !predictDone ? "Answer the question above, then press play" : active ? "Paused for a question below" : ended ? "Finished. Every stop answered?" : "Ready when you are";
+  const message = !predictDone ? "Choose an answer above to unlock play" : active ? "Paused for a learning check below" : ended ? "Video complete · review your checks" : "Your prediction is saved · ready to watch";
 
   return (
     <div className="flex flex-col gap-6">
@@ -262,7 +262,7 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
             </div>
           </div>
         </div>
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 xl:hidden">
+        <div className={`-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 ${focusMode ? "" : "xl:hidden"}`}>
           {chapters.map((c) => {
             const here = c === chapterNow;
             return (
@@ -272,7 +272,7 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
             );
           })}
         </div>
-        {railEl &&
+        {!focusMode && railEl &&
           createPortal(
             <section className="rounded-[16px] border border-hairline bg-white p-2">
               <p className="px-2 pt-2 pb-1.5 text-[11px] font-extrabold tracking-[.12em] text-ink-muted">CHAPTERS</p>
@@ -292,9 +292,33 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
         <p className="text-[13px] text-ink-muted">
           Course video · {fmt(total)} · {stops.length} stop{stops.length === 1 ? "" : "s"} for questions · Script approved by {REVIEWER.name}, {REVIEWER.credentials}
         </p>
-        {segs.map((s) => (
-          <Corrections key={s.clip.id} clip={s.clip} seek={(at) => goTo(s.offset + toSec(at), true)} />
-        ))}
+        {segs.some((s) => s.clip.corrections.length > 0) && (
+          <details className="rounded-[16px] border border-hairline bg-white px-4 py-3.5">
+            <summary className="cursor-pointer text-[14px] font-bold text-violet-700">
+              Video review notes · {segs.reduce((n, s) => n + s.clip.corrections.length, 0)} timestamped corrections
+            </summary>
+            <p className="mt-3 text-[13px] leading-6 text-ink-muted">Some statements in the original narration need clarification. Review these notes while watching.</p>
+            <div className="mt-4 flex flex-col gap-5">
+              {segs.filter((s) => s.clip.corrections.length > 0).map((s) => (
+                <section key={s.clip.id} className="border-t border-hairline pt-3">
+                  <h3 className="text-[14px] font-bold text-ink">{s.clip.shortTitle ?? s.clip.title}</h3>
+                  <ul className="mt-2 space-y-3">
+                    {s.clip.corrections.map((c) => (
+                      <li key={c.at} className="rounded-xl bg-mist p-3.5 text-[13px] leading-6">
+                        <button type="button" onClick={() => goTo(s.offset + toSec(c.at), true)}
+                          className="mb-2 min-h-10 rounded-full bg-white px-3 text-xs font-bold text-violet-700">
+                          Jump to {c.at} ↗
+                        </button>
+                        <p className="text-ink-muted line-through">{c.said}</p>
+                        <p className="mt-1 text-ink">{c.correct}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          </details>
+        )}
       </section>
 
       {active && (

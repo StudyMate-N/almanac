@@ -143,6 +143,7 @@ export function Predict({ id, stem, options, correct, reveal, eyebrow = "Predict
           <strong className={pick === correct ? "text-correct" : "text-[#A8430A]"}>{pick === correct ? "Right." : "Not quite."}</strong> {reveal}
         </p>
       )}
+      {pick && <p className="text-[12px] font-semibold text-correct" role="status">Prediction saved · You can continue to the video.</p>}
       {pick && children}
     </section>
   );
@@ -202,6 +203,8 @@ export function OpenPrompt({ id, stem, expert }: { id: string; stem: string; exp
   const { state, update } = useStudent();
   const [text, setText] = useState(state.notes[id] ?? "");
   const [shown, setShown] = useState(Boolean(state.notes[id]));
+  const [skipped, setSkipped] = useState(false);
+  const canCompare = Boolean(text.trim());
   return (
     <section aria-label="Submit and compare" className="flex flex-col gap-3 rounded-[16px] border border-hairline bg-white p-[18px_20px]">
       <p className="text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">Explain it in your own words</p>
@@ -220,18 +223,24 @@ export function OpenPrompt({ id, stem, expert }: { id: string; stem: string; exp
       <div className="flex flex-wrap gap-3">
         <button
           onClick={() => {
-            // As in the design: the expert answer opens once the student has written something.
-            if (!text.trim()) return document.getElementById(`open-${id}`)?.focus();
+            if (!canCompare) return;
             setShown(true);
+            setSkipped(false);
             update("notes", { ...state.notes, [id]: text.trim() });
           }}
-          className="min-h-11 rounded-[12px] border-[1.5px] border-violet px-[18px] text-[14px] font-bold text-violet-700 hover:bg-lilac"
+          disabled={!canCompare}
+          className="min-h-11 rounded-[12px] border-[1.5px] border-violet px-[18px] text-[14px] font-bold text-violet-700 hover:bg-lilac disabled:cursor-not-allowed disabled:border-hairline disabled:text-ink-muted"
         >
-          Compare with the expert answer
+          Save answer & compare
         </button>
+        {!shown && <button type="button" onClick={() => { setSkipped(true); setShown(true); }}
+          className="min-h-11 rounded-[12px] px-3 text-[13px] font-semibold text-ink-muted underline underline-offset-4 hover:text-violet-700">
+          Skip and reveal
+        </button>}
       </div>
       {shown && (
         <div className="rounded-[12px] bg-mist p-[14px_16px] text-[15px] leading-relaxed text-ink-body" role="status">
+          {skipped && <p className="mb-2 text-[13px] text-ink-muted">Answer revealed without an attempt. You can still write your own explanation above.</p>}
           <p className="mb-1 font-bold text-ink">Expert answer</p>
           <p>{expert}</p>
         </div>

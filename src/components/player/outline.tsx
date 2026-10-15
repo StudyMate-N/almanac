@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckIcon, LockIcon } from "@/components/icons";
 import { groupsInModule } from "@/content/course";
 import type { Lesson, Module, PageKind } from "@/content/types";
@@ -46,8 +46,26 @@ type Props = {
 export function Outline({ modules, currentId, isDone, isOpen, onNavigate }: Props) {
   const currentModule = modules.find((m) => groupsInModule(m.id).some((g) => g.pages.some((p) => p.id === currentId)))?.id;
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => (currentModule ? { [currentModule]: true } : {}));
+  const navRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (currentModule) setExpanded((prev) => prev[currentModule] ? prev : { ...prev, [currentModule]: true });
+  }, [currentModule]);
+  useEffect(() => {
+    if (!currentModule || !expanded[currentModule]) return;
+    const frame = requestAnimationFrame(() => {
+      const nav = navRef.current;
+      const rail = nav?.closest<HTMLElement>("[data-outline-scroll]");
+      const active = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!rail || !active) return;
+      const box = rail.getBoundingClientRect();
+      const rect = active.getBoundingClientRect();
+      if (rect.top < box.top + 12) rail.scrollTop -= (box.top + 12 - rect.top);
+      else if (rect.bottom > box.bottom - 12) rail.scrollTop += (rect.bottom - box.bottom + 12);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [currentId, currentModule, expanded]);
   return (
-    <nav aria-label="Course outline" className="flex flex-col gap-2">
+    <nav ref={navRef} aria-label="Course outline" className="flex flex-col gap-2">
       {modules.map((m) => {
         const groups = groupsInModule(m.id);
         const pages = groups.flatMap((g) => g.pages);
