@@ -40,13 +40,13 @@ function SignIn() {
 
   const field = "min-h-12 w-full rounded-2xl border-2 border-hairline bg-white px-4 text-base outline-none focus:border-violet";
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-5 py-10">
+    <main className="alm-signin mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-5 py-10">
       <Logo />
       <div>
         <h1 className="font-display text-[34px] leading-tight font-semibold">Sign in to Almanac</h1>
         <p className="mt-2 text-ink-body">Enter the access code sent by Almanac after your paid enrollment is approved. This includes enrollments paid directly or outside Almanac. Your progress follows you across devices.</p>
       </div>
-      <form onSubmit={submit} className="flex flex-col gap-3.5 rounded-tile bg-white p-6">
+      <form onSubmit={submit} className="flex flex-col gap-3.5 rounded-[20px] border border-hairline bg-white p-6 shadow-[0_18px_40px_rgba(42,27,120,.08)]">
         <label className="flex flex-col gap-1.5 text-sm font-semibold">
           Access code
           <input className={`${field} font-mono tracking-wider uppercase`} value={code} onChange={(e) => setCode(e.target.value)} placeholder="ALM-XXXX-XXXX-XXXX" required autoComplete="one-time-code" />
