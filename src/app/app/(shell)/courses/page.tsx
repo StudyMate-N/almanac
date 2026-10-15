@@ -39,6 +39,18 @@ export default function Courses() {
  return <div className="mx-auto max-w-[1110px]">
   <PageHeader eyebrow="Almanac" title="Your courses"/>
   <p className="-mt-2 mb-6 text-[13px] text-ink-muted">Pick up where you left off, or set a plan for what comes next.</p>
+  {authorizedCourses.includes("advanced-pharmacology")&&<section className="alm-desk-card mb-5 overflow-hidden">
+    <div className="grid sm:grid-cols-[205px_1fr]">
+      <div className="min-h-[175px] bg-[#E8E1FB] bg-cover bg-center" role="img" aria-label="Advanced Pharmacology course artwork"
+        style={{backgroundImage:'url("/almanac-art/cover-pharmacology.png")'}}/>
+      <div className="p-5 sm:p-6">
+        <p className="alm-desk-eyebrow">NUR-635 · Approved Advanced Pharmacology enrollment</p>
+        <h2 className="mt-2 text-[24px] font-bold">Midterm Prep — Topics 1–8</h2>
+        <p className="mt-2 max-w-[650px] text-sm text-ink-body">Eight focused topic reviews, practice questions with explanations, flashcards, and a timed midterm rehearsal. Prepared for your upcoming assessment.</p>
+        <Link href="/app/midterm/nur635" className="alm-desk-btn mt-4">Open midterm study sprint →</Link>
+      </div>
+    </div>
+  </section>}
   <div className="space-y-4">
    {openCourses.filter(c=>authorizedCourses.includes(c.id)).map(c=>{
     const moduleIds=modulesInCourse(c.id).map(m=>m.id);
@@ -82,14 +94,14 @@ export default function Courses() {
     </article>;
    })}
   </div>
-  {comingCourses.length>0&&<section className="mt-9">
+  {comingCourses.filter(c=>!authorizedCourses.includes(c.id)).length>0&&<section className="mt-9">
    <div className="flex flex-wrap items-baseline justify-between gap-3">
     <div><p className="alm-desk-eyebrow">Explore more</p><h2 className="mt-2 text-[23px] font-bold">More courses on Almanac</h2></div>
     <Link href="/request" className="text-[12px] font-bold text-violet-700">Request a different course →</Link>
    </div>
    <p className="mt-2 max-w-[680px] text-[13px] text-ink-body">These courses can be prepared for you. Choose a package and delivery timeline, with the price shown before you submit.</p>
    <div className="-mx-4 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
-    {comingCourses.map(c=><div key={c.id} className="w-[250px] snap-start sm:w-auto"><PreparedCourse course={c}/></div>)}
+    {comingCourses.filter(c=>!authorizedCourses.includes(c.id)).map(c=><div key={c.id} className="w-[250px] snap-start sm:w-auto"><PreparedCourse course={c}/></div>)}
    </div>
   </section>}
  </div>;
