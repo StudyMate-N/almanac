@@ -50,37 +50,82 @@ function SignIn() {
     }
   };
 
-  const field = "min-h-12 w-full rounded-2xl border-2 border-hairline bg-white px-4 text-base outline-none focus:border-violet";
+  const field = "h-12 w-full rounded-[12px] border border-[#D9D2F3] bg-white px-4 text-base outline-none focus:border-violet focus:ring-2 focus:ring-violet/15";
+  const points = ["Your course, plan and practice in one place", "Questions reviewed by registered nurses", "A coach who answers your questions"];
   return (
-    <main className="alm-signin mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-5 py-10">
-      <Logo />
-      <div>
-        <h1 className="font-display text-[34px] leading-tight font-semibold">Sign in to Almanac</h1>
-        <p className="mt-2 text-ink-body">Enter the access code sent by Almanac after your paid enrollment is approved. This includes enrollments paid directly or outside Almanac. Your progress follows you across devices.</p>
-      </div>
-      <form onSubmit={submit} className="flex flex-col gap-3.5 rounded-[20px] border border-hairline bg-white p-6 shadow-[0_18px_40px_rgba(42,27,120,.08)]">
-        <label className="flex flex-col gap-1.5 text-sm font-semibold">
-          Access code
-          <input className={`${field} font-mono tracking-wider uppercase`} value={code} onChange={(e) => setCode(e.target.value)} placeholder="ALM-XXXX-XXXX-XXXX" required autoComplete="one-time-code" />
-        </label>
-        <label className="flex flex-col gap-1.5 text-sm font-semibold">
-          Your name <span className="font-normal text-ink-muted">(first sign-in only)</span>
-          <input className={field} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
-        </label>
-        <label className="flex flex-col gap-1.5 text-sm font-semibold">
-          Email <span className="font-normal text-ink-muted">(so a coach can reach you)</span>
-          <input className={field} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-        </label>
-        {error && (
-          <p role="alert" className="rounded-xl bg-rose px-3 py-2 text-sm font-semibold text-rose-ink">
-            {error}
+    <main className="alm-signin grid min-h-dvh bg-white lg:grid-cols-2">
+      {/* Design 13a: art panel on the left (desktop only), the form on the right. */}
+      <section className="relative hidden flex-col justify-between overflow-hidden bg-[#F7F6FB] p-14 lg:flex" aria-hidden="true">
+        <Logo />
+        <div className="absolute inset-0 m-auto h-[62%] w-[78%] rounded-full bg-[radial-gradient(closest-side,#ECE7FF,rgba(236,231,255,0))]" />
+        <div className="relative mx-auto aspect-square w-full max-w-[460px] bg-[url('/almanac-art/hero-still-life.png')] bg-contain bg-center bg-no-repeat" />
+        <ul className="relative flex flex-col gap-3 text-[15px] text-ink-body">
+          {points.map((t) => (
+            <li key={t} className="flex items-center gap-3">
+              <span className="grid h-[22px] w-[22px] place-items-center rounded-full bg-mint text-[11px] font-extrabold text-correct">✓</span>
+              {t}
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section className="flex flex-col justify-center px-5 py-10 sm:px-10 lg:bg-white">
+        <div className="mx-auto flex w-full max-w-[420px] flex-col gap-6">
+          <span className="lg:hidden">
+            <Logo />
+          </span>
+          <div>
+            <h1 className="font-display text-[32px] leading-[1.05] font-bold tracking-[-.04em] sm:text-[40px]">Welcome back</h1>
+            <p className="mt-2 text-[15px] text-ink-body">Enter the access code sent by Almanac after your paid enrollment is approved. This includes enrollments paid directly or outside Almanac. Your progress follows you across devices.</p>
+          </div>
+          <form onSubmit={submit} className="flex flex-col gap-4">
+            <label className="flex flex-col gap-1.5 text-[13.5px] font-bold">
+              Access code
+              <input className={`${field} font-mono tracking-wider uppercase`} value={code} onChange={(e) => setCode(e.target.value)} placeholder="ALM-XXXX-XXXX-XXXX" required autoComplete="one-time-code" />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[13.5px] font-bold">
+              <span>
+                Your name <span className="font-normal text-ink-muted">(first sign-in only)</span>
+              </span>
+              <input className={field} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[13.5px] font-bold">
+              <span>
+                Email <span className="font-normal text-ink-muted">(so a coach can reach you)</span>
+              </span>
+              <input className={field} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="you@example.com" />
+            </label>
+            {error && (
+              <p role="alert" className="rounded-[12px] border border-[#FFD9C2] bg-[#FFF4EC] px-3.5 py-2.5 text-sm font-semibold text-[#A8430A]">
+                {error}
+              </p>
+            )}
+            <button disabled={busy} className="mt-1 h-[50px] rounded-[12px] bg-violet font-bold text-white hover:bg-[#4A2DE6] disabled:bg-[#A99BF0]">
+              {busy ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+          <details className="group border-t border-[#EEEBF7] pt-4">
+            <summary className="flex cursor-pointer list-none items-center justify-between text-[14.5px] font-bold text-violet-700 [&::-webkit-details-marker]:hidden">
+              Can&apos;t sign in?<span className="text-[18px] leading-none group-open:hidden">+</span><span className="hidden text-[18px] leading-none group-open:inline">–</span>
+            </summary>
+            <div className="mt-3 flex flex-col gap-2.5">
+              <div className="rounded-[12px] bg-mist px-3.5 py-3">
+                <p className="text-[14px] font-bold">No code yet</p>
+                <p className="text-[13px] text-ink-body">You receive one after your paid enrollment is approved.</p>
+              </div>
+              <div className="rounded-[12px] bg-mist px-3.5 py-3">
+                <p className="text-[14px] font-bold">Paid outside Almanac, or lost your code</p>
+                <p className="text-[13px] text-ink-body">Contact support@unemployedproff.com for your invitation. Include your invoice reference if you have one.</p>
+              </div>
+            </div>
+          </details>
+          <p className="text-[13.5px] text-ink-muted">
+            New to Almanac?{" "}
+            <a href="/courses" className="font-bold text-violet-700">
+              Browse courses
+            </a>
           </p>
-        )}
-        <button disabled={busy} className="mt-1 min-h-[52px] rounded-full bg-violet font-bold text-white hover:bg-violet-600 disabled:bg-violet-300">
-          {busy ? "Signing in…" : "Sign in"}
-        </button>
-      </form>
-      <p className="text-sm text-ink-muted">No code yet? You will receive one after your paid enrollment is approved. Already paid outside Almanac? Contact support@unemployedproff.com for your invitation.</p>
+        </div>
+      </section>
     </main>
   );
 }
