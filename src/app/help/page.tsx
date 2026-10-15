@@ -20,15 +20,15 @@ export default function HelpPage() {
   return <div className="alm-public min-h-screen"><SiteHeader/>
     <main className="mx-auto max-w-[980px] px-4 pb-24 pt-8 sm:px-6">
       <p className="text-xs font-bold uppercase tracking-widest text-violet-700">Almanac Help</p>
-      <h1 className="mt-3 font-display text-[42px] font-semibold">Answers and next steps.</h1>
+      <h1 className="mt-3 font-display text-[42px] font-semibold">Answers before you ask.</h1>
       <p className="mt-3 max-w-2xl text-lg text-ink-body">Find quick answers about learning materials, orders and account access.</p>
-      <div className="mt-9 space-y-3">
-        {questions.map(([q,a])=><details key={q} className="rounded-card bg-white p-5 open:bg-lilac">
+      <div className="mt-7 space-y-2">
+        {questions.map(([q,a])=><details key={q} className="alm-card p-4 open:bg-[#FBFAFE]">
           <summary className="cursor-pointer font-semibold">{q}</summary>
           <p className="mt-3 text-sm leading-relaxed text-ink-body">{a}</p>
         </details>)}
       </div>
-      <section className="mt-10 rounded-tile bg-lilac p-6">
+      <section className="mt-9 rounded-[18px] bg-[#ECE7FF] p-5 sm:p-6">
         <h2 className="font-display text-2xl font-semibold">Need help with something else?</h2>
         <p className="mt-2 text-ink-body">Reach Almanac support or return to your learning workspace.</p>
         <div className="mt-5 flex flex-wrap gap-5">
