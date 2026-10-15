@@ -1,7 +1,7 @@
 // Safe unit checks for the production Netlify/OpenNext origin mismatch.
 // No network calls, customer records, secrets, or orders are involved.
 import assert from "node:assert/strict";
-import { approvedRequestOrigin, emailLoginBaseUrl } from "../src/lib/request-origin.ts";
+import { approvedRequestOrigin, emailLoginBaseUrl, publicInvoiceUrl } from "../src/lib/request-origin.ts";
 
 const request=(url,origin)=>({
  url, headers: { get: (name) => name==="origin" ? origin : null }
@@ -16,6 +16,12 @@ assert.equal(approvedRequestOrigin(request(internal,live+".evil.example")),false
 assert.equal(approvedRequestOrigin(request(live+"/api/learning-requests",live)),true,"Direct production URLs must work");
 assert.equal(approvedRequestOrigin(request("http://localhost:3000/api/learning-requests","http://localhost:3000")),true,"Local development must work");
 assert.equal(emailLoginBaseUrl(request(internal,null)),live,"Server requests must not embed internal proxy URLs in access emails");
+const emailedInvoice=new URL(publicInvoiceUrl("00000000-0000-4000-a000-000000000000","test-private-token"));
+assert.equal(emailedInvoice.origin,live,"Customer invoice emails must use the public Almanac site");
+assert.equal(emailedInvoice.pathname,"/invoice");
+assert.equal(emailedInvoice.searchParams.get("id"),"00000000-0000-4000-a000-000000000000");
+assert.equal(emailedInvoice.searchParams.get("token"),"test-private-token");
+assert.equal(emailLoginBaseUrl(request("https://deploy-preview-3--almanac-study.netlify.app/api/learning-access-email","https://deploy-preview-3--almanac-study.netlify.app")),live,"Access emails must not lead to a team-protected preview");
 const originalNodeEnv=process.env.NODE_ENV;
 try{
  process.env.NODE_ENV="production";

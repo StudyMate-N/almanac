@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/config";
 import { calculateQuote, OfferValidationError, parseLearningRequest } from "@/lib/learning-offers";
 import { orderEmail } from "@/lib/learning-mail";
-import { approvedRequestOrigin } from "@/lib/request-origin";
+import { approvedRequestOrigin, publicInvoiceUrl } from "@/lib/request-origin";
 
 export async function POST(request: NextRequest) {
   if (!approvedRequestOrigin(request)) {
@@ -46,15 +46,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "We couldn't save your request. Please try again shortly." }, { status: 503 });
     }
     const received: { id: string; quoteUsd: number; payableCadCents: number; turnaroundDays: number; status: string } = await result.json();
-    const privateUrl = new URL("/invoice", request.url);
-    privateUrl.searchParams.set("id", received.id);
     // A private invoice token is returned once, not persisted in readable form.
     const invoiceToken=(received as { invoiceToken?: string }).invoiceToken;
     let emailNotice={customerSent:false,staffSent:false,configured:false};
     if(invoiceToken){
-      privateUrl.searchParams.set("token",invoiceToken);
+      // Netlify's request.url may be a protected deploy URL, never email it.
+      const privateUrl=publicInvoiceUrl(received.id,invoiceToken);
       emailNotice=await orderEmail({email:input.email,name:input.name,
-        ref:(received as {invoiceRef?:string}).invoiceRef||"",url:privateUrl.toString(),
+        ref:(received as {invoiceRef?:string}).invoiceRef||"",url:privateUrl,
         cadCents:received.payableCadCents});
     }
     return NextResponse.json({ ...received, notification:emailNotice }, {

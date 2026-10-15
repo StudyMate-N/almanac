@@ -42,10 +42,15 @@ export function approvedRequestOrigin(request: IncomingRequest): boolean {
   return permittedOrigins(request).has(browserOrigin);
 }
 
-export function emailLoginBaseUrl(request: IncomingRequest): string {
-  const browserOrigin = request.headers.get("origin");
-  if (browserOrigin && approvedRequestOrigin(request) && browserOrigin.startsWith("https://")) {
-    return browserOrigin;
-  }
+/** Create customer invoice links on the public site, never a protected deployment alias. */
+export function publicInvoiceUrl(id: string, token: string): string {
+  const url = new URL("/invoice", PRODUCTION_ORIGIN);
+  url.searchParams.set("id", id);
+  url.searchParams.set("token", token);
+  return url.toString();
+}
+
+/** All customer access emails should open the public learning workspace. */
+export function emailLoginBaseUrl(_request: IncomingRequest): string {
   return PRODUCTION_ORIGIN;
 }
