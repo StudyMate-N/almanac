@@ -284,6 +284,27 @@ export default function CoachConsole() {
   const [signups, setSignups] = useState<Signup[] | null>(null);
   const [drafts, setDrafts] = useState<Record<number, string>>({});
   const [err, setErr] = useState("");
+  const [emailTestBusy,setEmailTestBusy]=useState(false);
+  const [emailTestResult,setEmailTestResult]=useState("");
+
+  const runEmailTest=async()=>{
+    if(!admin||admin.role!=="owner"||emailTestBusy)return;
+    setEmailTestBusy(true);
+    setEmailTestResult("");
+    try{
+      const response=await fetch("/api/internal/email-check",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({staffToken:admin.token})
+      });
+      const result=await response.json() as {sent?:boolean;configured?:boolean;error?:string};
+      setEmailTestResult(result.sent
+        ?"Resend accepted the email from Almanac. Check the destination inbox and provider delivery status."
+        :result.configured===false
+        ?"The runtime sender or Resend key is not configured. Check the Netlify environment variables and redeploy."
+        :"Almanac could not send the email. Check Resend and Netlify runtime logs before retrying.");
+    }catch{setEmailTestResult("The email check could not reach Almanac. Retry when the server is available.");}
+    finally{setEmailTestBusy(false);}
+  };
 
   useEffect(() => setAdmin(load()), []);
   useEffect(() => {
@@ -350,6 +371,16 @@ export default function CoachConsole() {
           </button>
         ))}
       </nav>
+      {admin.role==="owner"&&
+        <details className="mb-5 rounded-2xl border border-hairline bg-white p-4">
+          <summary className="cursor-pointer text-[13px] font-bold text-violet-700">System QA · Email delivery</summary>
+          <p className="mt-2 text-[12px] text-ink-body">Send one diagnostic from the live Almanac server using the same Resend connection as invoices and access codes. No order or payment is created. The recipient is set in the hosting environment.</p>
+          <button type="button" onClick={()=>void runEmailTest()} disabled={emailTestBusy}
+            className="mt-3 min-h-11 rounded-full bg-violet px-4 text-[13px] font-bold text-white disabled:opacity-50">
+            {emailTestBusy?"Sending test…":"Send Almanac test email →"}
+          </button>
+          {emailTestResult&&<p role="status" className="mt-3 rounded-xl bg-lilac p-3 text-[12px] text-ink-body">{emailTestResult}</p>}
+        </details>}
       {err && <p className="mb-3 text-incorrect">{err}</p>}
 
       {tab === "inbox" && (
