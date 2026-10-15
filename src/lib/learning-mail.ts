@@ -32,3 +32,16 @@ export async function paymentReportEmail(ref:string,amountCents:number){
  const paid=(amountCents/100).toLocaleString("en-CA",{style:"currency",currency:"CAD"});
  return send(OPS,`Payment reported · ${ref}`,`A learner reported payment for invoice ${safe(ref)} (${paid}). Verify actual receipt in your CAD bank account before issuing access.\nOpen Almanac's staff dashboard for the reference and receipt.`);
 }
+
+/** Delivers a newly issued access code after independent bank verification.
+ * Never call until the staff session and code were checked by Supabase. */
+export async function verifiedAccessEmail({email,name,ref,code,baseUrl}:{
+ email:string;name:string;ref:string;code:string;baseUrl:string;
+}){
+ const signinUrl=new URL("/app",baseUrl).toString();
+ return send(email,`Almanac learning access · ${safe(ref)}`,
+  `Hello ${safe(name)},\n\nYour payment for Almanac invoice ${safe(ref)} has been verified by our team.\n\nYour learner access code: ${code}\n\nSign in: ${signinUrl}\n\nSave your code privately. Your plan and reviewed learning materials will appear in your workspace as they become available.\n\nQuestions? ${SUPPORT_EMAIL}\nAlmanac`);
+}
+export function transactionalEmailConfigured(){
+ return Boolean(API_KEY&&DOMAIN.test(FROM));
+}
