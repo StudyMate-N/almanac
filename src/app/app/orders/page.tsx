@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import {WorkspaceShell} from "@/components/workspace-shell";
+import {StudentPlanReview} from "@/components/site/student-plan-review";
 import { useCallback, useEffect, useState } from "react";
 import { rpc } from "@/lib/api";
 import { useStudent } from "@/lib/store";
@@ -155,12 +156,8 @@ export default function LearningOrdersPage(){
      <div className="rounded-xl bg-mist p-4"><p className="text-xs text-ink-muted">Target delivery</p>
       <p className="mt-1 font-semibold">{current.deliveryDueAt?date(current.deliveryDueAt):"To be confirmed"}</p></div>
     </div>
-    {current.planStatus==="shared"&&<div role="status" className="mt-4 rounded-xl border border-[#DAD2F9] bg-lilac p-4 text-[13px]">
-     <strong className="text-violet-700">Your learning plan is ready for review.</strong>
-     <p className="mt-1 text-ink-body">Use your private invoice link to review the proposed plan and request corrections. If you need that link reissued, contact support with your invoice reference.</p>
-     <a href={`mailto:support@unemployedproff.com?subject=${encodeURIComponent("Learning plan link "+current.invoiceRef)}`}
-       className="mt-2 inline-block font-bold text-violet-700 underline">Get help opening your plan →</a>
-    </div>}
+    {current.planStatus&&token&&<StudentPlanReview key={current.id} orderId={current.id} studentToken={token} onUpdated={()=>void load()}/>}
+
     <div className="alm-desk-card mt-4 bg-[#FBFAFE] p-4">
      <h3 className="text-[15px] font-bold">Your order timeline</h3>
      <ol className="mt-3">
