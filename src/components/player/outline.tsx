@@ -55,9 +55,9 @@ export function Outline({ modules, currentId, isDone, isOpen, onNavigate }: Prop
         const open = Boolean(expanded[m.id]);
         const here = m.id === currentModule;
         return (
-          <section key={m.id} className={`rounded-card ${here ? "bg-white" : "bg-white/60"}`}>
-            <button onClick={() => setExpanded((e) => ({ ...e, [m.id]: !open }))} aria-expanded={open} className="flex w-full items-center gap-3 rounded-card px-3.5 py-3 text-left hover:bg-white">
-              <span className={`grid h-8 w-8 flex-none place-items-center rounded-xl font-display text-[15px] font-semibold ${here ? "bg-violet text-white" : "bg-lilac text-violet-700"}`}>
+          <section key={m.id} className={`rounded-[14px] border border-hairline ${here ? "bg-white" : "bg-white/60"}`}>
+            <button onClick={() => setExpanded((e) => ({ ...e, [m.id]: !open }))} aria-expanded={open} className="flex w-full min-h-[57px] items-center gap-3 rounded-[14px] px-3 py-2 text-left hover:bg-[#FBFAFF]">
+              <span className={`grid h-8 w-8 flex-none place-items-center rounded-xl font-display text-[14px] font-semibold ${here ? "bg-[#2A1B78] text-white" : "bg-lilac text-violet-700"}`}>
                 {m.kind === "start" ? "★" : m.kind === "final" ? "✓" : m.number}
               </span>
               <span className="min-w-0 flex-1">
@@ -83,9 +83,9 @@ export function Outline({ modules, currentId, isDone, isOpen, onNavigate }: Prop
                           <>
                             <span
                               aria-hidden="true"
-                              className={`grid h-6 w-6 flex-none place-items-center rounded-full text-[10px] font-extrabold ${d ? "bg-correct text-white" : cur ? "bg-violet text-white" : ok ? "border-2 border-hairline bg-white" : "bg-mist text-ink-faint"}`}
+                              className={`grid h-6 w-6 flex-none place-items-center rounded-full text-[10px] font-extrabold ${d ? "bg-correct text-white" : cur ? "bg-violet text-white" : ok ? "border border-hairline bg-white" : "bg-mist text-ink-faint"}`}
                             >
-                              {d ? <CheckIcon size={11} /> : !ok ? <LockIcon size={11} /> : p.kind === "quiz" ? "Q" : p.kind === "test" ? "T" : p.kind === "summary" ? "S" : p.kind === "video" ? "▶" : ""}
+                              {d ? <CheckIcon size={11} /> : !ok ? <LockIcon size={11} /> : p.kind === "quiz" ? "Q" : p.kind === "test" ? "T" : p.kind === "summary" ? "S" : p.kind === "video" ? "▶" : String((p.title.match(/^\\d+\\.(\\d+)/)?.[1]) ?? "•")}
                             </span>
                             <span className={`min-w-0 flex-1 text-[13.5px] leading-snug ${cur ? "font-bold text-violet-700" : "font-medium text-ink-body"}`}>{rowLabel(p)}</span>
                             <span className="flex-none text-[12px] text-ink-muted">{minutesFor(p)} min</span>
