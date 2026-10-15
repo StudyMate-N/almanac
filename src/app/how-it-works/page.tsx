@@ -9,9 +9,10 @@ export const metadata: Metadata = {
 };
 
 const steps = [
-  ["Choose what you're learning", "Explore an existing course or tell us which course, exam or study resource you would like prepared."],
-  ["Make it yours", "Set your goals and select the learning formats, delivery method and timeline that work for you. See the price as you choose."],
-  ["Learn and make progress", "When your materials are ready, use them in your Almanac workspace or as downloadable files, depending on your selection."],
+ ["01","Choose what you're learning","Browse the catalog or tell us what course, exam or learning module you need.","Choose a complete package."],
+ ["02","Review your invoice","See the package, quantities and CAD amount before making a bank transfer.","Payment is verified by staff."],
+ ["03","Agree on your learning plan","Share your syllabus if you have one. Confirm your topics, objectives and milestones.","Your delivery window starts after required materials are received."],
+ ["04","Learn and make progress","Use your workspace as completed modules and approved files are released to you.","Return to practice, flashcards and your plan anytime."]
 ] as const;
 
 export default function HowItWorksPage() {
@@ -22,14 +23,22 @@ export default function HowItWorksPage() {
         <p className="text-xs font-bold uppercase tracking-widest text-violet-700">How Almanac works</p>
         <h1 className="mt-4 max-w-3xl font-display text-[42px] font-semibold leading-tight sm:text-[54px]">Start where you are. Know where to go next.</h1>
         <p className="mt-5 max-w-3xl text-lg text-ink-body">Whether you're following a course or preparing for something specific, Almanac helps turn your materials and goals into a learning experience you can follow.</p>
-        <ol className="mt-12 grid gap-5 md:grid-cols-3">
-          {steps.map(([heading,body],i)=><li key={heading} className="rounded-tile bg-white p-6">
-            <span className="font-display text-3xl font-semibold text-violet">{String(i+1).padStart(2,"0")}</span>
-            <h2 className="mt-4 font-display text-xl font-semibold">{heading}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-body">{body}</p>
+        <ol className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map(([number,heading,body,when],i)=><li key={heading} className="alm-card overflow-hidden">
+            <div className="grid h-28 place-items-center bg-[#F4F1FE] bg-contain bg-center bg-no-repeat" style={{backgroundImage:`url("/almanac-art/${["step-1-choose","step-invoice","step-2-plan","step-3-workspace"][i]}.png")`}} aria-hidden="true"></div>
+            <div className="p-5">
+            <span className="text-[11px] font-extrabold text-violet-700">{number}</span>
+            <h2 className="mt-2 text-[19px] font-bold">{heading}</h2>
+            <p className="mt-2 text-[13px] leading-relaxed text-ink-body">{body}</p><p className="mt-4 border-t border-hairline pt-3 text-[12px] font-medium text-violet-700">{when}</p></div>
           </li>)}
         </ol>
-        <section className="mt-14 rounded-tile bg-lilac p-6 sm:p-10">
+        <section className="mt-8 grid gap-3 sm:grid-cols-2">
+          <div className="alm-card p-5"><p className="alm-eyebrow">Workspace access</p><h2 className="mt-2 text-[22px] font-bold">Sign in after payment verification.</h2>
+          <p className="mt-2 text-[13px] text-ink-body">When the receiving bank confirms your payment, staff issue your access code. You can then see your order, reviewed plan, and preparation progress.</p></div>
+          <div className="alm-card p-5"><p className="alm-eyebrow">Finished materials</p><h2 className="mt-2 text-[22px] font-bold">Delivered module by module.</h2>
+          <p className="mt-2 text-[13px] text-ink-body">Each resource becomes available once it has been checked and released, within your confirmed production window.</p></div>
+        </section>
+        <section className="mt-10 rounded-[19px] bg-[#ECE7FF] p-6 sm:p-8">
           <h2 className="font-display text-3xl font-semibold">Choose what's ready. Or ask us to prepare it.</h2>
           <p className="mt-3 max-w-2xl text-ink-body">Existing courses can be explored immediately when access is open. Courses or resources prepared on request follow your selected package and production timeline.</p>
           <div className="mt-6 flex flex-wrap gap-3">
@@ -48,7 +57,7 @@ export default function HowItWorksPage() {
                   <th className="px-5 py-4 font-semibold">{OFFERS[k].title}</th>
                   <td className="px-3 py-4">{OFFERS[k].turnaround.standard} days</td>
                   <td className="px-3 py-4">{OFFERS[k].turnaround.priority} days</td>
-                  <td className="px-3 py-4">{OFFERS[k].turnaround.express} days</td>
+                  <td className="px-3 py-4">{k==="course"?"Not offered":OFFERS[k].turnaround.express+" days"}</td>
                 </tr>)}
               </tbody>
             </table>
