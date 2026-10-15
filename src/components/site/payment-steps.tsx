@@ -53,14 +53,14 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
  const instructions=bank&&canTransfer?[
   `Payment amount: ${cad(invoice.payableCadCents!)}`,
   `Reference: ${invoice.invoiceRef}`,
-  `Beneficiary: ${bank.beneficiary}`,
-  `Bank: ${bank.name}`,
+  `Beneficiary name: ${bank.beneficiary}`,
+  `Bank name: ${bank.name}`,
   `Account number: ${bank.accountNumber}`,
-  `Transit number: ${bank.transit}`,
-  `Institution number: ${bank.institution}`,
   `Account type: ${bank.accountType}`,
+  `Institution number: ${bank.institution}`,
+  `Transit number: ${bank.transit}`,
   `Bank address: ${bank.address}`,
-  `Currency: ${bank.currency}`
+  `Account currency: ${bank.currency}`
  ].join("\n"):"";
 
  const whatsText=`Hello Almanac, I need help with invoice ${invoice.invoiceRef} for ${invoice.subject}. ${invoice.payableCadCents?cad(invoice.payableCadCents):"CAD amount pending"}. ${reference?"My transfer reference is "+reference+".":""} Please help me confirm the next step.`;
@@ -144,16 +144,21 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
        {copied==="all"?"All details copied ✓":"Copy all bank details"}
      </button>
     </div>
-    <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+    <dl className="mt-4 divide-y divide-hairline">
      {([
-       ["Beneficiary",bank!.beneficiary],["Bank",bank!.name],["Account number",bank!.accountNumber],
-       ["Transit number",bank!.transit],["Institution number",bank!.institution],
-       ["Account type",bank!.accountType],["Bank address",bank!.address],
-       ["Currency",bank!.currency],["Payment reference",invoice.invoiceRef],
-     ] as const).map(([label,value])=><div key={label} className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b border-hairline pb-2">
+       ["Beneficiary name",bank!.beneficiary],
+       ["Bank name",bank!.name],
+       ["Account number",bank!.accountNumber],
+       ["Account type",bank!.accountType],
+       ["Institution number",bank!.institution],
+       ["Transit number",bank!.transit],
+       ["Bank address",bank!.address],
+       ["Account currency",bank!.currency],
+       ["Payment reference",invoice.invoiceRef],
+     ] as const).map(([label,value])=><div key={label} className="flex min-w-0 items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
        <div className="min-w-0 flex-1"><dt className="text-xs text-ink-muted">{label}</dt>
-       <dd className="break-words text-sm font-semibold">{value}</dd></div>
-       <button type="button" aria-label={`Copy ${label}`} onClick={()=>void copy(value,label)} className="rounded-full border border-hairline px-3 py-1.5 text-xs font-semibold text-violet-700">
+       <dd className="mt-0.5 break-words text-sm font-semibold select-text">{value}</dd></div>
+       <button type="button" aria-label={`Copy ${label}`} onClick={()=>void copy(value,label)} className="min-h-10 shrink-0 rounded-full border border-hairline bg-white px-4 py-2 text-xs font-semibold text-violet-700">
         {copied===label?"Copied ✓":"Copy"}
        </button>
       </div>)}
