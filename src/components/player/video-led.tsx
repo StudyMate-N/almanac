@@ -166,7 +166,7 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
   };
 
   const [railEl, setRailEl] = useState<HTMLElement | null>(null);
-  useEffect(() => setRailEl(document.getElementById("player-chapters")), []);
+  useEffect(() => setRailEl(document.getElementById("player-chapters")), [focusMode]);
   const keypoints = page.blocks.find((b) => b.t === "keypoints");
   const open = page.blocks.find((b) => b.t === "open");
   const notes = page.blocks.filter((b) => NOTE_KINDS.has(b.t));
