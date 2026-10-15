@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useDueCount } from "@/components/app-nav";
-import { ArrowRightIcon, CheckIcon } from "@/components/icons";
+import { CheckIcon } from "@/components/icons";
 import { lessons as allLessons } from "@/content/course";
 import type { Course, Lesson } from "@/content/types";
 import { dayKey } from "@/lib/deck";
@@ -71,45 +71,60 @@ export function TodaySession({ course }: { course: Course }) {
   const left = rows.filter((r) => !r.done);
   const minutes = left.reduce((n, r) => n + r.minutes, 0);
 
+  const next = left.find((r) => r.href);
   return (
-    <section aria-labelledby={`session-${course.id}`} className="alm-desk-card alm-desk-panel p-5 sm:p-6">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="alm-desk-eyebrow">
+    <section
+      aria-labelledby={`session-${course.id}`}
+      className="flex flex-col gap-3.5 rounded-[20px] border border-hairline p-4 sm:p-5"
+      style={{ background: "radial-gradient(60% 120% at 100% 0%,#ECE7FF 0%,rgba(236,231,255,0) 70%),#FFFFFF" }}
+    >
+      <div className="flex items-end justify-between gap-3">
+        <div className="flex flex-col gap-[3px]">
+          <span className="text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">
             Today&apos;s session{plan && week ? ` · week ${week} of ${plan.courseWeeks}` : ""}
-          </p>
-          <h2 id={`session-${course.id}`} className="mt-1 font-display text-[25px] leading-tight font-bold">
+          </span>
+          <h2 id={`session-${course.id}`} className="font-display text-[22px] font-bold tracking-[-.03em] sm:text-[24px]">
             {left.length ? `About ${minutes} min` : "Done for today"}
           </h2>
         </div>
-        <span className="alm-desk-chip">
+        <span className="rounded-full bg-lilac px-[11px] py-[5px] text-[12px] font-bold whitespace-nowrap text-violet-deep">
           {rows.length - left.length} of {rows.length} done
         </span>
       </div>
-      <ul className="flex flex-col gap-0">
+      <ul className="flex flex-col gap-1.5">
         {rows.map((r) => {
           const inner = (
             <>
-              <span aria-hidden="true" className={`grid h-7 w-7 flex-none place-items-center rounded-full ${r.done ? "bg-correct text-white" : "bg-lilac text-violet-700"}`}>
-                {r.done && <CheckIcon size={13} />}
+              <span aria-hidden="true" className={`grid h-[26px] w-[26px] place-items-center rounded-full text-[12px] font-extrabold text-white ${r.done ? "bg-correct" : "border-[1.5px] border-[#D9D2F3] bg-white"}`}>
+                {r.done && <CheckIcon size={12} />}
               </span>
-              <span className="min-w-0 flex-1 text-[13.5px]">
-                <strong className="font-bold">{r.verb}:</strong> {r.text}
+              <span className={`min-w-0 text-[14px] ${r.done ? "text-[#14532D]" : "text-ink"}`}>
+                <b>{r.verb}:</b> {r.text}
                 {r.done && <span className="sr-only"> (done)</span>}
               </span>
-              {!r.done && r.minutes > 0 && <span className="flex-none text-[13px] font-semibold text-ink-muted">{r.minutes} min</span>}
-              {!r.done && r.href && <ArrowRightIcon size={16} className="flex-none text-violet-700" />}
+              <span
+                className={`rounded-full px-[9px] py-[3px] text-[12px] font-bold whitespace-nowrap ${r.done ? "bg-mint text-correct" : r.key === "review" ? "bg-[#FFE9DC] text-[#A8430A]" : "bg-mist text-ink-muted"} ${!r.done && !r.minutes ? "invisible" : ""}`}
+              >
+                {r.done ? "Done" : `${r.minutes} min`}
+              </span>
+              <span className="w-3.5 text-[15px] font-bold text-violet-700" aria-hidden="true">
+                {r.done || !r.href ? "" : "→"}
+              </span>
             </>
           );
-          const cls = `flex min-h-[61px] items-center gap-3 border-b border-[#EEEBF7] px-1 py-2.5 ${r.done ? "text-mint-ink" : "text-ink"}`;
-          return <li key={r.key}>{r.href && !r.done ? <Link href={r.href} className={`${cls} hover:bg-[#F8F7FD]`}>{inner}</Link> : <div className={cls}>{inner}</div>}</li>;
+          const cls = `grid min-h-[52px] grid-cols-[28px_minmax(0,1fr)_auto_auto] items-center gap-3 rounded-[14px] border px-3.5 py-1.5 ${r.done ? "border-[#BFE6D1] bg-[#F2FBF6]" : "border-hairline bg-white hover:border-[#C9BEF7]"}`;
+          return <li key={r.key}>{r.href && !r.done ? <Link href={r.href} className={cls}>{inner}</Link> : <div className={cls}>{inner}</div>}</li>;
         })}
       </ul>
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        {left.find(r=>r.href) ? <Link href={left.find(r=>r.href)!.href!} className="alm-desk-btn">
-          {left.find(r=>r.href)!.key==="review"?"Review cards":left.find(r=>r.href)!.key==="answer"?"Start practice":"Start learning"} <ArrowRightIcon size={15}/>
-         </Link>:<span className="alm-desk-chip alm-chip-ready">✓ Today's plan complete</span>}
-        <span className="text-[12px] text-ink-muted">{left.length? `${left.length} step${left.length===1?"":"s"} remaining · ${minutes} min estimated` : "Your next session will appear here."}</span>
+      <div className="flex flex-wrap items-center gap-3">
+        {next ? (
+          <Link href={next.href!} className="flex h-[42px] items-center rounded-full bg-violet px-5 text-[14px] font-bold text-white hover:bg-[#4A2DE6]">
+            Continue: {next.verb.toLowerCase()} →
+          </Link>
+        ) : (
+          <span className="flex h-[42px] items-center rounded-full bg-mint px-5 text-[14px] font-bold text-correct">✓ Today&apos;s plan is done</span>
+        )}
+        <span className="text-[12px] text-ink-muted">{next ? "Rows turn green as you finish them today." : "Your next session appears here tomorrow."}</span>
       </div>
     </section>
   );
