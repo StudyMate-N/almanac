@@ -5,7 +5,7 @@ import { Logo } from "@/components/brand";
 import { friendlyError } from "@/lib/api";
 import { useStudent } from "@/lib/store";
 
-/** Shows the sign-in screen until a pilot student is signed in. */
+/** Shows the sign-in screen until an approved paid learner is signed in. */
 export function Gate({ children }: { children: React.ReactNode }) {
   const { status } = useStudent();
   if (status === "loading")
@@ -44,7 +44,7 @@ function SignIn() {
       <Logo />
       <div>
         <h1 className="font-display text-[34px] leading-tight font-semibold">Sign in to Almanac</h1>
-        <p className="mt-2 text-ink-body">Enter your Almanac access code. For a purchased course, the code is issued after payment verification. Pilot participants may also receive a separate test code. Your progress follows you across devices.</p>
+        <p className="mt-2 text-ink-body">Enter the access code sent by Almanac after your paid enrollment is approved. This includes enrollments paid directly or outside Almanac. Your progress follows you across devices.</p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-3.5 rounded-tile bg-white p-6">
         <label className="flex flex-col gap-1.5 text-sm font-semibold">
@@ -68,7 +68,7 @@ function SignIn() {
           {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>
-      <p className="text-sm text-ink-muted">No code yet? You will receive your access code after staff verify your payment. For help, contact support@unemployedproff.com.</p>
+      <p className="text-sm text-ink-muted">No code yet? You will receive one after your paid enrollment is approved. Already paid outside Almanac? Contact support@unemployedproff.com for your invitation.</p>
     </main>
   );
 }
