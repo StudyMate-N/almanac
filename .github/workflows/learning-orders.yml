@@ -7,6 +7,7 @@ on:
       - "scripts/check-learning-offers.mjs"
       - "scripts/check-checkout-health.mjs"
       - "scripts/check-private-endpoints.mjs"
+      - "scripts/check-request-origin.mjs"
       - "package*.json"
       - ".github/workflows/learning-orders.yml"
   workflow_dispatch:
@@ -22,6 +23,7 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: node --experimental-strip-types scripts/check-learning-offers.mjs
+      - run: node --experimental-strip-types scripts/check-request-origin.mjs
       - run: node scripts/check-checkout-health.mjs
       - run: node scripts/check-private-endpoints.mjs
       - run: npm run typecheck
