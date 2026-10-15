@@ -88,7 +88,7 @@ export function QuestionCard({
         })}
       </ul>
       {revealed && (
-        <div className={`rounded-2xl px-4 py-3 text-[15px] ${ok ? "bg-mint text-mint-ink" : "bg-peach text-peach-ink"}`} role="status">
+        <div className={`rounded-xl px-4 py-3 text-[14px] ${ok ? "bg-mint text-mint-ink" : "bg-rose text-rose-ink"}`} role="status">
           <span className="font-bold">{ok ? "You got it." : picks.length ? "Not quite." : "Not answered."}</span> {q.takeaway}
         </div>
       )}
@@ -109,8 +109,8 @@ export function LearningCheck({ q, pageId }: { q: Question; pageId: string }) {
     ]);
   };
   return (
-    <section aria-label="Learning check" className="rounded-tile bg-sky/70 p-5 sm:p-6">
-      <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-extrabold tracking-wide text-sky-ink uppercase">Learning check</p>
+    <section aria-label="Learning check" className="rounded-[16px] bg-lilac p-5 sm:p-6">
+      <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-extrabold tracking-wide text-violet-700 uppercase">Learning check</p>
       <QuestionCard q={q} picks={picks} onPick={setPicks} revealed={done} locked={done} />
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {!done ? (
