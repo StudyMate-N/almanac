@@ -13,15 +13,30 @@ const validSender=(value:string)=>{
  return Boolean(match&&DOMAIN.test(match[1]));
 };
 const safe=(s:string)=>s.replace(/[<>\r\n]/g," ").slice(0,600);
-async function send(to:string,subject:string,body:string) {
- if(!API_KEY||!validSender(FROM)||!DOMAIN.test(to))return false;
+type MailResult = {ok:boolean;status?:number;reason?:string};
+async function sendDetailed(to:string,subject:string,body:string):Promise<MailResult> {
+ if(!API_KEY||!validSender(FROM)||!DOMAIN.test(to))return {ok:false,reason:"configuration"};
  try{
-  const r=await fetch("https://api.resend.com/emails",{
-   method:"POST",headers:{Authorization:`Bearer ${API_KEY}`,"Content-Type":"application/json"},
-   body:JSON.stringify({from:FROM,to:[to],subject,text:body,reply_to:SUPPORT_EMAIL})
+  const response=await fetch("https://api.resend.com/emails",{
+   method:"POST",
+   headers:{Authorization:`Bearer ${API_KEY}`,"Content-Type":"application/json"},
+   body:JSON.stringify({from:FROM,to:[to],subject,text:body,reply_to:SUPPORT_EMAIL}),
+   cache:"no-store"
   });
-  return r.ok;
- }catch{return false;}
+  if(response.ok)return {ok:true,status:response.status};
+  // Only surface the provider's documented error category, never response content
+  // that could contain addresses, recipient data, or credentials.
+  let reason="provider_rejected";
+  try{
+    const raw=await response.json() as {name?:unknown;error?:unknown};
+    const code=typeof raw.name==="string"?raw.name:typeof raw.error==="string"?raw.error:"provider_rejected";
+    reason=code.replace(/[^a-zA-Z0-9_-]/g,"").slice(0,60)||"provider_rejected";
+  }catch{}
+  return {ok:false,status:response.status,reason};
+ }catch{return {ok:false,reason:"network_error"};}
+}
+async function send(to:string,subject:string,body:string){
+ return (await sendDetailed(to,subject,body)).ok;
 }
 export async function orderEmail({email,name,ref,url,cadCents}:{
  email:string;name:string;ref:string;url:string;cadCents:number
@@ -66,9 +81,12 @@ export async function sendAlmanacEmailDiagnostic() {
   "No order, payment or student account was created or changed.",
   "Almanac"
  ].join("\n\n");
+ const result=await sendDetailed(to,"Almanac — application email integration test",body);
  return {
-  sent:await send(to,"Almanac — application email integration test",body),
+  sent:result.ok,
   configured:true,
   missing,
+  providerStatus:result.status??null,
+  reason:result.ok?null:result.reason??"unknown",
  };
 }
