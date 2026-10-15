@@ -2,7 +2,7 @@ import type {Metadata} from "next";
 import {SiteHeader,SiteFooter} from "@/components/site/chrome";
 export const metadata:Metadata={title:"Privacy | Almanac",description:"How Almanac handles learning requests, payment information, course materials and student workspaces."};
 export default function PrivacyPage(){
- return <div className="min-h-screen bg-ground text-ink"><SiteHeader/>
+ return <div className="alm-public min-h-screen"><SiteHeader/>
  <main className="mx-auto max-w-[850px] px-5 pb-20 pt-8">
   <p className="text-xs font-bold uppercase tracking-widest text-violet-700">PRIVACY</p>
   <h1 className="mt-3 font-display text-4xl font-semibold">Privacy and your learning materials</h1>
