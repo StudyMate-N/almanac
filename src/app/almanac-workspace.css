@@ -84,3 +84,6 @@
 .alm-staff-topbar a.bg-lilac{color:#2A1B78!important}
 .alm-staff-topbar button{color:#fff!important}
 @media(max-width:640px){.alm-staff-topbar{padding:16px}}
+
+/* Video play button pulse (design 7a/14a). */
+@keyframes almPulse{0%{box-shadow:0 0 0 4px #FFE9DC,0 0 0 4px rgba(242,113,28,.45)}70%,100%{box-shadow:0 0 0 4px #FFE9DC,0 0 0 16px rgba(242,113,28,0)}}

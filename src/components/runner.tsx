@@ -12,6 +12,11 @@ import { isCorrect, type Answer, type AnswerMode } from "@/lib/progress";
 import { useStudent } from "@/lib/store";
 import { useDueCount } from "@/lib/use-cards";
 
+/** One answer to record. */
+export type AnswerRow = { q: Question; sel: string[]; correct: boolean; seconds: number };
+/** A step on the results revision path. */
+export type PathItem = { title: string; sub: string; min: number; href?: string; onClick?: () => void };
+
 /** Shown on the exam pre-start card (design 15a). */
 export type ExamIntro = { scope: string; total: number; repeats: number; showRepeats: boolean };
 
@@ -29,6 +34,12 @@ type Props = {
   passMark?: number;
   /** Keeps an exam in progress on this device, so leaving keeps answers and the timer running. */
   persistKey?: string;
+  /** Saves answers somewhere other than the course record (course packs). May throw: the learner sees "Retry". */
+  record?: (rows: AnswerRow[], phase: "check" | "submit") => void | Promise<void>;
+  /** Revision path for results; the default links to course pages, cards and missed questions. */
+  revision?: (r: { weakest?: string; missed: Question[] }) => PathItem[];
+  /** Called when the learner closes the runner (used when it runs inside another player). */
+  onClose?: () => void;
 };
 
 type Stage = "intro" | "run" | "timeup" | "results";
@@ -75,7 +86,7 @@ const topicChip = (t: string) => {
  * Tutor: each answer locks on "Check answer" and shows the rationale for the correct option and the pick.
  * Exam: no feedback until submit; answers can change until submit or time-up, then they are scored once.
  */
-export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes, backHref = "/app/practice", backLabel, intro, passMark, persistKey }: Props) {
+export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes, backHref = "/app/practice", backLabel, intro, passMark, persistKey, record, revision, onClose }: Props) {
   const { profile, state, update, addAnswers } = useStudent();
   const exam = mode === "exam";
   const [set, setSet] = useState(initial);
@@ -93,6 +104,24 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
   const seconds = useRef<Record<string, number>>({});
   const shownAt = useRef(Date.now());
   const sessionId = useMemo(() => `${kind}-${Date.now().toString(36)}`, [kind]);
+  const [retry, setRetry] = useState<null | (() => void)>(null);
+
+  /** Records answers; on failure the pick stays and the learner can retry (design 14c). */
+  const recordRows = useCallback(
+    async (rows: AnswerRow[], phase: "check" | "submit") => {
+      try {
+        if (record) await record(rows, phase);
+        else {
+          const at = new Date().toISOString();
+          addAnswers(rows.map<Answer>((r) => ({ questionId: r.q.id, moduleId: r.q.moduleId, lessonId: r.q.lessonId, selected: r.sel, correct: r.correct, seconds: r.seconds, mode: kind, sessionId, at })));
+        }
+        setRetry(null);
+      } catch {
+        setRetry(() => () => void recordRows(rows, phase));
+      }
+    },
+    [record, addAnswers, kind, sessionId],
+  );
 
   // Resume an exam left in progress on this device.
   useEffect(() => {
@@ -125,15 +154,7 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
   const finish = useCallback(
     (auto = false) => {
       tick();
-      if (exam) {
-        const at = new Date().toISOString();
-        addAnswers(
-          set.map<Answer>((x) => {
-            const sel = picks[x.id] ?? [];
-            return { questionId: x.id, moduleId: x.moduleId, lessonId: x.lessonId, selected: sel, correct: isCorrect(x, sel), seconds: seconds.current[x.id] ?? 0, mode: kind, sessionId, at };
-          }),
-        );
-      }
+      if (exam) void recordRows(set.map((x) => ({ q: x, sel: picks[x.id] ?? [], correct: isCorrect(x, picks[x.id] ?? []), seconds: seconds.current[x.id] ?? 0 })), "submit");
       save(persistKey, null);
       setConfirmOpen(false);
       setMapOpen(false);
@@ -141,7 +162,7 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
       setStage(auto ? "timeup" : "results");
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [exam, set, picks, kind, sessionId, persistKey, addAnswers],
+    [exam, set, picks, persistKey, recordRows],
   );
 
   useEffect(() => {
@@ -180,7 +201,7 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
     tick();
     const sel = picks[q.id] ?? [];
     setChecked((c) => ({ ...c, [q.id]: true }));
-    addAnswers([{ questionId: q.id, moduleId: q.moduleId, lessonId: q.lessonId, selected: sel, correct: isCorrect(q, sel), seconds: seconds.current[q.id] ?? 0, mode: kind, sessionId, at: new Date().toISOString() }]);
+    void recordRows([{ q, sel, correct: isCorrect(q, sel), seconds: seconds.current[q.id] ?? 0 }], "check");
   };
   const tryAgain = () => {
     if (!q) return;
@@ -231,7 +252,7 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
   if (set.length === 0)
     return (
       <div className="alm-focus min-h-dvh">
-        <FocusBar closeHref={close} eyebrow={eyebrow} title={title} />
+        <FocusBar closeHref={close} onClose={onClose} eyebrow={eyebrow} title={title} />
         <main className="mx-auto max-w-[640px] px-4 py-10">
           <p className="rounded-[20px] border border-hairline bg-white p-6 text-ink-body">No questions match yet. Questions appear here once our nurse reviewer approves them.</p>
         </main>
@@ -243,7 +264,7 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
     const partial = set.length < intro.total;
     return (
       <div className="alm-focus flex min-h-dvh flex-col">
-        <FocusBar closeHref={close} eyebrow={eyebrow} title={title} />
+        <FocusBar closeHref={close} onClose={onClose} eyebrow={eyebrow} title={title} />
         <main className="flex flex-1 items-center justify-center px-4 py-8 sm:p-10">
           <section className="flex w-full max-w-[640px] flex-col gap-[22px] rounded-[24px] border border-hairline bg-white p-6 shadow-[0_12px_32px_rgba(27,21,48,.06)] sm:px-10 sm:py-9">
             <div className="flex flex-col gap-2">
@@ -296,7 +317,7 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
               </li>
             </ul>
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#EEEBF7] pt-5">
-              <Link href={close} className="text-[14px] font-bold text-violet-700 hover:text-violet-deep">
+              <Link href={close} onClick={onClose} className="text-[14px] font-bold text-violet-700 hover:text-violet-deep">
                 ← {backLabel ?? "Back"}
               </Link>
               <button type="button" onClick={start} className="h-[52px] rounded-[12px] bg-violet px-[26px] text-[15px] font-bold text-white hover:bg-[#4A2DE6]">
@@ -314,7 +335,7 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
     const un = set.length - answered;
     return (
       <div className="alm-focus flex min-h-dvh flex-col">
-        <FocusBar closeHref={close} eyebrow={eyebrow} title={title} />
+        <FocusBar closeHref={close} onClose={onClose} eyebrow={eyebrow} title={title} />
         <main className="flex flex-1 items-center justify-center px-4 py-10">
           <section className="flex w-full max-w-[520px] flex-col gap-4 rounded-[24px] border border-hairline bg-white p-8" role="alert">
             <span className="grid h-[52px] w-[52px] place-items-center rounded-[16px] bg-[#FFE9DC] text-[22px] text-[#A8430A]" aria-hidden="true">
@@ -337,7 +358,7 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
   }
 
   /* ── 10c Results ─────────────────────────────────────────────────────── */
-  if (stage === "results") return <Results {...{ eyebrow, title, set, picks, passMark, startedAt, finishedAt, close, retakeLabel: exam ? "Retake the exam" : "Try the set again", onRetake: () => restart(shuffled(initial, String(Date.now()))) }} />;
+  if (stage === "results") return <Results {...{ eyebrow, title, set, picks, passMark, startedAt, finishedAt, close, onClose, revision, retakeLabel: exam ? "Retake the exam" : "Try the set again", onRetake: () => restart(shuffled(initial, String(Date.now()))) }} />;
 
   /* ── 8a / 15b / 15d Running ──────────────────────────────────────────── */
   const sel = picks[q.id] ?? [];
@@ -402,6 +423,7 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
       <div className="hidden sm:block">
         <FocusBar
           closeHref={close}
+          onClose={onClose}
           eyebrow={eyebrow}
           title={title}
           right={
@@ -415,7 +437,7 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
       {/* Mobile bar (15d) */}
       <div className="sticky top-0 z-30 sm:hidden">
         <div className="flex h-14 items-center gap-2.5 border-b border-[#EEEBF7] bg-white pr-2 pl-1.5">
-          <Link href={close} aria-label="Close" className="grid h-11 w-11 place-items-center text-[15px]">
+          <Link href={close} onClick={onClose} aria-label="Close" className="grid h-11 w-11 place-items-center text-[15px]">
             ✕
           </Link>
           <span className="flex-1 text-[13.5px] font-bold">
@@ -468,6 +490,14 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
             })}
           </fieldset>
 
+          {retry && (
+            <div role="alert" className="flex items-center justify-between gap-3 rounded-[12px] border border-[#FFD9C2] bg-[#FFF4EC] px-3.5 py-2.5 text-[13.5px] text-ink">
+              <span>Your answer wasn&apos;t saved. Check your connection.</span>
+              <button type="button" onClick={() => retry()} className="font-bold text-violet-700">
+                Retry
+              </button>
+            </div>
+          )}
           {isChecked && q.takeaway && (
             <p className="rounded-[14px] bg-lilac px-4 py-3 text-[14px] leading-relaxed text-ink" role="status">
               <b className="text-violet-deep">Takeaway. </b>
@@ -632,6 +662,8 @@ function Results({
   startedAt,
   finishedAt,
   close,
+  onClose,
+  revision,
   retakeLabel,
   onRetake,
 }: {
@@ -643,6 +675,8 @@ function Results({
   startedAt: number;
   finishedAt: number | null;
   close: string;
+  onClose?: () => void;
+  revision?: Props["revision"];
   retakeLabel: string;
   onRetake: () => void;
 }) {
@@ -667,11 +701,12 @@ function Results({
   const need = passMark ? Math.max(0, Math.ceil((passMark / 100) * set.length) - right) : 0;
   const weakPage = weakest?.lessonId ? lessonById(weakest.lessonId) : undefined;
   const weakTopicPage = weakPage && weakPage.kind === "topic" ? weakPage : undefined;
-  const path = [
+  const defaultPath = () => [
     weakTopicPage && { title: `Revisit ${weakTopicPage.shortTitle ?? weakTopicPage.title}`, sub: "Key points and the reading for your weakest topic", min: minutesFor(weakTopicPage), href: `/app/learn/${weakTopicPage.id}` },
     due > 0 && { title: `Review ${due} card${due === 1 ? "" : "s"} due`, sub: "Spaced review keeps today's fixes", min: Math.max(1, Math.round(due * 0.4)), href: "/app/review" },
     missed.length > 0 && { title: `Retry the ${missed.length} question${missed.length === 1 ? "" : "s"} you missed`, sub: "Practice mode, with rationales after each answer", min: Math.max(1, Math.round(missed.length * 1.2)), href: "/app/practice/missed" },
-  ].filter(Boolean) as { title: string; sub: string; min: number; href: string }[];
+  ];
+  const path = (revision ? revision({ weakest: weakest?.name, missed: missed.map((r) => r.q) }) : defaultPath()).filter(Boolean) as PathItem[];
   const pathMin = path.reduce((a, p) => a + p.min, 0);
   const mins = finishedAt ? Math.max(1, Math.round((finishedAt - startedAt) / 60_000)) : null;
   const when = new Date(finishedAt ?? Date.now()).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -697,7 +732,7 @@ function Results({
 
   return (
     <div className="alm-focus min-h-dvh">
-      <FocusBar closeHref={close} eyebrow={eyebrow} title={`${title} · Results`} right={<span className="hidden text-[12.5px] text-ink-muted sm:inline">Finished {when}{mins ? ` · ${mins} min` : ""}</span>} />
+      <FocusBar closeHref={close} onClose={onClose} eyebrow={eyebrow} title={`${title} · Results`} right={<span className="hidden text-[12.5px] text-ink-muted sm:inline">Finished {when}{mins ? ` · ${mins} min` : ""}</span>} />
       <main className="mx-auto flex max-w-[1080px] flex-col gap-4 px-4 pt-5 pb-12 sm:gap-5 sm:px-6 sm:pt-8">
         <div className="grid gap-4 sm:gap-5 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
           <section className="flex flex-col gap-4 rounded-[20px] border border-hairline bg-white p-5 shadow-[0_18px_40px_rgba(42,27,120,.08)] sm:p-[26px]">
@@ -757,15 +792,26 @@ function Results({
                     <span className="text-[12px] font-bold text-[#D9D2F3]">{p.min} min</span>
                   </>
                 );
-                return (
-                  <Link key={p.title} href={p.href} className="flex items-center gap-3 rounded-[14px] bg-white/8 px-3.5 py-3 hover:bg-white/12">
+                const cls = "flex w-full items-center gap-3 rounded-[14px] bg-white/8 px-3.5 py-3 hover:bg-white/12";
+                return p.href ? (
+                  <Link key={p.title} href={p.href} className={cls}>
                     {inner}
                   </Link>
+                ) : (
+                  <button key={p.title} type="button" onClick={p.onClick} className={cls}>
+                    {inner}
+                  </button>
                 );
               })}
-              <Link href={path[0].href} className="mt-auto flex h-12 items-center justify-center rounded-[12px] bg-white text-[15px] font-bold text-violet-deep hover:bg-lilac">
-                Start revision →
-              </Link>
+              {path[0].href ? (
+                <Link href={path[0].href} className="mt-auto flex h-12 items-center justify-center rounded-[12px] bg-white text-[15px] font-bold text-violet-deep hover:bg-lilac">
+                  Start revision →
+                </Link>
+              ) : (
+                <button type="button" onClick={path[0].onClick} className="mt-auto h-12 rounded-[12px] bg-white text-[15px] font-bold text-violet-deep hover:bg-lilac">
+                  Start revision →
+                </button>
+              )}
             </section>
           )}
         </div>
