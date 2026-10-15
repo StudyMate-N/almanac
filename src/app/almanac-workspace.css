@@ -74,3 +74,13 @@
 .alm-workspace .alm-staff-header a{color:white}
 @keyframes almFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(prefers-reduced-motion:reduce){.alm-workspace .alm-desk-progress>span{animation:none}}
+
+/* Sign-in and staff hierarchy from the October workspace handoff. */
+.alm-signin{position:relative;isolation:isolate}
+.alm-signin::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(75% 65% at 13% 5%,#DFF5EA 0%,transparent 72%),radial-gradient(75% 65% at 91% 34%,#ECE7FF 0%,transparent 76%),#F7F6FB}
+.alm-staff-topbar{padding:20px 24px;border-radius:18px;background:#2A1B78;color:#fff}
+.alm-staff-topbar .text-ink,.alm-staff-topbar .text-ink-muted{color:#fff!important}
+.alm-staff-topbar a{color:#fff}
+.alm-staff-topbar a.bg-lilac{color:#2A1B78!important}
+.alm-staff-topbar button{color:#fff!important}
+@media(max-width:640px){.alm-staff-topbar{padding:16px}}
