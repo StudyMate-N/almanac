@@ -92,3 +92,85 @@
     cursor: pointer;
   }
 }
+
+/* ── Motion (docs/experience-standard.md) ─────────────────────────────
+   Exits are quick, entrances gentle, one thing moves at a time.
+   Only opacity and transform animate. Reduced motion turns all of it off. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes slide-x {
+  from {
+    opacity: 0;
+    translate: var(--slide-offset) 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* Page to page: the old page fades out in 120 ms, the new one rises in over 220 ms. */
+::view-transition-old(.page) {
+  animation: 120ms ease-in both fade-in reverse;
+}
+::view-transition-new(.page) {
+  animation: 220ms cubic-bezier(0.2, 0.8, 0.2, 1) 60ms both rise-in;
+}
+/* Previous / next topic: the content slides in the direction of travel. */
+::view-transition-old(.nav-forward) {
+  --slide-offset: -40px;
+  animation: 160ms ease-in both slide-x reverse;
+}
+::view-transition-new(.nav-forward) {
+  --slide-offset: 40px;
+  animation: 260ms cubic-bezier(0.2, 0.8, 0.2, 1) 80ms both slide-x;
+}
+::view-transition-old(.nav-back) {
+  --slide-offset: 40px;
+  animation: 160ms ease-in both slide-x reverse;
+}
+::view-transition-new(.nav-back) {
+  --slide-offset: -40px;
+  animation: 260ms cubic-bezier(0.2, 0.8, 0.2, 1) 80ms both slide-x;
+}
+/* The rest of the screen (nav, tab bar) holds still instead of crossfading. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* The topic player's header is the fixed point while topics slide past it. */
+::view-transition-group(player-header) {
+  animation: none;
+  z-index: 50;
+}
+::view-transition-old(player-header) {
+  display: none;
+}
+::view-transition-new(player-header) {
+  animation: none;
+}

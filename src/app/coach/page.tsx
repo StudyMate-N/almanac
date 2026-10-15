@@ -91,6 +91,7 @@ function ItemView({ kind, id, item }: { kind: string; id: string; item: unknown 
     if (!c) return null;
     return (
       <div className="rounded-xl bg-mist p-4 text-sm">
+        <p className="text-xs font-bold text-violet-700">{c.topic}</p>
         <p className="font-bold">{c.front}</p>
         <p>{c.back}</p>
         {c.detail && <p className="text-ink-muted">{c.detail}</p>}

@@ -113,7 +113,10 @@ export default function Guide() {
               {cs.map((c) => (
                 <tr key={c.id} className="border-t border-hairline align-top">
                   <td className="w-1/2 py-2 pr-3 font-semibold">{c.front}</td>
-                  <td className="py-2">{c.back}</td>
+                  <td className="py-2">
+                    {c.back}
+                    {c.detail && <span className="mt-0.5 block text-[13px] text-ink-muted">{c.detail}</span>}
+                  </td>
                 </tr>
               ))}
             </tbody>

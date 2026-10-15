@@ -71,13 +71,14 @@ function ClipBlock({ clip: id, note }: { clip: string; note?: string }) {
 
 function CardsBlock({ title, cards }: { title: string; cards: Card[] }) {
   const [i, setI] = useState(0);
-  const [flip, setFlip] = useState(false);
+  const [open, setOpen] = useState(false);
   if (!cards.length) return null;
   const c = cards[i];
   const go = (n: number) => {
-    setFlip(false);
+    setOpen(false);
     setI((n + cards.length) % cards.length);
   };
+  // Same behaviour as the review screen: the question stays, shrinking to a line, and the answer opens beneath it.
   return (
     <section aria-label={title} className="rounded-tile bg-lilac p-5 sm:p-6">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -89,15 +90,21 @@ function CardsBlock({ title, cards }: { title: string; cards: Card[] }) {
         </span>
       </div>
       <button
-        onClick={() => setFlip((f) => !f)}
-        aria-label={flip ? "Show the question side" : "Show the answer"}
-        className={`grid min-h-[168px] w-full place-items-center rounded-card p-6 text-center transition-colors ${flip ? "bg-violet text-white" : "bg-white text-ink"}`}
+        key={c.id}
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-label={open ? "Hide the answer" : "Show the answer"}
+        className="flex min-h-[184px] w-full flex-col justify-center gap-2 rounded-card bg-white p-6 text-left motion-safe:animate-card-in"
       >
-        <span className="flex flex-col gap-2">
-          <span className={`text-xs font-bold tracking-wide uppercase ${flip ? "text-violet-on" : "text-ink-faint"}`}>{flip ? "Answer" : "Tap to reveal"}</span>
-          <span className="font-display text-[21px] leading-snug font-semibold">{flip ? c.back : c.front}</span>
-          {flip && c.detail && <span className="text-[15px] text-violet-on">{c.detail}</span>}
+        <span className="text-xs font-bold text-violet-700">{c.topic}</span>
+        <span className={`font-display leading-snug font-semibold transition-all duration-300 motion-reduce:transition-none ${open ? "text-[15px] text-ink-muted" : "text-[21px] text-ink"}`}>{c.front}</span>
+        <span className="grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none" style={{ gridTemplateRows: open ? "1fr" : "0fr" }}>
+          <span className="flex min-h-0 flex-col gap-1.5 overflow-hidden">
+            <span className="mt-1 border-t-2 border-dashed border-hairline pt-3 font-display text-[20px] leading-snug font-semibold text-violet-700">{c.back}</span>
+            {c.detail && <span className="text-[15px] leading-relaxed text-ink-body">{c.detail}</span>}
+          </span>
         </span>
+        {!open && <span className="text-[13px] font-semibold text-ink-faint">Tap to show the answer</span>}
       </button>
       <div className="mt-3 flex items-center justify-between gap-2">
         <button onClick={() => go(i - 1)} className="min-h-11 rounded-full bg-white px-4 text-sm font-bold text-violet-700">

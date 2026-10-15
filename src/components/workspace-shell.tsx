@@ -2,6 +2,7 @@
 import Link from "next/link";
 import {Sidebar,TabBar} from "@/components/app-nav";
 import {Logo} from "@/components/brand";
+import {PageTransition} from "@/components/page-transition";
 import {useStudent} from "@/lib/store";
 
 export function WorkspaceShell({children}:{children:React.ReactNode}) {
@@ -25,7 +26,7 @@ export function WorkspaceShell({children}:{children:React.ReactNode}) {
        {offline&&<div role="status" className="mb-5 rounded-xl bg-[#FFF4EC] px-4 py-3 text-[13px] text-[#9D3E0E]">
            You&apos;re offline. Your local study progress will sync when you reconnect.
        </div>}
-       {children}
+       <PageTransition>{children}</PageTransition>
      </main>
    </div>
    <TabBar/>

@@ -106,7 +106,7 @@ export default function Player() {
 
   return (
     <div className="alm-focus min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-hairline bg-white/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-hairline bg-white/95 backdrop-blur" style={{ viewTransitionName: "player-header" }}>
         <div className="mx-auto flex h-[60px] max-w-[1440px] items-center gap-3 px-4 sm:px-6">
           <Link href={`/app/courses/${course.id}`} aria-label="Close the course player" className="grid h-10 w-10 flex-none place-items-center rounded-full border border-hairline bg-white hover:bg-mist">
             <XIcon size={18} />
@@ -214,7 +214,7 @@ export default function Player() {
 
             <div ref={endRef} className="mt-6 flex flex-wrap items-stretch justify-between gap-3 border-t border-hairline pt-5">
               {prev ? (
-                <Link href={`/app/learn/${prev.id}`} className="flex min-h-[51px] min-w-[175px] flex-col justify-center rounded-xl border border-hairline bg-white px-4 py-2 hover:bg-mist">
+                <Link href={`/app/learn/${prev.id}`} transitionTypes={["nav-back"]} className="flex min-h-[51px] min-w-[175px] flex-col justify-center rounded-xl border border-hairline bg-white px-4 py-2 hover:bg-mist">
                   <span className="text-[12px] font-bold text-ink-muted">Previous</span>
                   <span className="font-display text-[17px] leading-snug font-semibold">{prev.shortTitle ?? prev.title}</span>
                 </Link>
@@ -222,7 +222,7 @@ export default function Player() {
                 <span />
               )}
               {next && (
-                <Link href={`/app/learn/${next.id}`} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} className="flex min-h-[51px] min-w-[175px] items-center gap-3 rounded-xl bg-violet px-4 py-2 text-white hover:bg-violet-600">
+                <Link href={`/app/learn/${next.id}`} transitionTypes={["nav-forward"]} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} className="flex min-h-[51px] min-w-[175px] items-center gap-3 rounded-xl bg-violet px-4 py-2 text-white hover:bg-violet-600">
                   <span className="min-w-0 flex-1">
                     <span className="block text-[12px] font-extrabold">Next</span>
                     <span className="block font-display text-[17px] leading-snug font-semibold">{next.shortTitle ?? next.title}</span>

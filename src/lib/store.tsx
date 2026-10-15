@@ -32,6 +32,7 @@ const KEYS = Object.keys(EMPTY) as (keyof StudentState)[];
 
 const TOKEN_KEY = "almanac.token";
 const CACHE_KEY = "almanac.cache.v2";
+const APPROVALS_KEY = "almanac.approvals";
 export const COACH_KEY = "almanac.coach";
 
 type Cache = { profileId: string; state: StudentState; dirty: (keyof StudentState)[]; pending: Answer[]; answers: Answer[] };
@@ -202,12 +203,32 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const tok = read<string>(TOKEN_KEY);
     setPreview(Boolean(read(COACH_KEY)));
+    // Seamless return visits: show what this device already knows at once, then sync quietly.
+    const cachedApprovals = read<Record<string, string>>(APPROVALS_KEY);
+    if (cachedApprovals) {
+      setApprovals(cachedApprovals);
+      setApprovalsLoaded(true);
+    }
     rpc<Record<string, string>>("approved_items")
-      .then((a) => setApprovals(a ?? {}))
-      .catch(() => setApprovals({}))
+      .then((a) => {
+        setApprovals(a ?? {});
+        write(APPROVALS_KEY, a ?? {});
+      })
+      .catch(() => {
+        if (!cachedApprovals) setApprovals({});
+      })
       .finally(() => setApprovalsLoaded(true));
     if (tok) {
       setToken(tok);
+      const local = read<Cache>(CACHE_KEY);
+      const prof = read<Profile>("almanac.profile");
+      if (local && prof && local.profileId === prof.id) {
+        cache.current = local;
+        setProfile(prof);
+        setState(local.state);
+        setAnswers([...local.answers, ...local.pending]);
+        setStatus("ready");
+      }
       void load(tok);
     } else {
       setStatus("signed-out");
@@ -242,6 +263,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     write(TOKEN_KEY, null);
     write(CACHE_KEY, null);
     write("almanac.profile", null);
+    write(APPROVALS_KEY, null);
     cache.current = null;
     setToken(null);
     setProfile(null);

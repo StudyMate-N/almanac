@@ -33,7 +33,13 @@ export type AQ = {
 };
 
 /** Flashcard: [front, back] or [front, back, detail]. */
-export type ACard = [string, string] | [string, string, string];
+/**
+ * A flashcard. The object form is the course standard: a cue or question on
+ * the front (`q`), a short answer (`a`), one line of mechanism or the trap
+ * that separates it from a look-alike (`why`), and the topic page it belongs to.
+ * Ids are positional within a cards block: edit in place, append new cards.
+ */
+export type ACard = [string, string] | [string, string, string] | { q: string; a: string; why?: string; topic: string };
 
 export type ABlock =
   | Exclude<Block, { t: "check" } | { t: "quiz" } | { t: "cards" }>
@@ -140,7 +146,8 @@ export function build(sections: ASection[]): Built {
             const ids = b.cards.map((c, i) => {
               const id = `${b.id}-${String(i + 1).padStart(2, "0")}`;
               unique(id);
-              out.cards.push({ id, moduleId, lessonId: p.id, topic, front: stripTags(c[0]), back: stripTags(c[1]), detail: c[2] ? stripTags(c[2]) : undefined, source });
+              if (Array.isArray(c)) out.cards.push({ id, moduleId, lessonId: p.id, topic, front: stripTags(c[0]), back: stripTags(c[1]), detail: c[2] ? stripTags(c[2]) : undefined, source });
+              else out.cards.push({ id, moduleId, lessonId: p.id, topic: c.topic, front: stripTags(c.q), back: stripTags(c.a), detail: c.why ? stripTags(c.why) : undefined, source: BOOK });
               return id;
             });
             return { t: "cards", title: b.title, ids };
@@ -194,6 +201,19 @@ export function lint(sections: ASection[]) {
     const topics = pages.filter((p) => p.kind === "topic");
     if (topics.length < 3 || topics.length > 6) add(s.id, false, `${topics.length} topics (want 3–6)`);
     if (pages.filter((p) => p.kind === "summary").length !== 1) add(s.id, false, "needs exactly one summary page");
+    // Flashcards: course-standard shape, tied to a topic page in this section.
+    const topicNames = new Set(topics.map((t) => t.shortTitle ?? t.title));
+    for (const p of pages)
+      for (const b of p.blocks)
+        if (b.t === "cards")
+          b.cards.forEach((c, i) => {
+            const id = `${b.id}-${String(i + 1).padStart(2, "0")}`;
+            if (Array.isArray(c)) return add(id, false, "card is a bare term/definition pair; use { q, a, why, topic }");
+            if (!topicNames.has(c.topic)) add(id, true, `card topic "${c.topic}" is not a topic page in ${s.id}`);
+            if (c.q.length > 110) add(id, true, `card front is ${c.q.length} characters (max 110)`);
+            if (c.a.length > 80) add(id, true, `card answer is ${c.a.length} characters (max 80)`);
+            if (c.why && c.why.length > 200) add(id, true, `card why-line is ${c.why.length} characters (max 200)`);
+          });
     for (const p of pages) {
       const n = (t: ABlock["t"]) => p.blocks.filter((b) => b.t === t).length;
       if (p.kind === "topic") {

@@ -8,10 +8,22 @@ import { useStudent } from "@/lib/store";
 /** Shows the sign-in screen until an approved paid learner is signed in. */
 export function Gate({ children }: { children: React.ReactNode }) {
   const { status } = useStudent();
+  // First visit on this device only (return visits render from the cached copy).
+  // The placeholder has the app's shape and fades in late, so a fast load shows no flash at all.
   if (status === "loading")
     return (
-      <div className="grid min-h-dvh place-items-center bg-ground" aria-busy="true">
-        <p className="font-semibold text-ink-muted">Loading your plan…</p>
+      <div className="min-h-dvh bg-ground px-4 pt-5 sm:px-6 lg:p-6" aria-busy="true" aria-label="Loading your plan">
+        <div className="mx-auto flex max-w-[1360px] gap-6 opacity-0 motion-safe:animate-[fade-in_300ms_ease-out_200ms_forwards] motion-reduce:opacity-100">
+          <div className="hidden h-[calc(100dvh-48px)] w-[240px] flex-none rounded-tile bg-surface lg:block" />
+          <div className="flex min-w-0 flex-1 flex-col gap-4">
+            <div className="h-9 w-48 rounded-full bg-track" />
+            <div className="h-[200px] rounded-tile bg-violet-200/60" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="h-[140px] rounded-tile bg-surface" />
+              <div className="h-[140px] rounded-tile bg-surface" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   if (status === "signed-out") return <SignIn />;
