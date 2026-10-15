@@ -29,7 +29,7 @@ export function Corrections({ clip, seek }: { clip: Clip; seek: (at: string) => 
   return (
     <details className="rounded-[14px] border border-hairline bg-white px-4 py-3 text-[14px]">
       <summary className="cursor-pointer font-bold text-violet-700">
-        {clip.corrections.length} correction{clip.corrections.length > 1 ? "s" : ""} to this clip
+        <span className="text-ink">Updated after nurse review.</span> <span className="font-semibold text-ink-body">{clip.corrections.length} statement{clip.corrections.length > 1 ? "s" : ""} in this clip {clip.corrections.length > 1 ? "were" : "was"} corrected</span>
       </summary>
       <ul className="mt-3 flex flex-col gap-2.5">
         {clip.corrections.map((c) => (
@@ -125,14 +125,14 @@ export function Predict({ id, stem, options, correct, reveal, eyebrow = "Predict
   const pick = state.notes[key];
   const choose = (o: string) => !pick && update("notes", { ...state.notes, [key]: o });
   return (
-    <section aria-label="Predict first" className="flex flex-col gap-3 rounded-tile bg-white p-[20px_22px]">
-      <p className="text-xs font-extrabold tracking-[.06em] text-violet-600 uppercase">{eyebrow}</p>
-      <p className="font-display text-[18px] leading-snug font-semibold">{stem}</p>
+    <section aria-label="Predict first" className="flex flex-col gap-3 rounded-[16px] border border-hairline bg-white p-[18px_20px]">
+      <p className="text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">{eyebrow}</p>
+      <p className="font-display text-[17px] leading-snug font-semibold sm:text-[18px]">{stem}</p>
       <div className="flex flex-wrap gap-2.5">
         {options.map((o) => {
-          const tone = !pick ? "border-hairline bg-mist" : o.id === correct ? "border-correct bg-mint" : o.id === pick ? "border-incorrect bg-rose" : "border-transparent bg-mist";
+          const tone = !pick ? "border-hairline bg-white hover:border-violet hover:bg-[#FBFAFE]" : o.id === correct ? "border-correct bg-mint" : o.id === pick ? "border-[#F2711C] bg-[#FFE9DC]" : "border-hairline bg-white text-ink-muted";
           return (
-            <button key={o.id} onClick={() => choose(o.id)} disabled={Boolean(pick)} aria-pressed={pick === o.id} className={`min-h-[52px] flex-[1_1_160px] rounded-full border-2 px-5 text-[15px] font-bold text-ink ${tone}`}>
+            <button key={o.id} onClick={() => choose(o.id)} disabled={Boolean(pick)} aria-pressed={pick === o.id} className={`min-h-12 flex-[1_1_160px] rounded-[12px] border-[1.5px] px-5 text-[15px] font-bold text-ink ${tone}`}>
               {o.text}
             </button>
           );
@@ -140,7 +140,7 @@ export function Predict({ id, stem, options, correct, reveal, eyebrow = "Predict
       </div>
       {pick && (
         <p role="status" className="rounded-2xl bg-lilac px-3.5 py-3 text-[15px] leading-[1.55] text-ink-body">
-          <strong className="text-violet-700">{pick === correct ? "Right." : "Not quite."}</strong> {reveal}
+          <strong className={pick === correct ? "text-correct" : "text-[#A8430A]"}>{pick === correct ? "Right." : "Not quite."}</strong> {reveal}
         </p>
       )}
       {pick && children}
@@ -174,24 +174,26 @@ function Figure({ id, alt, panels, aspect }: { id: string; alt: string; panels: 
 }
 
 export function TopicHead({ eq, items }: { eq?: string; items: string[] }) {
+  const points = (
+    <div className="rounded-[16px] bg-lilac p-[18px_20px] text-ink">
+      <p className="mb-2 text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">Key points</p>
+      <ul className="flex list-disc flex-col gap-2 pl-5 text-[15.5px] leading-normal marker:text-violet [&_strong]:font-bold">
+        {items.map((it, i) => (
+          <li key={i}>
+            <Html html={it} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+  if (!eq) return points;
   return (
-    <div className="flex flex-col gap-4 rounded-tile bg-violet p-[22px_24px] text-white">
-      {eq && (
-        <div>
-          <p className="mb-1 text-xs font-extrabold tracking-[.06em] text-violet-on uppercase">Essential question</p>
-          <p className="font-display text-[22px] leading-[1.3] font-semibold">{eq}</p>
-        </div>
-      )}
-      <div className="rounded-card bg-white/10 p-[16px_18px]">
-        <p className="mb-2 text-xs font-extrabold tracking-[.06em] text-violet-on uppercase">Key points</p>
-        <ul className="flex list-disc flex-col gap-1.5 pl-5 text-[15.5px] leading-normal [&_strong]:font-bold">
-          {items.map((it, i) => (
-            <li key={i}>
-              <Html html={it} />
-            </li>
-          ))}
-        </ul>
+    <div className="flex flex-col gap-3 rounded-[20px] border border-hairline bg-white p-[18px_20px] sm:p-[20px_22px]">
+      <div>
+        <p className="mb-1 text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">Essential question</p>
+        <p className="font-display text-[20px] leading-[1.3] font-semibold sm:text-[22px]">{eq}</p>
       </div>
+      {points}
     </div>
   );
 }
@@ -201,9 +203,9 @@ export function OpenPrompt({ id, stem, expert }: { id: string; stem: string; exp
   const [text, setText] = useState(state.notes[id] ?? "");
   const [shown, setShown] = useState(Boolean(state.notes[id]));
   return (
-    <section aria-label="Submit and compare" className="flex flex-col gap-3 rounded-tile bg-mint p-[20px_22px]">
-      <p className="self-start rounded-full bg-white px-3 py-1 text-xs font-extrabold tracking-[.06em] text-mint-ink uppercase">Explain it in your own words</p>
-      <p className="font-display text-[18px] leading-[1.35] font-semibold">{stem}</p>
+    <section aria-label="Submit and compare" className="flex flex-col gap-3 rounded-[16px] border border-hairline bg-white p-[18px_20px]">
+      <p className="text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">Explain it in your own words</p>
+      <p className="font-display text-[17px] leading-[1.35] font-semibold">{stem}</p>
       <label className="sr-only" htmlFor={`open-${id}`}>
         Your answer
       </label>
@@ -212,8 +214,8 @@ export function OpenPrompt({ id, stem, expert }: { id: string; stem: string; exp
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={4}
-        placeholder="Two or three sentences, then compare."
-        className="w-full resize-y rounded-2xl border-2 border-hairline bg-white p-3.5 text-[15px] outline-none focus:border-violet"
+        placeholder="Write two or three sentences…"
+        className="w-full resize-y rounded-[12px] border border-[#D9D2F3] bg-white p-3.5 text-[15px] outline-none focus:border-violet"
       />
       <div className="flex flex-wrap gap-3">
         <button
@@ -223,14 +225,14 @@ export function OpenPrompt({ id, stem, expert }: { id: string; stem: string; exp
             setShown(true);
             update("notes", { ...state.notes, [id]: text.trim() });
           }}
-          className="min-h-12 rounded-full bg-violet px-[22px] font-bold text-white"
+          className="min-h-11 rounded-[12px] border-[1.5px] border-violet px-[18px] text-[14px] font-bold text-violet-700 hover:bg-lilac"
         >
           Compare with the expert answer
         </button>
       </div>
       {shown && (
-        <div className="rounded-2xl bg-white p-[14px_16px] text-[15px] leading-relaxed text-ink-body" role="status">
-          <p className="mb-1 font-bold text-mint-ink">Expert answer</p>
+        <div className="rounded-[12px] bg-mist p-[14px_16px] text-[15px] leading-relaxed text-ink-body" role="status">
+          <p className="mb-1 font-bold text-ink">Expert answer</p>
           <p>{expert}</p>
         </div>
       )}
@@ -400,9 +402,9 @@ export function BlockView({ b, pageId, visibleQ, visibleCards, onComplete, eq }:
       );
     case "eq":
       return (
-        <div className="rounded-tile bg-violet p-5 text-white sm:p-6">
-          <p className="mb-1 text-xs font-extrabold tracking-wide text-violet-on uppercase">Essential question</p>
-          <p className="font-display text-[21px] leading-snug font-semibold">{b.text}</p>
+        <div className="rounded-[16px] border border-hairline bg-white p-[18px_20px]">
+          <p className="mb-1 text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">Essential question</p>
+          <p className="font-display text-[20px] leading-snug font-semibold">{b.text}</p>
         </div>
       );
     case "video":

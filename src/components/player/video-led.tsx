@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { questionById } from "@/content/course";
 import { type Clip, clipById } from "@/content/patho";
 import type { Block, Card, Lesson, Question } from "@/content/types";
@@ -164,6 +165,8 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
     if (p.play) void el.play();
   };
 
+  const [railEl, setRailEl] = useState<HTMLElement | null>(null);
+  useEffect(() => setRailEl(document.getElementById("player-chapters")), []);
   const keypoints = page.blocks.find((b) => b.t === "keypoints");
   const open = page.blocks.find((b) => b.t === "open");
   const notes = page.blocks.filter((b) => NOTE_KINDS.has(b.t));
@@ -173,10 +176,18 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
   const chapterNow = [...chapters].reverse().find((c) => c.pos <= t + 0.05) ?? chapters[0];
   const cur = segs[seg];
   const base = `${MEDIA_BASE.replace(/\/$/, "")}/${cur.clip.id}`;
-  const message = !predictDone ? "Answer the question below, then press play" : active ? "Paused for a question below" : ended ? "Finished. Every stop answered?" : "Press play";
+  const message = !predictDone ? "Answer the question above, then press play" : active ? "Paused for a question below" : ended ? "Finished. Every stop answered?" : "Ready when you are";
 
   return (
     <div className="flex flex-col gap-6">
+      {predict && (
+        <div>
+          <Predict id={predict.id} stem={predict.stem} options={predict.options} correct={predict.correct} reveal={predict.reveal} eyebrow="Before you press play · not scored">
+            {!playing && !active && t === 0 && (
+              <button onClick={play} className="min-h-12 self-start rounded-full bg-violet px-6 font-bold text-white">
+                Play the video ▶
+              </button>
+            )}
       <section aria-label="Course video" className="flex flex-col gap-2.5">
         <div className="relative aspect-video w-full overflow-hidden rounded-3xl bg-violet-deep text-white">
           <video
@@ -215,7 +226,7 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
                 >
                   {ended ? "↺" : "▶"}
                 </button>
-                <p className="text-center text-sm font-semibold text-violet-on">{message}</p>
+                <p className="rounded-full bg-white px-3 py-1.5 text-center text-[13px] font-bold text-violet-deep">{message}</p>
               </div>
             )}
             <div className="flex flex-col gap-2">
@@ -248,16 +259,33 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 xl:hidden">
           {chapters.map((c) => {
             const here = c === chapterNow;
             return (
-              <button key={`${c.pos}-${c.label}`} onClick={() => goTo(c.pos, playing)} className={`min-h-10 rounded-full px-3.5 text-[13px] font-bold ${here ? "bg-lilac text-violet-700" : "bg-white text-ink-muted"}`}>
+              <button key={`${c.pos}-${c.label}`} onClick={() => goTo(c.pos, playing)} aria-current={here ? "true" : undefined} className={`min-h-10 flex-none rounded-full border-[1.5px] px-3.5 text-[13px] font-bold whitespace-nowrap ${here ? "border-[#F2711C] bg-[#FFF4EC] text-ink" : "border-hairline bg-white text-ink-muted"}`}>
                 {fmt(c.pos)} {c.label}
               </button>
             );
           })}
         </div>
+        {railEl &&
+          createPortal(
+            <section className="rounded-[16px] border border-hairline bg-white p-2">
+              <p className="px-2 pt-2 pb-1.5 text-[11px] font-extrabold tracking-[.12em] text-ink-muted">CHAPTERS</p>
+              {chapters.map((c) => {
+                const here = c === chapterNow;
+                return (
+                  <button key={`${c.pos}-${c.label}`} onClick={() => goTo(c.pos, playing)} aria-current={here ? "true" : undefined} className={`relative flex min-h-11 w-full items-center gap-2 rounded-[10px] px-3.5 text-left text-[13.5px] ${here ? "bg-[#FFF4EC] font-bold text-ink" : "font-medium text-ink-body hover:bg-mist"}`}>
+                    {here && <span aria-hidden="true" className="absolute top-2.5 bottom-2.5 left-1 w-1 rounded-full bg-[#F2711C]" />}
+                    <span className="min-w-0 flex-1">{c.label}</span>
+                    <span className="font-mono text-[11.5px] text-ink-muted">{fmt(c.pos)}</span>
+                  </button>
+                );
+              })}
+            </section>,
+            railEl,
+          )}
         <p className="text-[13px] text-ink-muted">
           Course video · {fmt(total)} · {stops.length} stop{stops.length === 1 ? "" : "s"} for questions · Script approved by {REVIEWER.name}, {REVIEWER.credentials}
         </p>
@@ -275,14 +303,6 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
         </section>
       )}
 
-      {predict && (
-        <div className="rounded-tile ring-2 ring-violet-300">
-          <Predict id={predict.id} stem={predict.stem} options={predict.options} correct={predict.correct} reveal={predict.reveal} eyebrow="Before you press play · not scored">
-            {!playing && !active && t === 0 && (
-              <button onClick={play} className="min-h-12 self-start rounded-full bg-violet px-6 font-bold text-white">
-                Play the video ▶
-              </button>
-            )}
           </Predict>
         </div>
       )}

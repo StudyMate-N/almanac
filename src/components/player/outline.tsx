@@ -54,26 +54,28 @@ export function Outline({ modules, currentId, isDone, isOpen, onNavigate }: Prop
         const done = pages.filter((p) => isDone(p.id)).length;
         const open = Boolean(expanded[m.id]);
         const here = m.id === currentModule;
+        const allDone = pages.length > 0 && done === pages.length;
+        const mins = pages.reduce((n, p) => n + minutesFor(p), 0);
+        const eyebrow = (m.kind === "section" ? `Section ${m.number}` : m.kind === "start" ? "Start here" : "Finish") + (pages.length > 0 ? ` · about ${mins} min` : "");
         return (
-          <section key={m.id} className={`rounded-[14px] border border-hairline ${here ? "bg-white" : "bg-white/60"}`}>
-            <button onClick={() => setExpanded((e) => ({ ...e, [m.id]: !open }))} aria-expanded={open} className="flex w-full min-h-[57px] items-center gap-3 rounded-[14px] px-3 py-2 text-left hover:bg-[#FBFAFF]">
-              <span className={`grid h-8 w-8 flex-none place-items-center rounded-xl font-display text-[14px] font-semibold ${here ? "bg-[#2A1B78] text-white" : "bg-lilac text-violet-700"}`}>
-                {m.kind === "start" ? "★" : m.kind === "final" ? "✓" : m.number}
+          <section key={m.id} className="rounded-[14px] border border-hairline bg-white">
+            <button onClick={() => setExpanded((e) => ({ ...e, [m.id]: !open }))} aria-expanded={open} className="flex min-h-[50px] w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left hover:bg-[#FBFAFE]">
+              <span
+                className={`grid h-8 w-8 flex-none place-items-center rounded-[10px] font-display text-[15px] font-bold ${allDone ? "bg-mint text-correct" : here ? "bg-violet-deep text-white" : "border-[1.5px] border-[#D9D2F3] text-ink-body"}`}
+                aria-label={allDone ? `${done} of ${pages.length} pages done` : undefined}
+              >
+                {allDone ? <CheckIcon size={14} /> : m.kind === "start" ? "★" : m.kind === "final" ? "F" : m.number}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[11px] font-extrabold tracking-wide text-ink-muted uppercase">
-                  {m.kind === "section" ? `Section ${m.number}` : m.kind === "start" ? "Start here" : "Finish"}
-                  {pages.length > 0 && ` · about ${pages.reduce((n, p) => n + minutesFor(p), 0)} min`}
-                </span>
-                <span className="block text-[14.5px] leading-snug font-semibold">{m.title}</span>
+                {(open || here || m.kind !== "section") && <span className="block text-[10.5px] font-extrabold tracking-[.1em] text-ink-muted uppercase">{eyebrow}</span>}
+                <span className={`block leading-snug ${open || here ? "text-[14px] font-bold" : "text-[13.5px] font-semibold text-ink-body"}`}>{m.title}</span>
               </span>
-              <Ring done={done} total={pages.length} size={28} />
             </button>
             {open && (
               <div className="flex flex-col gap-1 px-2 pb-3">
                 {groups.map((g) => (
                   <div key={g.id}>
-                    {groups.length > 1 && g.pages.length > 1 && <p className="px-2 pt-2 pb-1 text-[12px] font-bold text-violet-700">{g.title}</p>}
+                    {groups.length > 1 && g.pages.length > 1 && <p className="px-2 pt-2 pb-1 text-[10.5px] font-extrabold tracking-[.1em] text-ink-muted uppercase">{g.title}</p>}
                     <ol className="flex flex-col">
                       {g.pages.map((p) => {
                         const cur = p.id === currentId;
@@ -83,12 +85,12 @@ export function Outline({ modules, currentId, isDone, isOpen, onNavigate }: Prop
                           <>
                             <span
                               aria-hidden="true"
-                              className={`grid h-6 w-6 flex-none place-items-center rounded-full text-[10px] font-extrabold ${d ? "bg-correct text-white" : cur ? "bg-violet text-white" : ok ? "border border-hairline bg-white" : "bg-mist text-ink-faint"}`}
+                              className={`grid h-5 w-5 flex-none place-items-center rounded-full text-[9.5px] font-extrabold ${d ? "bg-correct text-white" : cur ? "border-[1.5px] border-violet bg-white text-violet-700" : ok ? "border-[1.5px] border-[#D9D2F3] bg-white text-ink-body" : "bg-mist text-ink-faint"}`}
                             >
-                              {d ? <CheckIcon size={11} /> : !ok ? <LockIcon size={11} /> : p.kind === "quiz" ? "Q" : p.kind === "test" ? "T" : p.kind === "summary" ? "S" : p.kind === "video" ? "▶" : String((p.title.match(/^\\d+\\.(\\d+)/)?.[1]) ?? "•")}
+                              {d ? <CheckIcon size={10} /> : !ok ? <LockIcon size={11} /> : p.kind === "quiz" ? "Q" : p.kind === "test" ? "T" : p.kind === "summary" ? "S" : p.kind === "video" ? "▶" : String(p.title.match(/^\d+\.(\d+)/)?.[1] ?? "•")}
                             </span>
-                            <span className={`min-w-0 flex-1 text-[13.5px] leading-snug ${cur ? "font-bold text-violet-700" : "font-medium text-ink-body"}`}>{rowLabel(p)}</span>
-                            <span className="flex-none text-[12px] text-ink-muted">{minutesFor(p)} min</span>
+                            <span className={`min-w-0 flex-1 text-[13px] leading-snug ${cur ? "font-bold text-violet-deep" : "font-medium text-ink"}`}>{rowLabel(p)}</span>
+                            <span className="flex-none text-[11.5px] text-ink-muted">{minutesFor(p)}m</span>
                           </>
                         );
                         return (
@@ -98,7 +100,7 @@ export function Outline({ modules, currentId, isDone, isOpen, onNavigate }: Prop
                                 href={`/app/learn/${p.id}`}
                                 onClick={onNavigate}
                                 aria-current={cur ? "page" : undefined}
-                                className={`flex min-h-10 items-center gap-2.5 rounded-xl px-2 py-1.5 ${cur ? "bg-lilac" : "hover:bg-mist"}`}
+                                className={`flex min-h-10 items-center gap-2.5 rounded-[10px] px-2 py-1.5 ${cur ? "bg-lilac" : "hover:bg-mist"}`}
                               >
                                 {inner}
                               </Link>
