@@ -10,6 +10,7 @@ import { StaffPaymentProofs } from "@/components/site/staff-payment-proofs";
 import { StaffDeliveryPanel } from "@/components/site/staff-delivery-panel";
 import { StaffRecoveryPanel } from "@/components/site/staff-recovery-panel";
 import { StaffCoursePack } from "@/components/site/staff-course-pack";
+import { StaffOrderTimeline } from "@/components/site/staff-order-timeline";
 import { ENHANCEMENTS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 import { parseConfirmedCadCents } from "@/lib/payment-confirmation";
 
@@ -143,9 +144,9 @@ export default function LearningRequestsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-[1100px] px-4 pb-24 pt-8 sm:px-6">
+    <main className="alm-staff mx-auto max-w-[1100px] px-4 pb-24 pt-8 sm:px-6">
       <Link href="/coach" className="text-sm font-semibold text-violet-700">← Coach console</Link>
-      <h1 className="mt-4 font-display text-3xl font-semibold">Learning requests</h1>
+      <h1 className="mt-4 rounded-[18px] bg-[#2A1B78] px-6 py-6 font-display text-[30px] font-bold text-white">Learning orders &amp; payments</h1>
       <p className="mt-2 text-ink-body">Review package specifications, payment reports, and production status. Payments reported by customers stay pending until your independent bank confirmation.</p>
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-hairline bg-white p-4">
         <div>
@@ -191,6 +192,7 @@ export default function LearningRequestsPage() {
                   </label>
                 </div>
               </div>
+              <StaffOrderTimeline payment={r.payment_status} plan={r.learning_plan_status} started={r.production_started_at} status={r.status}/>
               <p className="mt-3 whitespace-pre-wrap text-sm text-ink-body">{r.goal}</p>
               <div className="mt-3 rounded-2xl bg-mist p-4 text-sm">
                 <p><strong>Bank transfer:</strong> {r.payment_status==="verified"?"Verified":r.payment_status==="reported"?"Reported · awaiting verification":"Not yet reported"}</p>
