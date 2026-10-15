@@ -12,14 +12,14 @@ import {useCourse} from "@/lib/use-course";
 
 export default function CourseOutline(){
  const {courseId}=useParams<{courseId:string}>();
- const {state}=useStudent();
+ const {state,authorizedCourses}=useStudent();
  const {modules,lessons,questions,scored}=useCourse(courseId);
  const course=courseById(courseId);
  const plan=planFor(state,courseId);
  const weeks=plan?moduleWeeks(plan,courseId):null;
  const week=plan?weekToday(plan):null;
- if(!course||course.status!=="open")return <p className="alm-desk-card p-5">
-   This course isn&apos;t open yet. <Link href="/app/courses" className="font-bold text-violet-700">See your courses →</Link>
+ if(!course||course.status!=="open"||!authorizedCourses.includes(courseId))return <p className="alm-desk-card p-5">
+   This course is not available in your paid learning plan. <Link href="/app/courses" className="font-bold text-violet-700">See your courses →</Link>
  </p>;
  const accessible=new Set(lessons.map(l=>l.id));
  const done=(id:string)=>Boolean(state.lessons[id]);
