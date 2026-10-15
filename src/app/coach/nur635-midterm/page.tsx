@@ -4,6 +4,7 @@ import Link from "next/link";
 import {useEffect,useState} from "react";
 import {rpc,friendlyError} from "@/lib/api";
 import {COACH_KEY} from "@/lib/store";
+import {StaffShell} from "@/components/staff-shell";
 
 type Question={stem:string;options:string[];correctIndex:number;explanation:string};
 type Card={front:string;back:string};
@@ -23,9 +24,11 @@ export default function MidtermRelease(){
  const [busy,setBusy]=useState(false);
  const [notice,setNotice]=useState("");
  const [error,setError]=useState("");
+ const [who,setWho]=useState<{label?:string;role?:string}>({});
  useEffect(()=>{
    try{
-     const staff=JSON.parse(localStorage.getItem(COACH_KEY)||"null") as {token?:string;role?:string}|null;
+     const staff=JSON.parse(localStorage.getItem(COACH_KEY)||"null") as {token?:string;role?:string;label?:string}|null;
+     setWho({label:staff?.label,role:staff?.role});
      if(!staff?.token||staff.role!=="owner"){
        setError("Sign in as Almanac Owner to prepare the NUR-635 midterm.");
        setLoading(false);return;
@@ -76,15 +79,24 @@ export default function MidtermRelease(){
   }catch(e){setError(e instanceof Error?e.message:"Could not publish.");}
   finally{setBusy(false)}
  }
- return <main className="alm-staff mx-auto max-w-[960px] px-4 pb-24 pt-8 sm:px-6">
-  <Link href="/coach/learning-requests" className="text-sm font-semibold text-violet-700">← Learning orders &amp; payments</Link>
-  <div className="mt-5 rounded-[20px] bg-[#2A1B78] p-6 text-white sm:p-8">
-   <p className="text-xs font-bold uppercase tracking-widest text-white/70">Almanac · Approved learning content</p>
-   <h1 className="mt-2 font-display text-[30px] font-bold">NUR-635 Midterm — Topics 1–8</h1>
-   <p className="mt-3 max-w-[650px] text-sm leading-6 text-white/80">Import the reviewed course pack once. Publication makes it available only to learners with an approved Advanced Pharmacology enrollment.</p>
+ const nav=[
+  {key:"today",label:"Today",href:"/coach"},
+  {key:"requests",label:"Learning requests",href:"/coach/learning-requests"},
+  {key:"review",label:"Content review",href:"/coach?tab=review"},
+  {key:"inbox",label:"Learner questions",href:"/coach?tab=inbox"},
+  {key:"reports",label:"Reports",href:"/coach?tab=reports"},
+  {key:"students",label:"Learners",href:"/coach?tab=students"},
+  {key:"signups",label:"Sign-ups",href:"/coach?tab=signups"},
+  {key:"nur635",label:"NUR-635 midterm",href:"/coach/nur635-midterm",active:true},
+ ];
+ return <StaffShell items={nav} user={who.label||"Staff"} role={who.role}><main className="alm-staff mx-auto max-w-[960px] px-4 pb-24 pt-6 sm:px-10 sm:pt-8">
+  <div className="flex flex-col gap-1">
+   <p className="text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">Approved learning content</p>
+   <h1 className="font-display text-[28px] leading-[1.05] font-bold tracking-[-.04em] sm:text-[36px]">NUR-635 Midterm — Topics 1–8</h1>
+   <p className="mt-1 max-w-[650px] text-[14px] leading-6 text-ink-body">Import the reviewed course pack once. Publication makes it available only to learners with an approved Advanced Pharmacology enrollment.</p>
   </div>
   {loading?<p className="mt-6 text-sm">Checking Owner access…</p>:null}
-  {error&&<p role="alert" className="mt-5 rounded-xl bg-rose p-4 text-sm">{error}</p>}
+  {error&&<p role="alert" className="mt-5 rounded-[12px] border border-[#FFD9C2] bg-[#FFF4EC] p-4 text-sm text-[#A8430A]">{error}</p>}
   {allowed&&<section className="alm-desk-card mt-5 p-5 sm:p-7">
     <div className="mb-5 rounded-xl border border-hairline bg-[#F7F6FB] p-4">
       <p className="text-sm font-bold">Preview the imported learning experience</p>
@@ -119,5 +131,5 @@ export default function MidtermRelease(){
     {notice&&<p role="status" className="mt-5 rounded-xl bg-mint p-4 text-sm">{notice}</p>}
     <p className="mt-5 text-xs text-ink-muted">This preparation course is independent of GCU. It is not a copy of the institution's proctored examination.</p>
   </section>}
- </main>;
+ </main></StaffShell>;
 }

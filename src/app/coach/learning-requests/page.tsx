@@ -9,6 +9,7 @@ import { StaffLearningPlan } from "@/components/site/staff-learning-plan";
 import { StaffPaymentProofs } from "@/components/site/staff-payment-proofs";
 import { StaffDeliveryPanel } from "@/components/site/staff-delivery-panel";
 import { StaffRecoveryPanel } from "@/components/site/staff-recovery-panel";
+import { StaffShell } from "@/components/staff-shell";
 import { StaffCoursePack } from "@/components/site/staff-course-pack";
 import { StaffOrderTimeline } from "@/components/site/staff-order-timeline";
 import { ENHANCEMENTS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
@@ -34,6 +35,9 @@ const statuses = ["received","awaiting_payment","in_production","review","delive
 export default function LearningRequestsPage() {
   const [token, setToken] = useState("");
   const [role,setRole]=useState("");
+  const [label,setLabel]=useState("");
+  const [filter,setFilter]=useState<"all"|"payments"|"plans"|"building"|"released">("all");
+  const [sel,setSel]=useState<string|null>(null);
   const [rows, setRows] = useState<RequestRow[]>([]);
   const [externalPaid,setExternalPaid] = useState<ExternalPaid[]>([]);
   const [error, setError] = useState("");
@@ -58,7 +62,7 @@ export default function LearningRequestsPage() {
 
 
   useEffect(() => {
-    let stored: { token?: string;role?: string } | null = null;
+    let stored: { token?: string;role?: string;label?: string } | null = null;
     try { stored = JSON.parse(localStorage.getItem(COACH_KEY) ?? "null"); } catch { /* no staff login */ }
     if (!stored?.token) {
       setError("Sign in to the coach console first.");
@@ -67,6 +71,7 @@ export default function LearningRequestsPage() {
     }
     setToken(stored.token);
     setRole(stored.role||"");
+    setLabel(stored.label||"");
     void rpc<ExternalPaid[]>("learning_external_paid_list", { p_token: stored.token })
       .then(setExternalPaid).catch(() => {});
     rpc<RequestRow[]>("learning_requests_list", { p_token: stored.token })
@@ -143,40 +148,87 @@ export default function LearningRequestsPage() {
     finally {setEditing(null);}
   }
 
+  const chip=(r:RequestRow)=>r.status==="delivered"?["Released","bg-mint text-correct"]:
+    r.status==="cancelled"?["Cancelled","bg-rose text-rose-ink"]:
+    r.status==="review"?["Nurse review","bg-[#FFE9DC] text-[#A8430A]"]:
+    r.status==="in_production"?["Being built","bg-lilac text-violet-deep"]:
+    r.payment_status==="reported"?["Payment reported","bg-[#FFE9DC] text-[#A8430A]"]:
+    (r.learning_plan_status==="shared"||r.learning_plan_status==="revision_requested")&&r.payment_status==="verified"?["Plan review","bg-lilac text-violet-deep"]:
+    r.payment_status==="verified"?["Paid","bg-mint text-correct"]:["Awaiting payment","bg-mist text-ink-muted"];
+  const groups={
+    all:(_:RequestRow)=>true,
+    payments:(r:RequestRow)=>r.payment_status==="reported",
+    plans:(r:RequestRow)=>(r.learning_plan_status==="shared"||r.learning_plan_status==="revision_requested")&&r.status!=="delivered",
+    building:(r:RequestRow)=>r.status==="in_production"||r.status==="review",
+    released:(r:RequestRow)=>r.status==="delivered",
+  } as const;
+  const shown=rows.filter(groups[filter]);
+  const current=rows.find(r=>r.id===sel)??shown[0];
+  const waited=(iso:string)=>{const m=(Date.now()-new Date(iso).getTime())/60000;return m<60?`${Math.round(m)} min`:m<2880?`${Math.round(m/60)} h`:`${Math.round(m/1440)} d`;};
+  const reported=rows.filter(r=>r.payment_status==="reported").length;
+  const nav=[
+    {key:"today",label:"Today",href:"/coach"},
+    {key:"requests",label:"Learning requests",badge:reported,active:true,href:"/coach/learning-requests"},
+    {key:"review",label:"Content review",href:"/coach?tab=review"},
+    {key:"inbox",label:"Learner questions",href:"/coach?tab=inbox"},
+    {key:"reports",label:"Reports",href:"/coach?tab=reports"},
+    {key:"students",label:"Learners",href:"/coach?tab=students"},
+    {key:"signups",label:"Sign-ups",href:"/coach?tab=signups"},
+    ...(role==="owner"?[{key:"nur635",label:"NUR-635 midterm",href:"/coach/nur635-midterm"}]:[]),
+  ];
   return (
-    <main className="alm-staff mx-auto max-w-[1100px] px-4 pb-24 pt-8 sm:px-6">
-      {role==="owner"&&<Link href="/coach/nur635-midterm" className="mt-3 inline-flex min-h-11 items-center rounded-full bg-violet px-5 text-sm font-bold text-white">NUR-635 Midterm · Import &amp; publish →</Link>}
-      <Link href="/coach" className="text-sm font-semibold text-violet-700">← Coach console</Link>
-      <h1 className="mt-4 rounded-[18px] bg-[#2A1B78] px-6 py-6 font-display text-[30px] font-bold text-white">Learning orders &amp; payments</h1>
-      <p className="mt-2 text-ink-body">Review package specifications, payment reports, and production status. Payments reported by customers stay pending until your independent bank confirmation.</p>
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-hairline bg-white p-4">
-        <div>
-          <p className="font-semibold">{rows.filter(r => r.payment_status === "reported").length} payments awaiting bank verification</p>
-          <p className="mt-1 text-xs text-ink-muted">Customer payment reports appear here, not in Coach inbox or Reports. {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : "Loading orders…"}.</p>
+    <StaffShell items={nav} user={label||"Staff"} role={role}>
+    <div className="alm-staff grid min-h-dvh lg:grid-cols-[400px_minmax(0,1fr)]">
+      <aside className="flex min-h-0 flex-col border-[#EEEBF7] bg-white lg:sticky lg:top-0 lg:h-dvh lg:border-r">
+        <div className="flex flex-col gap-3 px-5 pt-6 pb-4">
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="font-display text-[26px] leading-tight font-bold tracking-[-.03em]">Learning requests</h1>
+            <button type="button" onClick={() => void refreshOrders()} disabled={refreshBusy || !token} className="h-9 rounded-[10px] border border-hairline px-3 text-[12.5px] font-bold text-violet-700 hover:bg-mist disabled:opacity-50">
+              {refreshBusy ? "Refreshing…" : "Refresh"}
+            </button>
+          </div>
+          <p className="text-[12px] text-ink-muted">{reported} payment{reported===1?"":"s"} awaiting bank verification · {lastUpdated ? `updated ${lastUpdated.toLocaleTimeString()}` : "loading…"}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {([["all","All"],["payments","Payments"],["plans","Plans"],["building","Building"],["released","Released"]] as const).map(([k,l])=>{
+              const n=rows.filter(groups[k]).length;
+              return <button key={k} type="button" onClick={()=>{setFilter(k);setSel(null);}} aria-pressed={filter===k}
+                className={`flex h-8 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-bold ${filter===k?"bg-violet text-white":"border border-hairline text-ink-body hover:bg-mist"}`}>{l}<span className={filter===k?"text-white/80":"text-ink-muted"}>{n}</span></button>;
+            })}
+          </div>
         </div>
-        <button type="button" onClick={() => void refreshOrders()} disabled={refreshBusy || !token}
-          className="min-h-11 rounded-full border border-hairline bg-lilac px-5 text-sm font-bold text-violet-700 disabled:opacity-50">
-          {refreshBusy ? "Refreshing…" : "Refresh payment reports"}
-        </button>
-      </div>
-      <section className="mt-5 rounded-2xl border border-hairline bg-white p-4 sm:p-5">
-        <h2 className="font-semibold">Paid outside Almanac · Enrolled learners ({externalPaid.filter(e=>e.active).length})</h2>
-        <p className="mt-1 text-xs text-ink-muted">These learners have approved course access without a fabricated invoice or bank-transfer record. The enrollment is recorded separately from online orders.</p>
-        {externalPaid.length===0?<p className="mt-3 text-sm text-ink-muted">No external paid enrollments recorded yet.</p>:
-          <div className="mt-3 space-y-2">{externalPaid.map(e=><div key={e.email+e.courseId} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-hairline px-4 py-3 text-sm">
-            <div><p className="font-semibold">{e.name}</p><p className="text-xs text-ink-muted">{e.email} · {e.courseId}</p></div>
-            <span className="text-xs font-bold text-violet-700">{e.active?"Approved · external paid":"Access revoked"}</span>
-          </div>)}</div>}
-      </section>
-      {error && <p role="alert" className="mt-4 rounded-card bg-peach p-4 text-sm text-peach-ink">{error} <Link href="/coach" className="underline">Coach sign-in</Link></p>}
-      {loading ? <p className="mt-8 text-ink-muted">Loading requests…</p> : rows.length === 0 ? <p className="mt-8 rounded-card bg-white p-5">No requests to display.</p> : (
-        <div className="mt-6 space-y-4">
-          {rows.map(r => (
-            <article key={r.id} className="rounded-card border border-hairline bg-white p-5">
+        <ul className="min-h-0 flex-1 overflow-y-auto border-t border-[#EEEBF7]">
+          {loading?<li className="p-5 text-[13.5px] text-ink-muted">Loading requests…</li>:shown.length===0?<li className="p-5 text-[13.5px] text-ink-muted">No requests here.</li>:
+          shown.map(r=>{const [cl,cc]=chip(r);const on=current?.id===r.id;return <li key={r.id}>
+            <button type="button" onClick={()=>setSel(r.id)} aria-current={on?"true":undefined}
+              className={`flex w-full flex-col gap-1 border-b border-l-[3px] border-b-[#EEEBF7] px-5 py-3.5 text-left ${on?"border-l-violet bg-[#F6F4FB]":"border-l-transparent hover:bg-[#FBFAFE]"}`}>
+              <span className="flex items-center justify-between gap-2"><span className="font-mono text-[12px] text-ink-muted">{r.invoice_ref}</span>
+                {r.status!=="delivered"&&r.status!=="cancelled"&&<span className={`text-[12px] font-bold ${r.payment_status==="reported"?"text-[#A8430A]":"text-ink-muted"}`}>Waiting {waited(r.created_at)}</span>}</span>
+              <span className="truncate text-[14.5px] font-bold">{r.name} · {r.subject}</span>
+              <span className="flex items-center gap-2"><span className={`rounded-full px-2 py-0.5 text-[11.5px] font-bold ${cc}`}>{cl}</span><span className="truncate text-[12px] text-ink-muted">{r.kind} · {r.speed}</span></span>
+            </button>
+          </li>;})}
+        </ul>
+        <details className="border-t border-[#EEEBF7] px-5 py-3.5 text-sm">
+          <summary className="cursor-pointer text-[13px] font-bold text-violet-700">Paid outside Almanac · {externalPaid.filter(e=>e.active).length} enrolled</summary>
+          <p className="mt-2 text-xs text-ink-muted">These learners have approved course access without a fabricated invoice or bank-transfer record. The enrollment is recorded separately from online orders.</p>
+          {externalPaid.length===0?<p className="mt-2 text-xs text-ink-muted">No external paid enrollments recorded yet.</p>:
+            <div className="mt-2 space-y-1.5">{externalPaid.map(e=><div key={e.email+e.courseId} className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-hairline px-3 py-2 text-xs">
+              <div><p className="font-semibold">{e.name}</p><p className="text-ink-muted">{e.email} · {e.courseId}</p></div>
+              <span className="font-bold text-violet-700">{e.active?"Approved · external paid":"Access revoked"}</span>
+            </div>)}</div>}
+        </details>
+      </aside>
+      <section className="min-w-0 px-4 py-6 sm:px-8">
+        {error && <p role="alert" className="mb-4 rounded-[12px] border border-[#FFD9C2] bg-[#FFF4EC] p-4 text-sm text-[#A8430A]">{error} <Link href="/coach" className="underline">Coach sign-in</Link></p>}
+        <p className="mb-4 text-[12.5px] text-ink-muted">Payments reported by customers stay pending until your independent bank confirmation. Customer payment reports appear here, not in Learner questions or Reports.</p>
+        {!loading&&rows.length===0?<p className="rounded-[16px] border border-hairline bg-white p-5">No requests to display.</p>:
+        current?[current].map(r => (
+            <article key={r.id} className="rounded-[16px] border border-hairline bg-white p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs text-ink-muted">{new Date(r.created_at).toLocaleString()} · {r.invoice_ref}</p>
-                  <h2 className="mt-2 font-display text-xl font-semibold">{r.subject}</h2>
+                  <p className="font-mono text-[12.5px] text-ink-muted">{r.invoice_ref} · {r.kind} · {r.speed}</p>
+                  <h2 className="mt-1 font-display text-[24px] leading-tight font-bold tracking-[-.03em] sm:text-[28px]">{r.name} · {r.subject}</h2>
+                  <p className="text-[13px] text-ink-muted">Requested {new Date(r.created_at).toLocaleString()}</p>
                   <p className="text-sm text-ink-body">{r.kind} · {r.unit_count} modules · {r.speed} · {r.turnaround_days} days</p>
                 </div>
                 <div className="text-right">
@@ -195,14 +247,14 @@ export default function LearningRequestsPage() {
               </div>
               <StaffOrderTimeline payment={r.payment_status} plan={r.learning_plan_status} started={r.production_started_at} status={r.status}/>
               <p className="mt-3 whitespace-pre-wrap text-sm text-ink-body">{r.goal}</p>
-              <div className="mt-3 rounded-2xl bg-mist p-4 text-sm">
+              <div className="mt-3 rounded-[14px] bg-[#FFF4EC] p-4 text-sm">
                 <p><strong>Bank transfer:</strong> {r.payment_status==="verified"?"Verified":r.payment_status==="reported"?"Reported · awaiting verification":"Not yet reported"}</p>
                 {r.payment_reference && <p className="mt-1">Reference: {r.payment_reference}</p>}
                 {r.payment_date && <p className="mt-1">Reported transfer date: {r.payment_date}</p>}
                 <StaffPaymentProofs orderId={r.id} staffToken={token}/>
                 {r.payment_status==="reported" && <button disabled={editing===r.id}
                   type="button" onClick={()=>void verifyPayment(r.id)}
-                  className="mt-3 min-h-11 rounded-full bg-violet px-4 font-semibold text-white disabled:opacity-50">
+                  className="mt-3 h-11 rounded-[12px] bg-violet px-4 font-bold text-white hover:bg-[#4A2DE6] disabled:opacity-50">
                   Verified in bank · Issue access code →
                 </button>}
                 {r.payment_status==="verified" && <p className="mt-2 text-xs text-ink-muted">Access code was issued once. It is not stored in plaintext.</p>}
@@ -247,9 +299,9 @@ export default function LearningRequestsPage() {
               <StaffRecoveryPanel orderId={r.id} token={token} role={role} invoiceRef={r.invoice_ref}
                 email={r.email} quoteValidUntil={r.quote_valid_until} paymentStatus={r.payment_status}/>
             </article>
-          ))}
-        </div>
-      )}
-    </main>
+        )):null}
+      </section>
+    </div>
+    </StaffShell>
   );
 }

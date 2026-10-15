@@ -81,7 +81,7 @@ export default function Progress() {
             </ul>
           )}
           {missed > 0 && (
-            <Link href="/app/practice/missed" className="mt-4 inline-block rounded-full bg-peach px-4 py-2 text-sm font-bold text-peach-ink">
+            <Link href="/app/practice/missed" className="mt-4 inline-flex h-11 items-center rounded-[12px] border-[1.5px] border-[#D9D2F3] px-4 text-sm font-bold text-violet-deep hover:bg-mist">
               Redo the {missed} I missed
             </Link>
           )}
