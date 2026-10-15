@@ -211,7 +211,7 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
                   onClick={toggle}
                   disabled={!predictDone || Boolean(active)}
                   aria-label={ended ? "Play again" : "Play"}
-                  className="pointer-events-auto grid h-[76px] w-[76px] place-items-center rounded-full bg-tangerine text-[26px] text-ink disabled:opacity-60"
+                  className="pointer-events-auto grid h-[76px] w-[76px] place-items-center rounded-full bg-[#EA6512] text-[26px] text-white shadow-[0_0_0_6px_#FFE9DC] disabled:opacity-60"
                 >
                   {ended ? "↺" : "▶"}
                 </button>
