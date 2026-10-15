@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/outfit";
 import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
+import "./almanac-public.css";
 
 export const metadata: Metadata = {
   title: {
