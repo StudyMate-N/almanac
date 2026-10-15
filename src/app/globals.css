@@ -20,7 +20,7 @@
   --color-ink-muted: #5e5775;
   --color-ink-faint: #a39db5;
 
-  /* Violet — primary actions, the cards-due tile, progress */
+  /* Violet — primary actions and progress. Peach marks time and pending work. */
   --color-violet: #5b3df5;
   --color-violet-600: #4b2fe0;
   --color-violet-700: #3e25c9;
@@ -31,8 +31,8 @@
   --color-violet-200: #d6ccff;
   --color-violet-on: #e4deff;
 
-  /* Tangerine — the one hot spot per screen, always with ink text */
-  --color-tangerine: #ff7a2f;
+  /* Orange — video play and time/momentum, never primary actions */
+  --color-tangerine: #f2711c;
   --color-tangerine-700: #e0601a;
 
   /* Tints and their inks */
@@ -51,7 +51,7 @@
   --color-correct: #1e7a4f;
   --color-incorrect: #c2264b;
 
-  --radius-tile: 28px;
+  --radius-tile: 18px;
   --radius-card: 20px;
 
   /* Motion — one gentle entrance, used for the next flashcard */

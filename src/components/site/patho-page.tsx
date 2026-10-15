@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {SiteHeader,SiteFooter} from "@/components/site/chrome";
-import {SignupForm} from "@/components/signup-form";
 import {modulesInCourse} from "@/content/course";
 const ID="advanced-pathophysiology";
 
@@ -23,11 +22,11 @@ export function PathoPage() {
      <p className="text-[12px] text-ink-muted"><Link href="/courses" className="font-bold text-violet-700">Courses</Link> / Advanced Pathophysiology</p>
      <div className="mt-6 grid items-center gap-6 md:grid-cols-[1fr_.9fr]">
       <div>
-       <div className="flex flex-wrap items-center gap-2"><span className="alm-pill alm-pill-mint">● Pilot open</span><span className="alm-eyebrow">Nursing · Graduate</span></div>
+       <div className="flex flex-wrap items-center gap-2"><span className="alm-pill alm-pill-mint">Available with approved enrollment</span><span className="alm-eyebrow">Nursing · Graduate</span></div>
        <h1 className="mt-4 max-w-[610px] text-[37px] font-bold leading-[1.05] sm:text-[49px]">Advanced Pathophysiology</h1>
        <p className="mt-4 max-w-[530px] text-[15.5px] text-ink-body">Seven competencies, from homeostasis to every body system: how disease develops, shows up, complicates and varies.</p>
        <div className="mt-6 flex flex-wrap gap-2"><Link href="/request?course=advanced-pathophysiology" className="alm-action">Request this course →</Link><a href="#inside" className="alm-action alm-action-secondary">See an example lesson</a></div>
-       <p className="mt-4 max-w-[510px] text-[12px] text-ink-muted">Paid-request access opens once payment is verified. Finished learning materials are released as each module passes review.</p>
+       <p className="mt-4 max-w-[510px] text-[12px] text-ink-muted">Course access is reserved for approved paid enrollments. Personalized materials become available as each module passes review.</p>
       </div>
       <div className="alm-course-media relative aspect-[16/10] overflow-hidden border border-hairline bg-[#E6E0F8] shadow-[0_12px_30px_rgba(42,27,120,.1)]">
        <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage:"url('/almanac-art/video-poster-pathophysiology.png')"}}/>
@@ -66,14 +65,17 @@ export function PathoPage() {
     </div>
    </section>
    <section id="access" className="alm-section">
-    <div className="alm-wrap grid gap-6 rounded-[20px] bg-[#2A1B78] p-6 text-white md:grid-cols-[1fr_.85fr] md:p-8">
-     <div><p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#D2C8FF]">Pathophysiology pilot</p>
-       <h2 className="mt-3 text-[29px] font-bold">Explore the pilot. Or request a tailored course.</h2>
-       <p className="mt-3 max-w-[560px] text-[14px] text-white/80">Pilot access is currently offered separately from paid, made-to-order packages. If you're looking for a personalized learning companion, choose a package and provide your syllabus for review.</p>
-       <Link href="/request?course=advanced-pathophysiology" className="alm-action alm-action-secondary mt-5">Request personalized support →</Link>
-       <p className="mt-4 text-[12px] text-white/70">Already have an access code? <Link href="/app" className="font-bold text-white underline">Open your learning workspace</Link>.</p>
+    <div className="alm-wrap grid items-center gap-6 rounded-[20px] bg-[#2A1B78] p-6 text-white md:grid-cols-[1fr_auto] md:p-8">
+     <div>
+       <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#D2C8FF]">Approved learner access</p>
+       <h2 className="mt-3 text-[29px] font-bold">Build understanding, one module at a time.</h2>
+       <p className="mt-3 max-w-[610px] text-[14px] text-white/80">Request the full course or a focused learning resource. You'll see your package, delivery timeline and price before creating an invoice. Existing paid learners can continue in their workspace.</p>
+       <p className="mt-4 text-[12px] text-white/75">Need assistance? <a className="font-bold text-white underline" href="mailto:support@unemployedproff.com">Contact Almanac support</a>.</p>
      </div>
-     <div className="rounded-[15px] bg-white p-5 text-ink"><h3 className="text-[20px] font-bold">Ask about pilot access</h3><p className="mt-1 text-[12px] text-ink-muted">If pilot enrollment is open, the team will help you get started.</p><SignupForm courseId={ID}/></div>
+     <div className="flex flex-col gap-3">
+       <Link href="/request?course=advanced-pathophysiology" className="alm-action border-white bg-white text-[#2A1B78] hover:bg-[#F6F4FB]">Choose your learning package →</Link>
+       <Link href="/app" className="alm-action border-white/60 bg-transparent text-white hover:bg-white/10">Open learner workspace →</Link>
+     </div>
     </div>
    </section>
   </main><SiteFooter/>

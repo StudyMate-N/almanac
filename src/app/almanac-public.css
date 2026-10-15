@@ -67,3 +67,10 @@
  .alm-public *, .alm-public *::before,.alm-public *::after,
  .alm-play {animation:none!important;transition:none!important;}
 }
+
+/* Final design handoff: clear focus, responsive artwork and semantic video controls. */
+.alm-public .alm-hero-glow{animation:almGlow 7s ease-in-out infinite;}
+@keyframes almGlow{0%,100%{opacity:.85;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+.alm-public .alm-course-media img{object-position:80% 55%;}
+.alm-public .alm-play{border:0;cursor:pointer;}
+@media (prefers-reduced-motion:reduce){.alm-public .alm-hero-glow{animation:none}}

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SiteFooter, SiteHeader, toneBg } from "@/components/site/chrome";
+import { SiteFooter, SiteHeader } from "@/components/site/chrome";
 import { PathoPage } from "@/components/site/patho-page";
 import { courseById, courses } from "@/content/course";
 
@@ -17,6 +17,7 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
   const c = courseById((await params).courseId);
   if (!c) notFound();
   if (c.id === "advanced-pathophysiology") return <PathoPage />;
+  const cover = c.id.includes("pharm") ? "cover-pharmacology.png" : c.id.includes("editing") ? "cover-editing-proofreading.png" : c.id.includes("ai") ? "cover-practical-ai-skills.png" : "cover-on-request.png";
 
   return (
     <div className="alm-public min-h-screen">
@@ -28,18 +29,21 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
           </Link>{" "}
           · {c.category}
         </p>
-        <div className={`mt-4 rounded-tile p-6 sm:p-10 ${toneBg[c.tone]}`}>
-          <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-ink-muted">Prepared on request</span>
-          <h1 className="mt-4 font-display text-[40px] leading-[1.05] font-semibold sm:text-[52px]">{c.title}</h1>
-          <p className="mt-3 max-w-2xl text-lg text-ink-body">{c.blurb}</p>
-          <p className="mt-4 max-w-2xl text-ink-body">
-            Choose your course materials, delivery method and timeline. We'll prepare a learning package shaped around your goals.
-          </p>
-          <Link href={`/request?course=${encodeURIComponent(c.id)}`}
-            className="mt-6 inline-flex min-h-[52px] items-center rounded-full bg-violet px-6 font-bold text-white hover:bg-violet-600">
-            Request this course →
-          </Link>
-        </div>
+        <section className="alm-gradient-lilac mt-4 overflow-hidden rounded-[20px] border border-hairline">
+          <div className="grid gap-6 p-6 sm:p-9 lg:grid-cols-[minmax(0,1fr)_minmax(290px,.9fr)] lg:items-center">
+            <div>
+              <span className="alm-pill">Prepared on request</span>
+              <h1 className="mt-4 text-[35px] leading-[1.05] sm:text-[46px]">{c.title}</h1>
+              <p className="mt-4 max-w-[530px] text-[15px] leading-relaxed text-ink-body">{c.blurb}</p>
+              <p className="mt-4 max-w-[530px] text-[14px] text-ink-body">Choose the material formats, delivery method and timeline that work for you. See the price before placing your request.</p>
+              <Link href={`/request?course=${encodeURIComponent(c.id)}`} className="alm-action mt-6">Request this course →</Link>
+              <p className="mt-4 text-[12px] text-ink-muted">Access is issued after approval of a verified payment. Courses are prepared around the learner's request.</p>
+            </div>
+            <div className="alm-course-media relative aspect-[16/10] border border-hairline">
+              <img src={`/almanac-art/${cover}`} alt={`${c.title} course artwork`} className="h-full w-full object-cover" />
+            </div>
+          </div>
+        </section>
       </main>
       <SiteFooter />
     </div>

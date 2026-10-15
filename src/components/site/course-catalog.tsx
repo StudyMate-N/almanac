@@ -39,19 +39,19 @@ export function CourseCatalog({courses}:{courses:Course[]}) {
   </div>
   {open.length>0&&<section className="mt-9" aria-labelledby="available">
    <div className="flex flex-wrap items-end justify-between gap-3">
-    <div><p className="alm-eyebrow">Explore now</p><h2 id="available" className="mt-1 text-[26px] font-bold">Available to explore</h2></div>
-    <span className="alm-pill alm-pill-mint">● Pilot open</span>
+    <div><p className="alm-eyebrow">Explore now</p><h2 id="available" className="mt-1 text-[26px] font-bold">Courses accepting enrollments</h2></div>
+    <span className="alm-pill alm-pill-mint">Approved access</span>
    </div>
    <div className="mt-4 grid gap-4 sm:grid-cols-2">
     {open.map(c=><article key={c.id} className="alm-card alm-card-hover overflow-hidden">
      <div className="alm-course-media relative h-[205px] bg-[#E6E0F8]">
       <div className="absolute inset-0 grid place-items-center text-[24px] font-display font-bold text-[#7A68B4]">ALMANAC · LEARN</div>
       <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage:`url("${coverFor(c.id)}")`}}/>
-      <span className="alm-pill alm-pill-mint absolute right-4 top-4">● Pilot open</span>
+      <span className="alm-pill alm-pill-mint absolute right-4 top-4">Approved access</span>
      </div>
      <div className="p-5"><p className="alm-eyebrow">{c.category}</p><h3 className="mt-2 text-[23px] font-bold">{c.title}</h3>
       <p className="mt-2 text-[13.5px] text-ink-body">{c.blurb}</p>
-      <Link href={`/courses/${c.id}`} className="mt-4 inline-flex min-h-[42px] items-center text-[13px] font-bold text-violet-700">Explore the course →</Link>
+      <Link href={`/courses/${c.id}`} className="mt-4 inline-flex min-h-[44px] items-center text-[13px] font-bold text-violet-700">Explore course &amp; enrollment →</Link>
      </div>
     </article>)}
    </div>

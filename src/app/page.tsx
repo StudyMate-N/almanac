@@ -20,34 +20,12 @@ const steps=[
 ] as const;
 
 function DeskArt(){
- return <div className="relative mx-auto aspect-[1.22] w-full max-w-[520px]" aria-label="Illustration of books and study objects">
-   <div className="absolute inset-[8%] rounded-full bg-[radial-gradient(circle,#ECE7FF_0%,transparent_73%)]"/>
-   <svg className="alm-hero-art relative h-full w-full" viewBox="0 0 520 430" role="img" aria-label="Books, papers, writing pen, molecule and study objects">
-    <defs><linearGradient id="alm-cover" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#E7E0FB"/><stop offset="1" stopColor="#A89AE5"/></linearGradient><filter id="alm-shadow"><feDropShadow dx="0" dy="14" stdDeviation="13" floodOpacity=".13"/></filter></defs>
-    <g filter="url(#alm-shadow)">
-      <path d="M95 286L328 238 440 297 200 348Z" fill="#DDD5F8"/>
-      <path d="M95 286v17l105 45v-18z" fill="#8171B5"/>
-      <path d="M200 348v-18l240-33v14z" fill="#B5A9DF"/>
-      <path d="M82 242L320 202 431 261 185 309Z" fill="#FAF7EE" stroke="#D7D0C3" strokeWidth="2"/>
-      <path d="M82 242v22l103 45v-20z" fill="#F1EBDD"/>
-      <path d="M185 309v-20l246-28v17z" fill="#D4CEC5"/>
-      <path d="M120 221L317 189 421 239 206 269Z" fill="url(#alm-cover)"/>
-      <path d="M120 221v18l86 38v-17z" fill="#8074B5"/>
-      <path d="M206 269v8l215-26v-12z" fill="#C4BAE6"/>
-      <path d="M142 198L307 170 399 218 226 245Z" fill="#FEFEFD"/>
-      <path d="M142 198v11l84 36v-11z" fill="#DBD7E4"/>
-      <path d="M226 245v-11l173-16v9z" fill="#F4F3F7"/>
-    </g>
-    <circle cx="341" cy="175" r="40" fill="#F2711C"/><circle cx="328" cy="162" r="13" fill="#F9B27B" opacity=".7"/>
-    <g stroke="#5B3DF5" strokeWidth="4"><path d="M165 137L213 103 262 137 225 180 165 137M213 103l12 77M165 137l97 0" fill="none"/>
-    <g fill="#ECE7FF"><circle cx="165" cy="137" r="13"/><circle cx="213" cy="103" r="16"/><circle cx="262" cy="137" r="13"/><circle cx="225" cy="180" r="12"/></g></g>
-    <path d="M296 130l37-62 38 62z" fill="#D8B86D" stroke="#B68B42" strokeWidth="3"/><path d="M333 68v62h38z" fill="#BFA058"/>
-    <circle cx="291" cy="201" r="19" fill="#D5E5EA" stroke="#A6B3C0" strokeWidth="2"/><circle cx="295" cy="191" r="7" fill="#F7FAFA" opacity=".8"/>
-    <path d="M129 245L366 167" stroke="#30234D" strokeWidth="7" strokeLinecap="round"/><path d="M358 168l17-8-8 19z" fill="#EACB94"/><path d="M131 247l-12 4" stroke="#BE9D58" strokeWidth="8" strokeLinecap="round"/>
-   </svg>
-   <div className="pointer-events-none absolute inset-0 bg-[url('/almanac-art/hero-still-life.png')] bg-contain bg-center bg-no-repeat" aria-hidden="true"/>
-  </div>;
+ return <div className="relative mx-auto aspect-[5/4] w-full max-w-[600px]">
+   <div className="alm-hero-glow pointer-events-none absolute inset-[4%] rounded-full bg-[radial-gradient(circle,#ECE7FF_0%,transparent_72%)]"/>
+   <img src="/almanac-art/hero-still-life.png" alt="A carefully arranged stack of study books, notes and learning objects" className="alm-hero-art relative h-full w-full object-contain" width="600" height="480"/>
+ </div>;
 }
+
 function CourseVisual({variant}:{variant:"patho"|"request"}){
  return <div className="alm-course-media relative grid h-[165px] place-items-center">
    {variant==="patho"?<svg viewBox="0 0 350 160" className="h-full w-full" aria-hidden="true"><ellipse cx="170" cy="145" rx="115" ry="10" fill="#CEC5EB"/><g fill="none" stroke="#5B3DF5" strokeWidth="4"><circle cx="145" cy="80" r="41"/><path d="M122 40L188 110M117 106l77-56"/><circle cx="210" cy="80" r="29"/></g><g fill="#F2711C"><circle cx="121" cy="43" r="10"/><circle cx="184" cy="117" r="9"/><circle cx="205" cy="65" r="8"/></g><g fill="#ECE7FF"><circle cx="142" cy="84" r="20"/><circle cx="209" cy="97" r="11"/></g></svg>:
