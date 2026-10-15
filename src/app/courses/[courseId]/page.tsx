@@ -19,7 +19,7 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
   if (c.id === "advanced-pathophysiology") return <PathoPage />;
 
   return (
-    <div className="min-h-screen bg-ground text-ink">
+    <div className="alm-public min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-[1200px] px-4 pt-8 pb-20 sm:px-6">
         <p className="text-sm font-bold text-violet-700">
