@@ -36,6 +36,20 @@ export default function LearningRequestsPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
   const [issued, setIssued] = useState<{id:string;invoiceRef:string;code:string;email:string}|null>(null);
+  const [emailStatus,setEmailStatus]=useState<Record<string,"sending"|"sent"|"not_configured"|"failed">>({});
+  async function deliverAccessEmail(id:string,code:string){
+    if(!token)return;
+    setEmailStatus(s=>({...s,[id]:"sending"}));
+    try{
+      const r=await fetch("/api/learning-access-email",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({orderId:id,staffToken:token,accessCode:code}),
+      });
+      const body=await r.json() as {configured?:boolean;sent?:boolean};
+      setEmailStatus(s=>({...s,[id]:body.sent?"sent":body.configured===false?"not_configured":"failed"}));
+    }catch{setEmailStatus(s=>({...s,[id]:"failed"}));}
+  }
+
 
   useEffect(() => {
     let stored: { token?: string;role?: string } | null = null;
@@ -89,6 +103,7 @@ export default function LearningRequestsPage() {
         throw new Error("Payment was already verified. The access code cannot be displayed again; contact the owner for a reset.");
       }
       setIssued({id,invoiceRef:result.invoiceRef,code:result.accessCode,email:result.email});
+      void deliverAccessEmail(id,result.accessCode);
       setRows(rows=>rows.map(row=>row.id===id?{...row,payment_status:"verified",status:"received"}:row));
     } catch(e) {setError(e instanceof Error?e.message:friendlyError(e));}
     finally {setEditing(null);}
@@ -139,7 +154,18 @@ export default function LearningRequestsPage() {
                 {issued?.id===r.id && <div className="mt-3 rounded-xl border border-hairline bg-white p-4">
                   <p className="font-semibold">New access code — copy before leaving</p>
                   <p className="mt-1 break-all font-mono text-lg">{issued.code}</p>
-                  <p className="mt-2 text-xs text-ink-muted">Send this code to the learner using the verified email address. It will not be shown again.</p>
+                  <p className="mt-2 text-xs text-ink-muted">
+                    This code is shown once. Automatic delivery is attempted to {issued.email}; if unavailable, use the manual email link below.
+                  </p>
+                  {emailStatus[r.id]==="sending"&&<p role="status" className="mt-2 rounded-xl bg-lilac p-3 text-xs text-violet-700">Sending secure access email…</p>}
+                  {emailStatus[r.id]==="sent"&&<p role="status" className="mt-2 rounded-xl bg-mint p-3 text-xs font-semibold text-mint-ink">✓ Access email delivered to the email provider.</p>}
+                  {emailStatus[r.id]==="not_configured"&&<p role="status" className="mt-2 rounded-xl bg-[#FFF4EC] p-3 text-xs text-[#9D3E0E]">Automatic email is not configured. Please send this code manually.</p>}
+                  {emailStatus[r.id]==="failed"&&<p role="status" className="mt-2 rounded-xl bg-[#FFF4EC] p-3 text-xs text-[#9D3E0E]">Email could not be sent. Use the manual email link, or retry.</p>}
+                  {emailStatus[r.id]!=="sending"&&emailStatus[r.id]!=="sent"&&emailStatus[r.id]!=="not_configured"&&
+                   <button type="button" onClick={()=>void deliverAccessEmail(r.id,issued.code)}
+                    className="mt-3 rounded-full border border-hairline px-3 py-2 text-xs font-bold text-violet-700">
+                    Retry automatic email →
+                   </button>}
                   <a className="mt-3 inline-flex font-semibold text-violet-700 underline"
                     href={`mailto:${encodeURIComponent(issued.email)}?subject=${encodeURIComponent("Almanac access code · "+issued.invoiceRef)}&body=${encodeURIComponent("Your payment has been verified for "+issued.invoiceRef+".\n\nYour Almanac learning access code is: "+issued.code+"\n\nSign in: "+window.location.origin+"/app\n\nYour materials are being prepared. We will update you when they are ready.")}`}>
                     Prepare access email →
