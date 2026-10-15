@@ -16,7 +16,7 @@ const steps = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-ground text-ink">
+    <div className="alm-public min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-[1080px] px-4 pb-24 pt-8 sm:px-6">
         <p className="text-xs font-bold uppercase tracking-widest text-violet-700">How Almanac works</p>
