@@ -2,10 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/config";
 import { calculateQuote, OfferValidationError, parseLearningRequest } from "@/lib/learning-offers";
 import { orderEmail } from "@/lib/learning-mail";
+import { approvedRequestOrigin } from "@/lib/request-origin";
 
 export async function POST(request: NextRequest) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) {
+  if (!approvedRequestOrigin(request)) {
     return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
   }
   if (Number(request.headers.get("content-length") || "0") > 16000) {
