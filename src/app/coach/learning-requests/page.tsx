@@ -145,6 +145,7 @@ export default function LearningRequestsPage() {
 
   return (
     <main className="alm-staff mx-auto max-w-[1100px] px-4 pb-24 pt-8 sm:px-6">
+      {role==="owner"&&<Link href="/coach/nur635-midterm" className="mt-3 inline-flex min-h-11 items-center rounded-full bg-violet px-5 text-sm font-bold text-white">NUR-635 Midterm · Import &amp; publish →</Link>}
       <Link href="/coach" className="text-sm font-semibold text-violet-700">← Coach console</Link>
       <h1 className="mt-4 rounded-[18px] bg-[#2A1B78] px-6 py-6 font-display text-[30px] font-bold text-white">Learning orders &amp; payments</h1>
       <p className="mt-2 text-ink-body">Review package specifications, payment reports, and production status. Payments reported by customers stay pending until your independent bank confirmation.</p>
