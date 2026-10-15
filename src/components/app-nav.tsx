@@ -46,6 +46,10 @@ export function Sidebar() {
             </Link>
           );
         })}
+        {authorizedCourses.includes("advanced-pharmacology")&&<Link href="/app/midterm/nur635"
+          className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-[13px] font-semibold ${pathname.startsWith("/app/midterm/nur635")?"bg-lilac font-bold text-violet-700":"text-ink-muted hover:bg-mist"}`}>
+          <BookIcon/> NUR-635 midterm
+        </Link>}
         <Link href="/app/coach" className={`flex min-h-12 items-center gap-3 rounded-[14px] px-3.5 font-semibold ${pathname.startsWith("/app/coach") ? "bg-lilac font-bold text-violet-700" : "text-ink-muted hover:bg-mist hover:text-ink"}`}>
           <img src="/almanac-art/icon-support.svg" alt="" className="alm-workspace-icon" />
           Ask a coach
