@@ -51,17 +51,24 @@ export function transactionalEmailConfigured(){
  return Boolean(API_KEY&&validSender(FROM));
 }
 
-/** Owner-only live transport test, using the same Resend sender as customer messages. */
+/** Owner-only live transport test, using the same Resend sender as customer messages.
+ * Report only configuration flags, never secret values. */
 export async function sendAlmanacEmailDiagnostic() {
  const to=process.env.ALMANAC_EMAIL_TEST_RECIPIENT||"";
- if(!DOMAIN.test(to))return {sent:false,configured:false};
- const configured=transactionalEmailConfigured();
- if(!configured)return {sent:false,configured:false};
+ const missing:string[]=[];
+ if(!process.env.ALMANAC_RESEND_API_KEY)missing.push("ALMANAC_RESEND_API_KEY");
+ if(!validSender(FROM))missing.push("ALMANAC_EMAIL_FROM");
+ if(!DOMAIN.test(to))missing.push("ALMANAC_EMAIL_TEST_RECIPIENT");
+ if(missing.length)return {sent:false,configured:false,missing};
  const body=[
   "This test email was sent from the live Almanac web application.",
   "It confirms the Netlify runtime can reach the same Resend transport used for invoice and learner access notifications.",
   "No order, payment or student account was created or changed.",
   "Almanac"
  ].join("\n\n");
- return {configured:true,sent:await send(to,"Almanac — application email integration test",body)};
+ return {
+  sent:await send(to,"Almanac — application email integration test",body),
+  configured:true,
+  missing,
+ };
 }
