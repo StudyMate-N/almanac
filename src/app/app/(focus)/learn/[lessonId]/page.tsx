@@ -20,20 +20,21 @@ const SELF_COMPLETING = new Set(["reading", "activity", "summary", "video", "top
 
 export default function Player() {
   const { lessonId } = useParams<{ lessonId: string }>();
-  const { state, answers, update, isVisible, isApproved, preview } = useStudent();
+  const { state, answers, update, isVisible, isApproved, preview, authorizedCourses } = useStudent();
   const [drawer, setDrawer] = useState(false);
   const page = lessonById(lessonId);
   const mod = page ? moduleById(page.moduleId) : undefined;
   const course = mod ? courseById(mod.courseId) : undefined;
   const coursePages = useMemo(() => (mod ? lessons.filter((l) => moduleById(l.moduleId)?.courseId === mod.courseId) : []), [mod]);
-  const isOpen = (p: Lesson) => isVisible(p.id, p);
+  const entitled = Boolean(course && authorizedCourses.includes(course.id));
+  const isOpen = (p: Lesson) => entitled && isVisible(p.id, p);
   const isDone = (id: string) => Boolean(state.lessons[id]);
   const visibleQ = (q: Question) => isVisible(q.id, q);
   const visibleCards = (c: Card) => isVisible(c.id, c);
   const open = page ? isOpen(page) : false;
 
   const markDone = () => {
-    if (page && !state.lessons[page.id]) update("lessons", { ...state.lessons, [page.id]: { at: new Date().toISOString() } });
+    if (page && entitled && !state.lessons[page.id]) update("lessons", { ...state.lessons, [page.id]: { at: new Date().toISOString() } });
   };
 
   // A page with learning checks is done only when every visible check has been answered.
@@ -79,6 +80,15 @@ export default function Player() {
         </p>
       </main>
     );
+
+  if (!entitled) return <main className="mx-auto max-w-xl px-4 py-12">
+    <div className="alm-desk-card p-6">
+      <p className="alm-desk-eyebrow">Approved course access</p>
+      <h1 className="mt-3 text-[25px] font-bold">This course is not in your enrollment yet.</h1>
+      <p className="mt-3 text-[14px] text-ink-body">Lessons and practice are available only with an approved paid enrollment.</p>
+      <Link href="/app/courses" className="alm-desk-btn mt-5">See your courses →</Link>
+    </div>
+  </main>;
 
   const idx = coursePages.findIndex((p) => p.id === page.id);
   const prev = coursePages.slice(0, idx).reverse().find(isOpen);
