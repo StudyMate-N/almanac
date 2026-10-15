@@ -2,6 +2,7 @@
 import Link from "next/link";
 import {WorkspaceShell} from "@/components/workspace-shell";
 import {markOrdersSeen} from "@/components/app-nav";
+import {Avatar} from "@/components/page-header";
 import {StudentPlanReview} from "@/components/site/student-plan-review";
 import { useCallback, useEffect, useState } from "react";
 import { rpc } from "@/lib/api";
@@ -28,11 +29,12 @@ const describeStatus=(r:Order)=>{
  return "Awaiting payment";
 };
 const paymentLabel=(status:string)=>status==="verified"?"Verified":status==="reported"?"Transfer reported":"Awaiting verification";
-const chip=(r:Order)=>{
- const s=describeStatus(r);
- return r.deliveredAt||r.packPublished||r.releasedCount>0?"alm-chip-ready":
-  r.productionStartedAt||r.status==="in_production"||r.status==="review"?"alm-chip-building":"alm-chip-pending";
-};
+/** Status chip colours (uniformity rules): ready = mint, being built = lilac, review or waiting = peach. */
+const chip=(r:Order)=>r.deliveredAt||r.packPublished||r.releasedCount>0?"bg-mint text-correct":
+  r.status==="review"?"bg-[#FFE9DC] text-[#A8430A]":
+  r.productionStartedAt||r.status==="in_production"||r.planStatus==="shared"?"bg-lilac text-violet-deep":"bg-[#FFE9DC] text-[#A8430A]";
+const Chip=({r}:{r:Order})=><span className={`inline-block rounded-full px-2.5 py-1 text-[11.5px] font-bold whitespace-nowrap ${chip(r)}`}>{describeStatus(r)}</span>;
+const kindText=(r:Order)=>`${r.moduleCount} ${r.moduleCount===1?"module":"modules"} · ${r.kind.replaceAll("_"," ")}`;
 
 export default function LearningOrdersPage(){
  const {token,status,authorizedCourses}=useStudent();
@@ -114,99 +116,93 @@ export default function LearningOrdersPage(){
   finally{setDownloading(null);}
  }
  const current=orders.find(r=>r.id===selected);
- return <WorkspaceShell><div className="mx-auto max-w-[1110px]">
-  <div className="flex flex-wrap items-center justify-between gap-3">
-   <div><p className="alm-desk-eyebrow">Learning workspace / Orders</p>
-    <h1 className="mt-2 text-[29px] font-bold">Your learning orders</h1>
-    <p className="mt-2 text-sm text-ink-body">Track what we're preparing and open the materials released for you.</p></div>
-   <div className="flex gap-3"><Link className="alm-desk-btn alm-desk-btn-secondary" href="/app">Learning tools →</Link>
-    <button type="button" onClick={()=>void load()} disabled={busy} className="alm-desk-btn disabled:opacity-50">Refresh status</button></div>
+ const steps:[string,boolean][]=current?[
+  ["Request received",true],
+  ["Payment verified",current.paymentStatus==="verified"],
+  ["Course being prepared",Boolean(current.productionStartedAt)],
+  ["Nurse review",current.status==="review"||current.status==="delivered"||Boolean(current.deliveredAt)],
+  ["Ready in your workspace",Boolean(current.packPublished||current.releasedCount>0||current.deliveredAt)]
+ ]:[];
+ const firstOpen=steps.findIndex(x=>!x[1]);
+ return <WorkspaceShell><div className="mx-auto max-w-[1128px]">
+  <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+   <div className="flex min-w-0 flex-col gap-1">
+    {orders.length>0&&<p className="text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">{orders.length} order{orders.length===1?"":"s"}</p>}
+    <h1 className="font-display text-[26px] leading-[1.05] font-bold tracking-[-.035em] sm:text-[32px]">Orders</h1>
+    <p className="text-[13.5px] text-ink-body sm:text-[14px]">Track what we're preparing and open the materials released for you.</p>
+   </div>
+   <div className="flex flex-wrap gap-2.5">
+    <button type="button" onClick={()=>void load()} disabled={busy} className="flex h-11 items-center rounded-[12px] border-[1.5px] border-[#D9D2F3] bg-white px-4 text-[14px] font-bold text-violet-deep hover:bg-mist disabled:opacity-50">{busy?"Refreshing…":"Refresh status"}</button>
+    <Link href="/request" className="flex h-11 items-center rounded-[12px] bg-violet px-5 text-[14px] font-bold text-white hover:bg-[#4A2DE6]">Request a course</Link>
+    <span className="hidden sm:block"><Avatar/></span>
+   </div>
   </div>
-  {claim&&<section className="mt-6 rounded-card border border-violet bg-lilac p-5">
+  {claim&&<section className="mb-5 rounded-[16px] border border-violet bg-lilac p-5">
     <h2 className="font-display text-xl font-semibold">Keep your learning in one workspace</h2>
     <p className="mt-2 text-sm text-ink-body">You opened a verified purchase from a private invoice. Link it to this signed-in Almanac account to keep your learning orders together. For security, the email address on both accounts must match.</p>
     <button type="button" disabled={claimBusy} onClick={()=>void claimOrder()}
-      className="mt-4 min-h-12 rounded-full bg-violet px-5 font-semibold text-white disabled:opacity-50">
+      className="mt-4 h-11 rounded-[12px] bg-violet px-5 font-bold text-white disabled:opacity-50">
       {claimBusy?"Linking…":"Link this purchase to my account →"}</button>
     <p className="mt-2 text-xs text-ink-muted">Any separate access code previously issued just for this purchase will be retired after linking.</p>
    </section>}
-  {claimNotice&&<p role="status" className="mt-5 rounded-xl bg-mist p-4 text-sm">{claimNotice}</p>}
-  {error&&<p role="alert" className="mt-5 rounded-xl bg-rose p-4 text-sm">{error}</p>}
-  {orders.length===0&&!busy&&authorizedCourses.length>0?<section className="mt-7 rounded-tile bg-white p-7">
+  {claimNotice&&<p role="status" className="mb-5 rounded-[12px] border border-hairline bg-white p-4 text-sm">{claimNotice}</p>}
+  {error&&<p role="alert" className="mb-5 rounded-[12px] border border-[#FFD9C2] bg-[#FFF4EC] p-4 text-sm text-[#A8430A]">{error}</p>}
+  {orders.length===0&&!busy&&authorizedCourses.length>0?<section className="rounded-[16px] border border-hairline bg-white p-7">
    <h2 className="font-display text-2xl font-semibold">Your learning access is active.</h2>
    <p className="mt-3 text-sm text-ink-body">Your enrollment was approved outside Almanac checkout, so there is no invoice or payment request to complete here. You can begin with your enrolled course.</p>
-   <div className="mt-4 flex flex-wrap gap-3">{authorizedCourses.map(id=><Link key={id} href={`/app/courses/${encodeURIComponent(id)}`} className="alm-desk-btn alm-desk-btn-secondary">Open your course →</Link>)}</div>
+   <div className="mt-4 flex flex-wrap gap-3">{authorizedCourses.map(id=><Link key={id} href={`/app/courses/${encodeURIComponent(id)}`} className="flex h-11 items-center rounded-[12px] border-[1.5px] border-[#D9D2F3] px-4 text-[14px] font-bold text-violet-deep hover:bg-mist">Open your course →</Link>)}</div>
   </section>:null}
-  {orders.length===0&&!busy&&authorizedCourses.length===0?<section className="mt-7 rounded-tile bg-white p-7">
+  {orders.length===0&&!busy&&authorizedCourses.length===0?<section className="rounded-[16px] border border-hairline bg-white p-7">
    <h2 className="font-display text-2xl font-semibold">No paid orders linked to this code yet.</h2>
    <p className="mt-3 text-sm text-ink-body">If you're waiting on payment confirmation, check your private invoice. Your course order will appear here once staff verify your transfer.</p>
    <Link href="/courses" className="mt-4 inline-block font-semibold text-violet-700 underline">Browse courses →</Link>
   </section>:null}
-  {orders.length>0&&<div className="mt-5 grid gap-4 md:grid-cols-[265px_1fr]">
-   <aside className="space-y-2" aria-label="Your orders">
-    {orders.map(r=><button type="button" key={r.id} onClick={()=>void choose(r.id)}
-     className={`w-full rounded-[15px] border p-4 text-left ${selected===r.id?"border-violet bg-lilac":"border-hairline bg-white hover:bg-mist"}`}>
-     <span className="text-xs text-ink-muted">{r.invoiceRef}</span>
-     <strong className="mt-1 block">{r.subject}</strong>
-     <span className={`alm-desk-chip mt-2 ${chip(r)}`}>{describeStatus(r)}</span><span className="ml-2 text-[11px] text-ink-muted">{r.releasedCount} resources</span>
-    </button>)}
-   </aside>
-   {current&&<section className="alm-desk-card p-5 sm:p-6">
-    <p className="text-xs font-bold uppercase tracking-wide text-violet-700">{current.invoiceRef}</p>
-    <h2 className="mt-2 text-[24px] font-bold">{current.subject}</h2><span className={`alm-desk-chip mt-2 ${chip(current)}`}>{describeStatus(current)}</span>
-    <p className="mt-2 text-sm text-ink-body">
-     {current.moduleCount} learning {current.moduleCount===1?"module":"modules"} · {current.kind.replaceAll("_"," ")}
-    </p>
-    <div className="mt-5 grid gap-2 sm:grid-cols-3">
-     <div className="rounded-xl bg-mist p-4"><p className="text-xs text-ink-muted">Payment</p><p className="mt-1 font-semibold">{paymentLabel(current.paymentStatus)}</p></div>
-     <div className="rounded-xl bg-mist p-4"><p className="text-xs text-ink-muted">Preparation</p><p className="mt-1 font-semibold">{current.productionStartedAt?"Underway":"Awaiting start"}</p></div>
-     <div className="rounded-xl bg-mist p-4"><p className="text-xs text-ink-muted">Target delivery</p>
-      <p className="mt-1 font-semibold">{current.deliveryDueAt?date(current.deliveryDueAt):"To be confirmed"}</p></div>
+  {orders.length>0&&<div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:grid-rows-[auto_1fr]">
+    <section aria-label="Your orders" className="overflow-hidden rounded-[16px] border border-hairline bg-white">
+     <div className="hidden grid-cols-[120px_minmax(0,1fr)_190px_90px] gap-4 border-b border-[#EEEBF7] px-[18px] py-3 text-[11px] font-extrabold tracking-[.12em] text-ink-muted md:grid">
+      <span>ORDER</span><span>COURSE</span><span>STATUS</span><span className="text-right">RELEASED</span>
+     </div>
+     {orders.map(r=><button type="button" key={r.id} onClick={()=>void choose(r.id)} aria-pressed={selected===r.id}
+      className={`grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1.5 border-b border-[#EEEBF7] px-4 py-4 text-left last:border-b-0 md:grid-cols-[120px_minmax(0,1fr)_190px_90px] md:px-[18px] md:py-5 ${selected===r.id?"bg-[#F6F4FB]":"hover:bg-[#FBFAFE]"}`}>
+      <span className="font-mono text-[12.5px] text-ink-body max-md:order-2 max-md:col-span-2">{r.invoiceRef}</span>
+      <span className="flex min-w-0 flex-col max-md:order-1"><span className="truncate text-[14.5px] font-bold">{r.subject}</span><span className="text-[12.5px] text-ink-muted">{kindText(r)}</span></span>
+      <span className="max-md:order-1 max-md:self-start"><Chip r={r}/></span>
+      <span className="hidden text-right text-[14px] font-bold md:block">{r.releasedCount}</span>
+     </button>)}
+    </section>
+   {current&&<aside className="flex flex-col gap-4 rounded-[16px] border border-hairline bg-white p-5 lg:sticky lg:top-6 lg:row-span-2">
+    <div className="flex items-center justify-between gap-3"><span className="font-mono text-[12.5px] text-ink-body">{current.invoiceRef}</span><Chip r={current}/></div>
+    <div><h2 className="font-display text-[22px] leading-tight font-bold tracking-[-.02em]">{current.subject}</h2><p className="mt-1 text-[12.5px] text-ink-muted">{kindText(current)}</p></div>
+    <ol className="flex flex-col gap-2.5">
+     {steps.map(([label,finished],i)=>{const now=i===firstOpen;return <li key={label} className="flex items-start gap-3">
+      <span className={`mt-0.5 grid h-5 w-5 flex-none place-items-center rounded-full text-[10px] font-extrabold ${finished?"bg-correct text-white":now?"border-2 border-violet text-violet-700":"border-[1.5px] border-[#D9D2F3] text-ink-muted"}`}>{finished?"✓":i+1}</span>
+      <span className="flex flex-col"><span className={`text-[14px] ${finished||now?"font-semibold text-ink":"text-ink-muted"}`}>{label}</span><span className="text-[12px] text-ink-muted">{finished?"Done":now?"In progress":"Waiting"}</span></span>
+     </li>;})}
+    </ol>
+    <div className="flex flex-col gap-2 border-t border-[#EEEBF7] pt-3.5 text-[13.5px]">
+     <div className="flex justify-between gap-3"><span className="text-ink-muted">Payment</span><span className="font-bold">{paymentLabel(current.paymentStatus)}</span></div>
+     <div className="flex justify-between gap-3"><span className="text-ink-muted">Target delivery</span><span className="font-bold">{current.deliveryDueAt?date(current.deliveryDueAt):"To be confirmed"}</span></div>
+     {current.deliveredAt&&<div className="flex justify-between gap-3"><span className="text-ink-muted">Released</span><span className="font-bold">{date(current.deliveredAt)}</span></div>}
     </div>
     {current.planStatus&&token&&<StudentPlanReview key={current.id} orderId={current.id} studentToken={token} onUpdated={()=>void load()}/>}
-
-    <div className="alm-desk-card mt-4 bg-[#FBFAFE] p-4">
-     <h3 className="text-[15px] font-bold">Your order timeline</h3>
-     <ol className="mt-3">
-      {[
-        ["Request received",true],
-        ["Payment verified",current.paymentStatus==="verified"],
-        ["Course preparation",Boolean(current.productionStartedAt)],
-        ["Quality review",current.status==="review"||current.status==="delivered"||Boolean(current.deliveredAt)],
-        ["Ready in your workspace",Boolean(current.packPublished||current.releasedCount>0||current.deliveredAt)]
-      ].map(([label,finished],i,all)=><li key={String(label)} className="alm-timeline-row">
-        <span className={`alm-timeline-dot ${finished?"done":all.slice(0,i).every(x=>x[1])?"current":""}`}>{finished?"✓":i+1}</span>
-        <span className={`flex-1 ${finished?"font-semibold text-ink":"text-ink-muted"}`}>{label}</span>
-        {finished&&<span className="text-[11px] font-semibold text-mint-ink">Complete</span>}
-      </li>)}
-     </ol>
-    </div>
-    {current.deliveredAt&&<p className="mt-4 rounded-xl bg-mist p-4 text-sm font-semibold">
-     Released on {date(current.deliveredAt)}. Your materials remain available below.
-    </p>}
     {current.packPublished?
-      <div className="mt-5 rounded-xl bg-lilac p-5">
-       <p className="font-semibold">Your interactive lessons are ready</p>
-       <p className="mt-1 text-sm text-ink-body">Open structured modules, complete explained practice questions, review flashcards and take exam simulations. Your latest answers are saved to this account.</p>
-       <Link href={`/app/orders/${encodeURIComponent(current.id)}/learn`}
-        className="mt-3 inline-flex min-h-11 items-center rounded-full bg-violet px-5 text-sm font-semibold text-white">
-        Start learning →</Link>
-      </div>:
-      <p className="mt-5 rounded-xl bg-mist p-4 text-sm text-ink-body">Interactive lessons and practice will appear here after staff quality review. Any completed downloadable files remain available below.</p>}
-    <h3 className="mt-7 text-[20px] font-bold">Your released materials</h3>
-    {busy?<p className="mt-3 text-sm text-ink-muted">Loading…</p>:
-     files.length===0?<div className="mt-3 rounded-xl border border-hairline p-5 text-sm text-ink-body">
-      Nothing has been released yet. We'll make each approved resource available here. You do not need to submit another purchase.
-     </div>:<ul className="mt-4 space-y-3">{files.map(f=><li key={f.id}
-      className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline p-4">
-      <div className="min-w-0 flex-1"><p className="break-words font-semibold">{f.name}</p>
-       <p className="mt-1 text-xs text-ink-muted">{f.kind} · {f.moduleNumber?`Module ${f.moduleNumber} · `:""}{(f.size/1024/1024).toFixed(1)} MB</p></div>
-      <button type="button" disabled={downloading!==null} onClick={()=>void download(f)}
-       className="rounded-full bg-violet px-5 py-2 font-semibold text-white disabled:opacity-50">
-       {downloading===f.id?"Preparing…":"Download →"}</button>
-     </li>)}</ul>}
-    <p className="mt-5 text-xs text-ink-muted">Need help? Email support@unemployedproff.com and include {current.invoiceRef}. Only files released to your order appear here.</p>
-   </section>}
+     <Link href={`/app/orders/${encodeURIComponent(current.id)}/learn`} className="flex h-12 items-center justify-center rounded-[12px] bg-violet text-[14.5px] font-bold text-white hover:bg-[#4A2DE6]">Start learning →</Link>:
+     <p className="rounded-[12px] bg-mist p-3.5 text-[13px] text-ink-body">Interactive lessons and practice appear here after nurse review. Any released files stay available under Released materials.</p>}
+   </aside>}
+    {current&&<section className="min-w-0 rounded-[16px] border border-hairline bg-white p-5">
+     <h2 className="font-display text-[18px] font-bold">Released materials</h2>
+     {busy?<p className="mt-3 text-sm text-ink-muted">Loading…</p>:
+      files.length===0?<p className="mt-2 text-[13.5px] text-ink-body">Nothing has been released yet. We'll make each approved resource available here. You do not need to submit another purchase.</p>:
+      <ul className="mt-3 flex flex-col gap-2">{files.map(f=><li key={f.id}
+       className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[#EEEBF7] p-3.5">
+       <div className="min-w-0 flex-1"><p className="font-semibold break-words">{f.name}</p>
+        <p className="mt-0.5 text-xs text-ink-muted">{f.kind} · {f.moduleNumber?`Module ${f.moduleNumber} · `:""}{(f.size/1024/1024).toFixed(1)} MB</p></div>
+       <button type="button" disabled={downloading!==null} onClick={()=>void download(f)}
+        className="h-10 rounded-[12px] border-[1.5px] border-violet px-4 text-[13.5px] font-bold text-violet-700 hover:bg-lilac disabled:opacity-50">
+        {downloading===f.id?"Preparing…":"Download"}</button>
+      </li>)}</ul>}
+     <p className="mt-4 text-xs text-ink-muted">Need help? Email support@unemployedproff.com and include {current.invoiceRef}. Only files released to your order appear here.</p>
+    </section>}
   </div>}
  </div></WorkspaceShell>;
 }
