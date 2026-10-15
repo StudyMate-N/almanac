@@ -34,13 +34,13 @@ function PreparedCourse({course}:{course:Course}) {
  </article>;
 }
 export default function Courses() {
- const {state}=useStudent();
+ const {state,authorizedCourses}=useStudent();
  const {questions,scored,lessonOpen}=useCourse();
  return <div className="mx-auto max-w-[1110px]">
   <PageHeader eyebrow="Almanac" title="Your courses"/>
   <p className="-mt-2 mb-6 text-[13px] text-ink-muted">Pick up where you left off, or set a plan for what comes next.</p>
   <div className="space-y-4">
-   {openCourses.map(c=>{
+   {openCourses.filter(c=>authorizedCourses.includes(c.id)).map(c=>{
     const moduleIds=modulesInCourse(c.id).map(m=>m.id);
     const qs=questions.filter(q=>moduleIds.includes(q.moduleId));
     const readinessResult=readiness(qs,scored);
