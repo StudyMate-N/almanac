@@ -1,206 +1,132 @@
 "use client";
-
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { ArrowRightIcon, CheckIcon, PlayIcon } from "@/components/icons";
-import { Ring } from "@/components/player/outline";
-import { courseById, groupsInModule } from "@/content/course";
-import { EXAMS } from "@/lib/config";
-import { moduleWeeks, planFor, weekToday } from "@/lib/plan";
-import { readiness, readinessLabel, readinessTone } from "@/lib/progress";
-import { useStudent } from "@/lib/store";
-import { useCourse } from "@/lib/use-course";
+import {useParams} from "next/navigation";
+import {ArrowRightIcon,CheckIcon} from "@/components/icons";
+import {Ring} from "@/components/player/outline";
+import {courseById,groupsInModule} from "@/content/course";
+import {EXAMS} from "@/lib/config";
+import {moduleWeeks,planFor,weekToday} from "@/lib/plan";
+import {readiness,readinessLabel,readinessTone} from "@/lib/progress";
+import {useStudent} from "@/lib/store";
+import {useCourse} from "@/lib/use-course";
 
-const tints = ["bg-lilac", "bg-peach", "bg-mint", "bg-sky"];
-const inks = ["text-violet-700", "text-peach-ink", "text-mint-ink", "text-sky-ink"];
-
-export default function CourseOutline() {
-  const { courseId } = useParams<{ courseId: string }>();
-  const { state } = useStudent();
-  const { modules, lessons, questions, scored } = useCourse(courseId);
-  const course = courseById(courseId);
-  const plan = planFor(state, courseId);
-  const weeks = plan ? moduleWeeks(plan, courseId) : null;
-  const week = plan ? weekToday(plan) : null;
-  if (!course || course.status !== "open")
-    return (
-      <p className="rounded-tile bg-white p-6">
-        This course isn&apos;t open yet. <Link href="/app/courses" className="font-bold text-violet-600">All courses</Link>
-      </p>
-    );
-
-  const open = new Set(lessons.map((l) => l.id));
-  const done = (id: string) => Boolean(state.lessons[id]);
-  const allPages = modules.flatMap((m) => groupsInModule(m.id).flatMap((g) => g.pages));
-  const doneCount = allPages.filter((p) => done(p.id)).length;
-  const resume = allPages.find((p) => open.has(p.id) && !done(p.id)) ?? allPages.find((p) => open.has(p.id));
-  const start = modules.find((m) => m.kind === "start");
-  const final = modules.find((m) => m.kind === "final");
-  const sections = modules.filter((m) => m.kind === "section");
-  const firstOpen = (moduleId: string) => {
-    const ps = groupsInModule(moduleId).flatMap((g) => g.pages).filter((p) => open.has(p.id));
-    return ps.find((p) => !done(p.id)) ?? ps[0];
-  };
-
-  return (
-    <>
-      <nav aria-label="Breadcrumb" className="mb-2 text-sm font-semibold text-ink-muted">
-        <Link href="/app/courses" className="hover:text-ink">
-          Courses
-        </Link>{" "}
-        / {course.title}
-      </nav>
-
-      <section className="relative mb-5 overflow-hidden rounded-tile bg-violet p-6 text-white sm:p-8">
-        <div aria-hidden="true" className="pointer-events-none absolute -top-16 -right-10 h-56 w-56 rounded-full bg-violet-decor" />
-        <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-[46%] hidden h-44 w-44 rounded-full bg-tangerine/90 lg:block" />
-        <div className="relative flex flex-wrap items-end gap-6">
-          <div className="min-w-0 flex-[1_1_380px]">
-            <p className="text-sm font-bold text-violet-on">{course.category}</p>
-            <h1 className="font-display text-[34px] leading-tight font-semibold sm:text-[42px]">{course.title}</h1>
-            <p className="mt-2 max-w-xl text-violet-on">{course.blurb}</p>
-            <div className="mt-5 flex flex-wrap gap-2.5">
-              {resume && (
-                <Link href={`/app/learn/${resume.id}`} className="inline-flex min-h-[52px] items-center gap-2 rounded-full bg-tangerine px-6 font-bold text-ink">
-                  <PlayIcon size={14} /> {doneCount ? "Continue" : "Start the course"}
-                </Link>
-              )}
-              <Link href={`/app/setup?course=${course.id}`} className="inline-flex min-h-[52px] items-center rounded-full bg-white/15 px-5 font-bold text-white hover:bg-white/25">
-                {plan ? `Week ${week} of ${plan.courseWeeks} · edit plan` : "Set up your plan"}
-              </Link>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 rounded-card bg-white/10 p-4">
-            <Ring done={doneCount} total={allPages.length} size={64} tone="white" />
-            <div>
-              <p className="font-display text-[26px] leading-none font-semibold">
-                {doneCount}
-                <span className="text-[16px] text-violet-on"> / {allPages.length}</span>
-              </p>
-              <p className="text-sm text-violet-on">pages done</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      <p className="mb-6 max-w-2xl text-sm text-ink-muted">{course.fit} Almanac is independent and not affiliated with any school or publisher.</p>
-
-      {start && (
-        <Link href={firstOpen(start.id) ? `/app/learn/${firstOpen(start.id)!.id}` : "#"} className="mb-5 flex flex-wrap items-center gap-4 rounded-tile bg-white p-5 hover:bg-mist">
-          <span className="grid h-12 w-12 flex-none place-items-center rounded-2xl bg-lilac font-display text-xl text-violet-700" aria-hidden="true">
-            ★
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-xs font-extrabold tracking-wide text-violet-600 uppercase">Start here</span>
-            <span className="block font-display text-[19px] font-semibold">{start.title}</span>
-            <span className="block text-sm text-ink-muted">{start.blurb}</span>
-          </span>
-          <Ring done={groupsInModule(start.id).flatMap((g) => g.pages).filter((p) => done(p.id)).length} total={groupsInModule(start.id).flatMap((g) => g.pages).length} size={40} />
-        </Link>
-      )}
-
-      <h2 className="mb-3 font-display text-[22px] font-semibold">Seven competencies</h2>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {sections.map((m, i) => {
-          const groups = groupsInModule(m.id);
-          const pages = groups.flatMap((g) => g.pages);
-          const d = pages.filter((p) => done(p.id)).length;
-          // Topic pages (course standard v1); sections not yet restructured list their lessons.
-          const topics = pages.filter((p) => p.kind === "topic");
-          const rows = topics.length
-            ? topics.map((p) => ({ id: p.id, title: p.title, pages: [p] }))
-            : groups.filter((g) => /^Lesson \d+:/.test(g.title));
-          const r = readiness(
-            questions.filter((q) => q.moduleId === m.id),
-            scored,
-          );
-          const go = firstOpen(m.id);
-          const test = pages.find((p) => p.kind === "test");
-          return (
-            <section key={m.id} aria-labelledby={`sec-${m.id}`} className="flex flex-col rounded-tile bg-white p-5">
-              <div className="mb-3 flex items-start gap-3">
-                <span className={`grid h-12 w-12 flex-none place-items-center rounded-2xl font-display text-[22px] font-semibold ${tints[i % 4]} ${inks[i % 4]}`}>{m.number}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-extrabold tracking-wide text-ink-muted uppercase">
-                    Section {m.number}
-                    {weeks ? ` · week ${weeks[m.id]}${week === weeks[m.id] ? " (now)" : ""}` : ""}
-                  </p>
-                  <h3 id={`sec-${m.id}`} className="font-display text-[19px] leading-snug font-semibold">
-                    {m.title}
-                  </h3>
-                </div>
-                <Ring done={d} total={pages.length} size={38} />
-              </div>
-              <p className="mb-3 text-sm text-ink-body">{m.blurb}</p>
-              <ul className="mb-4 flex flex-col gap-1.5">
-                {rows.map((g) => {
-                  const gd = g.pages.filter((p) => done(p.id)).length;
-                  const gOpen = g.pages.find((p) => open.has(p.id));
-                  const single = g.pages.length === 1;
-                  return (
-                    <li key={g.id}>
-                      {gOpen ? (
-                        <Link href={`/app/learn/${gOpen.id}`} className="flex items-center gap-2 rounded-xl bg-mist px-3 py-2 text-[14px] font-semibold hover:bg-lilac">
-                          <span className="min-w-0 flex-1">{g.title}</span>
-                          {single ? (
-                            gd > 0 && (
-                              <span className="grid h-5 w-5 place-items-center rounded-full bg-correct text-white" aria-label="Done">
-                                <CheckIcon size={10} />
-                              </span>
-                            )
-                          ) : (
-                            <span className="text-xs font-bold text-ink-muted">
-                              {gd}/{g.pages.length}
-                            </span>
-                          )}
-                        </Link>
-                      ) : (
-                        <span className="flex items-center gap-2 rounded-xl bg-mist px-3 py-2 text-[14px] font-semibold opacity-70">
-                          <span className="min-w-0 flex-1">{g.title}</span>
-                          <span className="text-xs font-bold text-ink-muted">In review</span>
-                        </span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-              <div className="mt-auto flex flex-wrap items-center gap-2">
-                {go ? (
-                  <Link href={`/app/learn/${go.id}`} className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-violet px-4 text-sm font-bold text-white">
-                    {d ? "Continue" : "Begin"} <ArrowRightIcon size={14} />
-                  </Link>
-                ) : (
-                  <span className="rounded-full bg-mist px-4 py-2 text-sm font-bold text-ink-muted">Pages in review</span>
-                )}
-                {test && open.has(test.id) && (
-                  <Link href={`/app/learn/${test.id}`} className="min-h-11 rounded-full bg-mist px-4 py-2.5 text-sm font-bold text-violet-700">
-                    Section test
-                  </Link>
-                )}
-                {r.total > 0 && <span className={`ml-auto rounded-full px-3 py-1 text-xs font-bold ${readinessTone[r.level].chip}`}>{readinessLabel[r.level]}</span>}
-              </div>
-            </section>
-          );
+export default function CourseOutline(){
+ const {courseId}=useParams<{courseId:string}>();
+ const {state}=useStudent();
+ const {modules,lessons,questions,scored}=useCourse(courseId);
+ const course=courseById(courseId);
+ const plan=planFor(state,courseId);
+ const weeks=plan?moduleWeeks(plan,courseId):null;
+ const week=plan?weekToday(plan):null;
+ if(!course||course.status!=="open")return <p className="alm-desk-card p-5">
+   This course isn&apos;t open yet. <Link href="/app/courses" className="font-bold text-violet-700">See your courses →</Link>
+ </p>;
+ const accessible=new Set(lessons.map(l=>l.id));
+ const done=(id:string)=>Boolean(state.lessons[id]);
+ const allPages=modules.flatMap(m=>groupsInModule(m.id).flatMap(g=>g.pages));
+ const doneCount=allPages.filter(p=>done(p.id)).length;
+ const pct=allPages.length?Math.round(doneCount/allPages.length*100):0;
+ const resume=allPages.find(p=>accessible.has(p.id)&&!done(p.id))??allPages.find(p=>accessible.has(p.id));
+ const start=modules.find(m=>m.kind==="start");
+ const final=modules.find(m=>m.kind==="final");
+ const sections=modules.filter(m=>m.kind==="section");
+ const firstOpen=(moduleId:string)=>{
+  const ps=groupsInModule(moduleId).flatMap(g=>g.pages).filter(p=>accessible.has(p.id));
+  return ps.find(p=>!done(p.id))??ps[0];
+ };
+ const current=sections.find(m=>weeks&&week&&weeks[m.id]===week)??sections.find(m=>groupsInModule(m.id).flatMap(g=>g.pages).some(p=>accessible.has(p.id)&&!done(p.id)))??sections[0];
+ return <div className="mx-auto max-w-[1110px]">
+  <nav aria-label="Breadcrumb" className="mb-4 text-[12px] font-semibold text-ink-muted">
+   <Link href="/app/courses" className="text-violet-700">Courses</Link> / {course.title}
+  </nav>
+  <section className="alm-desk-card overflow-hidden">
+   <div className="grid gap-0 md:grid-cols-[1fr_235px]">
+    <div className="p-5 sm:p-7">
+     <span className="alm-desk-eyebrow">{course.category}</span>
+     <h1 className="mt-3 text-[30px] font-bold sm:text-[34px]">{course.title}</h1>
+     <p className="mt-2 max-w-[680px] text-[13px] leading-relaxed text-ink-body">{course.blurb}</p>
+     <div className="mt-5 flex flex-wrap items-center gap-2">
+       {resume&&<Link href={`/app/learn/${resume.id}`} className="alm-desk-btn">{doneCount?"Continue learning":"Start the course"} <ArrowRightIcon size={14}/></Link>}
+       <Link href={`/app/setup?course=${course.id}`} className="alm-desk-btn alm-desk-btn-secondary">
+          {plan?`Week ${week} of ${plan.courseWeeks} · Edit plan`:"Set up your plan"}
+       </Link>
+     </div>
+     <div className="mt-5 max-w-[570px]"><div className="flex justify-between text-[12px] text-ink-muted"><span>{doneCount} of {allPages.length} pages complete</span><strong className="text-violet-700">{pct}%</strong></div>
+       <div className="alm-desk-progress mt-2"><span style={{width:`${pct}%`}}/></div></div>
+    </div>
+    <div className="alm-cover min-h-[155px] bg-[#E6E0F8] md:min-h-full" aria-label="Advanced Pathophysiology course cover" role="img"/>
+   </div>
+  </section>
+  <p className="my-5 text-[12px] text-ink-muted">{course.fit} Almanac is independent of your school and publisher.</p>
+  {start&&<section className="alm-desk-card mb-4 flex flex-wrap items-center gap-4 p-4 sm:p-5">
+    <span className="grid h-10 w-10 place-items-center rounded-xl bg-lilac font-bold text-violet-700">★</span>
+    <div className="min-w-0 flex-1"><p className="alm-desk-eyebrow">Start here</p>
+     <h2 className="text-[17px] font-bold">{start.title}</h2>
+     <p className="mt-1 text-[12px] text-ink-muted">{start.blurb}</p></div>
+    {firstOpen(start.id)&&<Link href={`/app/learn/${firstOpen(start.id)!.id}`} className="alm-desk-btn alm-desk-btn-secondary">Open →</Link>}
+  </section>}
+  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+    <h2 className="text-[24px] font-bold">Seven competencies</h2>
+    <span className="alm-desk-chip">{sections.filter(m=>groupsInModule(m.id).flatMap(g=>g.pages).every(p=>done(p.id))).length} complete</span>
+  </div>
+  <div className="space-y-2">
+   {sections.map(m=>{
+     const groups=groupsInModule(m.id);
+     const pages=groups.flatMap(g=>g.pages);
+     const completed=pages.filter(p=>done(p.id)).length;
+     const allDone=pages.length>0&&completed===pages.length;
+     const go=firstOpen(m.id);
+     const isCurrent=m.id===current?.id;
+     const r=readiness(questions.filter(q=>q.moduleId===m.id),scored);
+     const topics=pages.filter(p=>p.kind==="topic");
+     const rows=topics.length?topics.map(p=>({id:p.id,title:p.title,pages:[p]})):groups.filter(g=>/^Lesson \d+:/.test(g.title));
+     const test=pages.find(p=>p.kind==="test");
+     return <details key={m.id} open={isCurrent?true:undefined} className="group alm-desk-card overflow-hidden">
+      <summary className="flex min-h-[74px] cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
+       <span className={`grid h-10 w-10 flex-none place-items-center rounded-xl font-display text-[18px] font-bold ${allDone?"bg-mint text-mint-ink":isCurrent?"bg-[#2A1B78] text-white":"bg-lilac text-violet-700"}`}>
+        {allDone?<CheckIcon size={17}/>:m.number}
+       </span>
+       <span className="min-w-0 flex-1">
+        <span className="block text-[10px] font-extrabold uppercase tracking-[.11em] text-ink-muted">Section {m.number}{weeks?` · Week ${weeks[m.id]}`:""}</span>
+        <span className="mt-1 block text-[16px] font-bold">{m.title}</span>
+       </span>
+       <span className="hidden text-[12px] text-ink-muted sm:block">{completed}/{pages.length} pages</span>
+       <Ring done={completed} total={pages.length} size={32}/>
+       <span className="text-violet-700 transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+      </summary>
+      <div className="border-t border-hairline px-4 pb-5 pt-4 sm:px-5">
+       <p className="text-[13px] text-ink-body">{m.blurb}</p>
+       <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        {rows.map(g=>{
+          const available=g.pages.find(p=>accessible.has(p.id));
+          const finished=g.pages.filter(p=>done(p.id)).length;
+          return available?<Link key={g.id} href={`/app/learn/${available.id}`}
+            className="flex min-h-11 items-center gap-3 rounded-xl bg-[#F7F6FB] px-3 text-[12px] font-semibold hover:bg-lilac">
+            <span className={`grid h-6 w-6 place-items-center rounded-full text-[11px] ${finished===g.pages.length?"bg-mint text-mint-ink":"bg-white text-violet-700"}`}>{finished===g.pages.length?"✓":"→"}</span>
+            <span className="min-w-0 flex-1">{g.title}</span>
+           </Link>:<div key={g.id} className="flex min-h-11 items-center justify-between gap-2 rounded-xl bg-[#F7F6FB] px-3 text-[12px] text-ink-muted"><span>{g.title}</span><span>In review</span></div>
         })}
+       </div>
+       <div className="mt-4 flex flex-wrap items-center gap-2">
+        {go?<Link href={`/app/learn/${go.id}`} className="alm-desk-btn">{completed?"Continue":"Begin section"} →</Link>:
+          <span className="alm-desk-chip">Content in review</span>}
+        {test&&accessible.has(test.id)&&<Link href={`/app/learn/${test.id}`} className="alm-desk-btn alm-desk-btn-secondary">Section test</Link>}
+        {r.total>0&&<span className={`alm-desk-chip ml-auto ${readinessTone[r.level].chip}`}>{readinessLabel[r.level]}</span>}
+       </div>
       </div>
-
-      {final && (
-        <section className="mt-5 grid gap-4 md:grid-cols-[1.4fr_1fr]">
-          <Link href={firstOpen(final.id) ? `/app/learn/${firstOpen(final.id)!.id}` : "#"} className="rounded-tile bg-mint p-6 hover:brightness-95">
-            <p className="text-xs font-extrabold tracking-wide text-mint-ink uppercase">Finish</p>
-            <p className="font-display text-[22px] font-semibold">{final.title}</p>
-            <p className="text-sm text-mint-ink">{final.blurb}</p>
-          </Link>
-          <Link href={`/app/exam/final?course=${course.id}`} className="flex flex-col justify-between rounded-tile bg-ink p-6 text-white hover:bg-violet-deep">
-            <p className="text-xs font-extrabold tracking-wide text-violet-200 uppercase">Full-length simulation</p>
-            <p className="font-display text-[22px] font-semibold">
-              {EXAMS.final.questions} questions · {EXAMS.final.minutes} minutes
-            </p>
-            <span className="mt-2 inline-flex items-center gap-1.5 font-bold text-tangerine">
-              Start when ready <ArrowRightIcon size={14} />
-            </span>
-          </Link>
-        </section>
-      )}
-    </>
-  );
+     </details>;
+   })}
+  </div>
+  {final&&<section className="mt-5 grid gap-3 sm:grid-cols-2">
+    <div className="alm-desk-card p-5"><p className="alm-desk-eyebrow">Final review</p><h2 className="mt-2 text-[21px] font-bold">{final.title}</h2>
+     <p className="mt-2 text-[13px] text-ink-body">{final.blurb}</p>
+     {firstOpen(final.id)&&<Link href={`/app/learn/${firstOpen(final.id)!.id}`} className="alm-desk-btn mt-4">Open final review →</Link>}
+    </div>
+    <div className="rounded-[18px] bg-[#2A1B78] p-5 text-white"><p className="text-[11px] font-bold uppercase tracking-[.12em] text-white/70">Timed exam rehearsal</p>
+      <h2 className="mt-2 text-[21px] font-bold">{EXAMS.final.questions} questions · {EXAMS.final.minutes} min</h2>
+      <p className="mt-2 text-[12px] text-white/75">Practice simulation, not an official exam.</p>
+      <Link href={`/app/exam/final?course=${course.id}`} className="mt-4 inline-flex min-h-11 items-center rounded-full bg-white px-4 text-[13px] font-bold text-[#2A1B78]">Start when ready →</Link>
+    </div>
+   </section>}
+ </div>;
 }
