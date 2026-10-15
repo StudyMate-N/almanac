@@ -128,10 +128,10 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
     <p className="mt-2 font-display text-[34px] font-extrabold">{cad(invoice.payableCadCents!)}</p>
     <p className="mt-1 text-xs text-ink-body">Fixed for invoice {invoice.invoiceRef} · USD list price: ${invoice.quoteUsd.toFixed(2)} · Pay by {invoice.quoteValidUntil?new Date(invoice.quoteValidUntil).toLocaleDateString("en-US"):"the deadline on your invoice"}</p>
     <div className="mt-3 flex flex-wrap gap-2">
-     <button type="button" onClick={()=>void copy((invoice.payableCadCents!/100).toFixed(2),"amount")} className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-violet-700">
+     <button type="button" onClick={()=>void copy((invoice.payableCadCents!/100).toFixed(2),"amount")} className="min-h-11 rounded-full bg-white px-4 py-2 text-[13px] font-semibold text-violet-700">
        {copied==="amount"?"Amount copied ✓":"Copy CAD amount"}
      </button>
-     <button type="button" onClick={()=>void copy(invoice.invoiceRef,"reference")} className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-violet-700">
+     <button type="button" onClick={()=>void copy(invoice.invoiceRef,"reference")} className="min-h-11 rounded-full bg-white px-4 py-2 text-[13px] font-semibold text-violet-700">
        {copied==="reference"?"Reference copied ✓":"Copy invoice reference"}
      </button>
     </div>
@@ -140,7 +140,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
    <div className="mt-4 rounded-[14px] border border-hairline bg-white p-5">
     <div className="flex flex-wrap items-center justify-between gap-2">
      <h3 className="font-semibold">2 · Bank details</h3>
-     <button type="button" onClick={()=>void copy(instructions,"all")} className="rounded-full bg-lilac px-4 py-2 text-xs font-semibold text-violet-700">
+     <button type="button" onClick={()=>void copy(instructions,"all")} className="min-h-11 rounded-full bg-lilac px-4 py-2 text-[13px] font-semibold text-violet-700">
        {copied==="all"?"All details copied ✓":"Copy all bank details"}
      </button>
     </div>
@@ -158,7 +158,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
      ] as const).map(([label,value])=><div key={label} className="flex min-w-0 items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
        <div className="min-w-0 flex-1"><dt className="text-xs text-ink-muted">{label}</dt>
        <dd className="mt-0.5 break-words text-sm font-semibold select-text">{value}</dd></div>
-       <button type="button" aria-label={`Copy ${label}`} onClick={()=>void copy(value,label)} className="min-h-10 shrink-0 rounded-full border border-hairline bg-white px-4 py-2 text-xs font-semibold text-violet-700">
+       <button type="button" aria-label={`Copy ${label}`} onClick={()=>void copy(value,label)} className="min-h-11 shrink-0 rounded-full border border-hairline bg-white px-4 py-2 text-[13px] font-semibold text-violet-700">
         {copied===label?"Copied ✓":"Copy"}
        </button>
       </div>)}
@@ -175,10 +175,10 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
      <p className="text-sm text-ink-body">Use a bank reference, a screenshot/receipt, or both. A screenshot is optional if you have a transfer reference. {expired?"Only report a transfer that you actually sent before this quote expired. Do not send a new transfer against the expired amount.":""}</p>
      <div className="grid gap-3 sm:grid-cols-2">
       <label className="block text-sm font-semibold">Bank transfer reference (if available)
-       <input className="mt-2 w-full rounded-xl border border-hairline px-3 py-3" value={reference} maxLength={120} onChange={e=>setReference(e.target.value)} placeholder="e.g. transfer confirmation number"/>
+       <input className="mt-2 min-h-12 w-full rounded-xl border border-hairline px-3 py-3 text-base" value={reference} maxLength={120} onChange={e=>setReference(e.target.value)} placeholder="e.g. transfer confirmation number"/>
       </label>
       <label className="block text-sm font-semibold">Date transfer was sent
-       <input className="mt-2 w-full rounded-xl border border-hairline px-3 py-3" required type="date" value={date} onChange={e=>setDate(e.target.value)}/>
+       <input className="mt-2 min-h-12 w-full rounded-xl border border-hairline px-3 py-3 text-base" required type="date" value={date} onChange={e=>setDate(e.target.value)}/>
       </label>
      </div>
      <label className="block text-sm font-semibold">Screenshot or PDF receipt (optional)
