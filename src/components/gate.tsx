@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Logo } from "@/components/brand";
 import { friendlyError } from "@/lib/api";
 import { useStudent } from "@/lib/store";
@@ -16,16 +15,7 @@ export function Gate({ children }: { children: React.ReactNode }) {
       </div>
     );
   if (status === "signed-out") return <SignIn />;
-  return <>
-    <div className="border-b border-hairline bg-white px-4 py-3 text-sm">
-      <nav className="mx-auto flex max-w-[1200px] flex-wrap gap-5 font-semibold" aria-label="Learning workspace">
-        <Link href="/app">Learning tools</Link>
-        <Link href="/app/orders" className="text-violet-700">My orders &amp; delivered files</Link>
-        <Link href="/contact">Support</Link>
-      </nav>
-    </div>
-    {children}
-  </>;
+  return <>{children}</>;
 }
 
 function SignIn() {
@@ -54,7 +44,7 @@ function SignIn() {
       <Logo />
       <div>
         <h1 className="font-display text-[34px] leading-tight font-semibold">Sign in to Almanac</h1>
-        <p className="mt-2 text-ink-body">Use the access code Almanac sent you after verifying your payment. Your progress is saved to your account, so you can switch devices.</p>
+        <p className="mt-2 text-ink-body">Enter your Almanac access code. For a purchased course, the code is issued after payment verification. Pilot participants may also receive a separate test code. Your progress follows you across devices.</p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-3.5 rounded-tile bg-white p-6">
         <label className="flex flex-col gap-1.5 text-sm font-semibold">
