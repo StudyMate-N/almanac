@@ -11,6 +11,7 @@ import { StaffDeliveryPanel } from "@/components/site/staff-delivery-panel";
 import { StaffRecoveryPanel } from "@/components/site/staff-recovery-panel";
 import { StaffCoursePack } from "@/components/site/staff-course-pack";
 import { ENHANCEMENTS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
+import { parseConfirmedCadCents } from "@/lib/payment-confirmation";
 
 type RequestRow = {
   id: string; name: string; email: string; course_id: string | null;
@@ -34,6 +35,8 @@ export default function LearningRequestsPage() {
   const [rows, setRows] = useState<RequestRow[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshBusy, setRefreshBusy] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [issued, setIssued] = useState<{id:string;invoiceRef:string;code:string;email:string}|null>(null);
   const [emailStatus,setEmailStatus]=useState<Record<string,"sending"|"sent"|"not_configured"|"failed">>({});
@@ -62,10 +65,34 @@ export default function LearningRequestsPage() {
     setToken(stored.token);
     setRole(stored.role||"");
     rpc<RequestRow[]>("learning_requests_list", { p_token: stored.token })
-      .then(setRows)
+      .then(data => { setRows(data); setLastUpdated(new Date()); })
       .catch(e => setError(friendlyError(e)))
       .finally(() => setLoading(false));
   }, []);
+
+  // Refresh payment reports while the staff dashboard stays open.
+  useEffect(() => {
+    if (!token) return;
+    const interval = setInterval(() => {
+      void rpc<RequestRow[]>("learning_requests_list", { p_token: token })
+        .then(data => { setRows(data); setLastUpdated(new Date()); })
+        .catch(() => {}); // A transient poll failure must not hide loaded orders.
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [token]);
+
+  async function refreshOrders() {
+    if (!token || refreshBusy) return;
+    setRefreshBusy(true);
+    try {
+      const updated = await rpc<RequestRow[]>("learning_requests_list", { p_token: token });
+      setRows(updated);
+      setLastUpdated(new Date());
+      setError("");
+    } catch (e) {
+      setError(friendlyError(e));
+    } finally { setRefreshBusy(false); }
+  }
 
   async function changeStatus(id: string, status: string) {
     if (!token) return;
@@ -87,8 +114,8 @@ export default function LearningRequestsPage() {
     if(!token || editing || !row?.payable_cad_cents)return;
     const typed=window.prompt("Enter the CAD amount actually received in your bank account for "+row.invoice_ref+" (example: 123.45). This is not the amount on a screenshot.");
     if(typed===null)return;
-    if(!/^\\d+(?:\\.\\d{1,2})?$/.test(typed.trim())||
-      Math.round(Number(typed.trim())*100)!==row.payable_cad_cents){
+    const receivedCents=parseConfirmedCadCents(typed);
+    if(receivedCents===null || receivedCents!==row.payable_cad_cents){
       setError("Bank amount does not match the invoice's fixed CAD total ("+cad+"). Do not issue access; investigate any shortfall or fee.");
       return;
     }
@@ -113,7 +140,17 @@ export default function LearningRequestsPage() {
     <main className="mx-auto max-w-[1100px] px-4 pb-24 pt-8 sm:px-6">
       <Link href="/coach" className="text-sm font-semibold text-violet-700">← Coach console</Link>
       <h1 className="mt-4 font-display text-3xl font-semibold">Learning requests</h1>
-      <p className="mt-2 text-ink-body">Review package specifications, contact information, price and production status.</p>
+      <p className="mt-2 text-ink-body">Review package specifications, payment reports, and production status. Payments reported by customers stay pending until your independent bank confirmation.</p>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-hairline bg-white p-4">
+        <div>
+          <p className="font-semibold">{rows.filter(r => r.payment_status === "reported").length} payments awaiting bank verification</p>
+          <p className="mt-1 text-xs text-ink-muted">Customer payment reports appear here, not in Coach inbox or Reports. {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : "Loading orders…"}.</p>
+        </div>
+        <button type="button" onClick={() => void refreshOrders()} disabled={refreshBusy || !token}
+          className="min-h-11 rounded-full border border-hairline bg-lilac px-5 text-sm font-bold text-violet-700 disabled:opacity-50">
+          {refreshBusy ? "Refreshing…" : "Refresh payment reports"}
+        </button>
+      </div>
       {error && <p role="alert" className="mt-4 rounded-card bg-peach p-4 text-sm text-peach-ink">{error} <Link href="/coach" className="underline">Coach sign-in</Link></p>}
       {loading ? <p className="mt-8 text-ink-muted">Loading requests…</p> : rows.length === 0 ? <p className="mt-8 rounded-card bg-white p-5">No requests to display.</p> : (
         <div className="mt-6 space-y-4">
