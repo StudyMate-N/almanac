@@ -74,3 +74,10 @@
 .alm-public .alm-course-media img{object-position:80% 55%;}
 .alm-public .alm-play{border:0;cursor:pointer;}
 @media (prefers-reduced-motion:reduce){.alm-public .alm-hero-glow{animation:none}}
+
+/* Mobile bank instructions and date fields use readable, no-zoom sizing. */
+@media(max-width:640px){
+ .alm-public input:not([type=checkbox]):not([type=radio]),.alm-public select,.alm-public textarea{font-size:16px;min-height:44px}
+ .alm-public button[aria-label^="Copy "]{min-height:44px;font-size:13px}
+ .alm-public dl dd{overflow-wrap:anywhere}
+}
