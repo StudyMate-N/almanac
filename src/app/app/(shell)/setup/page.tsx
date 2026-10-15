@@ -16,7 +16,7 @@ export default function SetupPage() {
 }
 
 function Setup() {
-  const { state, update } = useStudent();
+  const { state, update, authorizedCourses } = useStudent();
   const router = useRouter();
   const course = courseById(useSearchParams().get("course") ?? "") ?? openCourses[0];
   const p = planFor(state, course.id);
@@ -34,6 +34,11 @@ function Setup() {
   };
   const field = "min-h-12 w-full rounded-2xl border-2 border-hairline bg-white px-4 outline-none focus:border-violet";
 
+  if (!authorizedCourses.includes(course.id)) return <section className="alm-desk-card mx-auto max-w-xl p-6">
+    <p className="alm-desk-eyebrow">Approved learning</p>
+    <h1 className="mt-3 text-[24px] font-bold">Choose an enrolled course first.</h1>
+    <p className="mt-3 text-sm text-ink-body">Study planning is available for courses included in your approved enrollment.</p>
+  </section>;
   return (
     <>
       <PageHeader eyebrow={`Your plan · ${course.title}`} title="Fit Almanac to your course" />
