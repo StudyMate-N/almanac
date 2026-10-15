@@ -1,0 +1,63 @@
+/* Signed-in learner workspace: approved design handoff, Oct 2026.
+   These rules are scoped to .alm-workspace and .alm-focus to keep the public
+   site and coach console independent. Actual data is never hard-coded here. */
+.alm-workspace,.alm-focus {
+ --alm-ground:#F7F6FB;--alm-plum:#2A1B78;--alm-violet:#5B3DF5;
+ --alm-orange:#F2711C;--alm-lilac:#ECE7FF;--alm-mint:#DFF5EA;
+ --alm-peach:#FFF4EC;--alm-rose:#FDEBEF;--alm-hairline:#E4DFF5;
+ --alm-ink:#1B1530;--alm-muted:#5E5775;
+ background:var(--alm-ground);color:var(--alm-ink);
+ font-family:var(--font-sans);font-size:14px;
+}
+.alm-workspace h1,.alm-workspace h2,.alm-workspace h3,.alm-focus h1,.alm-focus h2,.alm-focus h3 {
+ font-family:var(--font-display);line-height:1.18;letter-spacing:-.027em;
+}
+.alm-workspace .rounded-tile,.alm-focus .rounded-tile {border-radius:18px;}
+.alm-workspace .rounded-card,.alm-focus .rounded-card {border-radius:15px;}
+.alm-workspace .alm-desk-card,.alm-focus .alm-desk-card {
+ background:#fff;border:1px solid var(--alm-hairline);border-radius:18px;
+}
+.alm-workspace .alm-desk-btn,.alm-focus .alm-desk-btn {
+ display:inline-flex;min-height:44px;align-items:center;justify-content:center;
+ border-radius:999px;background:var(--alm-violet);color:white;padding:9px 17px;
+ font-size:13px;font-weight:750;gap:7px;
+}
+.alm-workspace .alm-desk-btn:hover,.alm-focus .alm-desk-btn:hover {background:#4A2DE0;}
+.alm-workspace .alm-desk-btn-secondary,.alm-focus .alm-desk-btn-secondary {
+ border:1px solid #DCD5F6;background:#fff;color:var(--alm-plum);
+}
+.alm-workspace .alm-desk-btn-secondary:hover,.alm-focus .alm-desk-btn-secondary:hover {background:#F5F1FF;}
+.alm-workspace .alm-desk-eyebrow,.alm-focus .alm-desk-eyebrow {
+ text-transform:uppercase;letter-spacing:.13em;color:#3E25C9;
+ font-size:11px;font-weight:800;
+}
+.alm-workspace .alm-desk-chip,.alm-focus .alm-desk-chip {
+ display:inline-flex;align-items:center;gap:5px;
+ border-radius:999px;background:var(--alm-lilac);
+ color:var(--alm-plum);padding:5px 10px;font-size:11px;font-weight:750;
+}
+.alm-workspace .alm-chip-due {background:var(--alm-peach);color:#9D3E0E;}
+.alm-workspace .alm-chip-ready {background:var(--alm-mint);color:#155C3A;}
+.alm-workspace .alm-chip-pending {background:var(--alm-peach);color:#9D3E0E;}
+.alm-workspace .alm-chip-building {background:var(--alm-lilac);color:var(--alm-plum);}
+.alm-workspace .alm-desk-progress {height:7px;overflow:hidden;background:#EEEBF7;border-radius:999px;}
+.alm-workspace .alm-desk-progress>span {display:block;height:100%;background:var(--alm-violet);border-radius:999px;}
+.alm-workspace .alm-workspace-icon {object-fit:contain;width:20px;height:20px;}
+.alm-workspace .alm-desk-panel {box-shadow:0 5px 24px rgba(42,27,120,.045);}
+.alm-focus .alm-lesson-content .bg-sky\/70,.alm-focus .alm-lesson-content .bg-sky {background:var(--alm-lilac);}
+.alm-focus .alm-lesson-content .text-sky-ink {color:var(--alm-plum);}
+.alm-focus .alm-lesson-content .bg-peach.text-peach-ink {background:var(--alm-rose);color:#8A1C37;}
+.alm-focus .alm-lesson-content .bg-tangerine {background:var(--alm-violet);color:#fff;}
+.alm-workspace .alm-timeline-dot {height:18px;width:18px;display:grid;place-items:center;border-radius:50%;background:#ECE7FF;color:#2A1B78;font-size:10px;font-weight:800;flex:none;}
+.alm-workspace .alm-timeline-dot.done {background:#1E7A4F;color:white;}
+.alm-workspace .alm-timeline-dot.current {outline:2px solid #5B3DF5;outline-offset:3px;}
+.alm-workspace .alm-timeline-row {position:relative;display:flex;align-items:center;gap:11px;padding:8px 0;font-size:13px;}
+.alm-workspace .alm-timeline-row:not(:last-child)::after {content:"";position:absolute;top:27px;bottom:-6px;left:8px;border-left:1px solid #DDD5F6;}
+.alm-workspace .alm-cover {background-image:url('/almanac-art/cover-pathophysiology.png');background-position:center;background-size:cover;}
+@media(max-width:767px){
+ .alm-workspace h1 {font-size:26px;line-height:1.13;}
+ .alm-workspace .alm-desk-card {border-radius:16px;}
+}
+@media(prefers-reduced-motion:reduce) {
+ .alm-workspace *,.alm-focus * {animation:none!important;scroll-behavior:auto!important;}
+}
