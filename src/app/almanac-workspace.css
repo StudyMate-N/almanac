@@ -61,3 +61,16 @@
 @media(prefers-reduced-motion:reduce) {
  .alm-workspace *,.alm-focus * {animation:none!important;scroll-behavior:auto!important;}
 }
+
+/* Handoff refinements: intentional motion, consistent surfaces and tighter focus. */
+.alm-workspace .alm-desk-progress>span{transform-origin:left;animation:almFill 700ms cubic-bezier(.2,.7,.2,1) both}
+.alm-workspace .alm-desk-btn,.alm-focus .alm-desk-btn{transition:background-color .15s,transform .15s}
+.alm-workspace .alm-desk-btn:active,.alm-focus .alm-desk-btn:active{transform:scale(.98)}
+.alm-workspace .alm-cover{background-position:80% 55%;background-size:150% auto}
+.alm-focus .alm-lesson-content{font-size:15px;line-height:1.65}
+.alm-focus .alm-lesson-content .bg-peach.text-peach-ink{background:#FDEBEF;color:#8A1C37}
+.alm-focus .alm-lesson-content .bg-sky{background:#ECE7FF;color:#1B1530}
+.alm-workspace .alm-staff-header{background:#2A1B78;color:white;border-radius:18px;padding:20px 24px}
+.alm-workspace .alm-staff-header a{color:white}
+@keyframes almFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(prefers-reduced-motion:reduce){.alm-workspace .alm-desk-progress>span{animation:none}}
