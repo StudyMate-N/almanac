@@ -77,10 +77,16 @@ export default function Today() {
   </section>}
   <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_294px]">
     <div className="space-y-5">
-      {availableCourses.map(course=><section key={course.id}>
+      {availableCourses.filter(course=>course.id!=="advanced-pharmacology").map(course=><section key={course.id}>
        {availableCourses.length>1&&<h2 className="mb-3 text-[19px] font-bold">{course.title}</h2>}
        <TodaySession course={course}/>
       </section>)}
+      {availableCourses.some(course=>course.id==="advanced-pharmacology")&&<section className="alm-desk-card p-6">
+        <p className="alm-desk-eyebrow">Your midterm preparation</p>
+        <h2 className="mt-2 text-[24px] font-bold">Advanced Pharmacology</h2>
+        <p className="mt-2 text-sm text-ink-body">Study the eight NUR-635 midterm topics, practise clinical decisions, and review flashcards in one place.</p>
+        <Link href="/app/midterm/nur635" className="alm-desk-btn mt-4">Open midterm study sprint →</Link>
+      </section>}
       <section className="alm-desk-card p-5">
         <p className="alm-desk-eyebrow">Explore your learning</p>
         <h2 className="mt-2 text-[20px] font-bold">Everything is within reach.</h2>
@@ -91,7 +97,7 @@ export default function Today() {
         </div>
       </section>
     </div>
-    <aside className="space-y-4">{availableCourses.map(course=><TodayRail key={course.id} course={course}/>)}</aside>
+    <aside className="space-y-4">{availableCourses.filter(course=>course.id!=="advanced-pharmacology").map(course=><TodayRail key={course.id} course={course}/>)}</aside>
   </div>
  </div>;
 }

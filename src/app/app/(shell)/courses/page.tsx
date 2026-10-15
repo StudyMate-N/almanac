@@ -70,7 +70,7 @@ export default function Courses() {
       <div className="p-5 sm:p-6">
        <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="alm-desk-eyebrow">{c.category}</span>
-        <span className={`alm-desk-chip ${begun?"alm-chip-ready":""}`}>{begun?"Started":plan?"Plan set":"No plan yet"}</span>
+        <span className={`alm-desk-chip ${begun?"alm-chip-ready":""}`}>{c.id==="advanced-pharmacology"?"Midterm study":begun?"Started":plan?"Plan set":"No plan yet"}</span>
        </div>
        <h2 className="mt-3 text-[24px] font-bold sm:text-[27px]">{c.title}</h2>
        <p className="mt-2 max-w-[630px] text-[13px] leading-relaxed text-ink-body">{c.blurb}</p>
@@ -87,7 +87,9 @@ export default function Courses() {
        {qs.length>0&&<p className="mt-3 text-[12px] text-ink-muted">Practice readiness: <span className={readinessTone[readinessResult.level].chip+" rounded-full px-2 py-0.5 font-semibold"}>{readinessLabel[readinessResult.level]}</span></p>}
        <div className="mt-5 flex flex-wrap gap-2">
         <Link href={`/app/courses/${c.id}`} className="alm-desk-btn alm-desk-btn-secondary">Open course <ArrowRightIcon size={15}/></Link>
-        <Link href={`/app/setup?course=${c.id}`} className="alm-desk-btn">{plan?"Edit study plan":"Set up your plan"} <ArrowRightIcon size={15}/></Link>
+        {c.id==="advanced-pharmacology"?
+          <Link href="/app/midterm/nur635" className="alm-desk-btn">Open midterm prep <ArrowRightIcon size={15}/></Link>:
+          <Link href={`/app/setup?course=${c.id}`} className="alm-desk-btn">{plan?"Edit study plan":"Set up your plan"} <ArrowRightIcon size={15}/></Link>}
        </div>
       </div>
      </div>

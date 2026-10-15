@@ -21,6 +21,25 @@ export default function CourseOutline(){
  if(!course||course.status!=="open"||!authorizedCourses.includes(courseId))return <p className="alm-desk-card p-5">
    This course is not available in your paid learning plan. <Link href="/app/courses" className="font-bold text-violet-700">See your courses →</Link>
  </p>;
+ if(courseId==="advanced-pharmacology")return <div className="mx-auto max-w-[960px]">
+    <Link href="/app/courses" className="text-sm font-bold text-violet-700">← Your courses</Link>
+    <div className="alm-desk-card mt-5 overflow-hidden">
+      <div className="grid gap-0 md:grid-cols-[1fr_240px]">
+        <div className="p-6 sm:p-8">
+          <p className="alm-desk-eyebrow">NUR-635 · Advanced Pharmacology</p>
+          <h1 className="mt-3 text-[30px] font-bold">Midterm preparation · Topics 1–8</h1>
+          <p className="mt-3 max-w-[560px] text-sm leading-6 text-ink-body">Review your lessons, strengthen the drug mechanisms and test your clinical reasoning. Your progress is saved as you practise.</p>
+          <Link href="/app/midterm/nur635" className="alm-desk-btn mt-6">Open your midterm course →</Link>
+        </div>
+        <div className="min-h-[180px] bg-cover bg-center" role="img" aria-label="Advanced Pharmacology course cover" style={{backgroundImage:'url("/almanac-art/cover-pharmacology.png")'}}/>
+      </div>
+    </div>
+    <section className="alm-desk-card mt-5 p-6">
+      <p className="alm-desk-eyebrow">Learning path</p>
+      <h2 className="mt-2 text-[22px] font-bold">Eight focused review topics</h2>
+      <p className="mt-3 text-sm leading-6 text-ink-body">Your course includes topic lessons, explained practice questions, flashcards and a timed midterm rehearsal once the reviewed materials are released.</p>
+    </section>
+  </div>;
  const accessible=new Set(lessons.map(l=>l.id));
  const done=(id:string)=>Boolean(state.lessons[id]);
  const allPages=modules.flatMap(m=>groupsInModule(m.id).flatMap(g=>g.pages));

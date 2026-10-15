@@ -17,6 +17,62 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
   const c = courseById((await params).courseId);
   if (!c) notFound();
   if (c.id === "advanced-pathophysiology") return <PathoPage />;
+  if (c.id === "advanced-pharmacology") {
+    const topics=[
+      "Pharmacology foundations, PK/PD and lifespan prescribing",
+      "Autonomic and peripheral nervous system",
+      "Central nervous system, pain and orthopedic therapy",
+      "Psychotherapeutics and substance-use pharmacology",
+      "Hypertension and heart-failure treatment",
+      "Atrial fibrillation, coronary disease and lipid management",
+      "Endocrine, diabetes and reproductive pharmacology",
+      "Immunology, disease-modifying drugs and vaccines"
+    ];
+    return <div className="alm-public min-h-screen">
+      <SiteHeader/>
+      <main className="mx-auto max-w-[1200px] px-4 pb-20 pt-8 sm:px-6">
+        <Link href="/courses" className="text-sm font-semibold text-violet-700">← All courses</Link>
+        <section className="alm-gradient-lilac mt-5 overflow-hidden rounded-[20px] border border-hairline">
+          <div className="grid gap-6 p-6 sm:p-9 lg:grid-cols-[minmax(0,1fr)_minmax(290px,.9fr)] lg:items-center">
+            <div>
+              <span className="alm-pill">Now accepting enrollments</span>
+              <p className="alm-eyebrow mt-5">Nursing · Graduate</p>
+              <h1 className="mt-2 font-display text-[36px] font-bold leading-[1.05] sm:text-[48px]">Advanced Pharmacology</h1>
+              <p className="mt-4 max-w-[570px] text-[15px] leading-7 text-ink-body">Learn how medicines work, why patients respond differently and how to reason through prescribing and monitoring decisions.</p>
+              <p className="mt-4 max-w-[540px] text-sm leading-6 text-ink-body">Our first prepared learning sequence focuses on <strong>NUR-635 midterm Topics 1–8</strong>. Structured lessons and practice are in final review; narrated videos and remaining supporting resources are still being prepared.</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link href="/request?course=advanced-pharmacology" className="alm-action">Choose a learning package →</Link>
+                <a href="#midterm-outline" className="alm-action alm-action-secondary">See midterm topics ↓</a>
+              </div>
+              <p className="mt-4 text-xs text-ink-muted">Packages and delivery times are quoted before payment. Learning access begins after payment verification; materials are released as they are completed and approved.</p>
+            </div>
+            <img src="/almanac-art/cover-pharmacology.png" alt="Advanced Pharmacology course artwork" className="aspect-[16/10] h-full w-full rounded-[16px] object-cover" />
+          </div>
+        </section>
+        <section id="midterm-outline" className="mt-9 rounded-[20px] border border-hairline bg-white p-6 sm:p-8">
+          <p className="alm-eyebrow">First learning sequence</p>
+          <h2 className="mt-2 font-display text-[27px] font-bold">The eight topics covered in the midterm</h2>
+          <p className="mt-3 max-w-[750px] text-sm leading-6 text-ink-body">A focused study route for understanding the mechanisms, clinical applications and safety concepts most relevant to your exam. Practice questions, revision cards and a timed rehearsal support the written lessons.</p>
+          <ol className="mt-6 grid gap-3 sm:grid-cols-2">
+            {topics.map((topic,i)=><li key={topic} className="flex gap-3 rounded-[14px] bg-[#F7F6FB] p-4">
+              <span className="grid h-8 w-8 flex-none place-items-center rounded-lg bg-[#2A1B78] text-sm font-bold text-white">{i+1}</span>
+              <span className="text-[14px] font-semibold leading-6">{topic}</span>
+            </li>)}
+          </ol>
+        </section>
+        <section className="mt-7 grid gap-5 rounded-[20px] bg-[#2A1B78] p-6 text-white md:grid-cols-[1fr_auto] md:items-center sm:p-8">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/70">Prepared around your assessment</p>
+            <h2 className="mt-2 font-display text-[27px] font-bold">Choose the support you need.</h2>
+            <p className="mt-3 max-w-[650px] text-sm leading-6 text-white/80">Request a focused module, exam-preparation package or an eight-module learning package. For the full 16-topic semester, describe your additional coverage needs in your request.</p>
+          </div>
+          <Link href="/request?course=advanced-pharmacology" className="alm-action border-white bg-white text-[#2A1B78] hover:bg-[#F6F4FB]">View packages & prices →</Link>
+        </section>
+        <p className="mt-6 text-xs text-ink-muted">Almanac provides independent study support. It is not affiliated with or endorsed by Grand Canyon University.</p>
+      </main>
+      <SiteFooter/>
+    </div>;
+  }
   const cover = c.id.includes("pharm") ? "cover-pharmacology.png" : c.id.includes("editing") ? "cover-editing-proofreading.png" : c.id.includes("ai") ? "cover-practical-ai-skills.png" : "cover-on-request.png";
 
   return (
