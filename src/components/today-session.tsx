@@ -72,28 +72,28 @@ export function TodaySession({ course }: { course: Course }) {
   const minutes = left.reduce((n, r) => n + r.minutes, 0);
 
   return (
-    <section aria-labelledby={`session-${course.id}`} className="mb-5 rounded-tile bg-lilac p-6">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+    <section aria-labelledby={`session-${course.id}`} className="alm-desk-card alm-desk-panel p-5 sm:p-6">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-bold text-violet-700">
+          <p className="alm-desk-eyebrow">
             Today&apos;s session{plan && week ? ` · week ${week} of ${plan.courseWeeks}` : ""}
           </p>
-          <h2 id={`session-${course.id}`} className="font-display text-[24px] leading-tight font-semibold">
+          <h2 id={`session-${course.id}`} className="mt-1 font-display text-[25px] leading-tight font-bold">
             {left.length ? `About ${minutes} min` : "Done for today"}
           </h2>
         </div>
-        <span className="rounded-full bg-white px-3 py-1 text-[13px] font-bold text-violet-700">
+        <span className="alm-desk-chip">
           {rows.length - left.length} of {rows.length} done
         </span>
       </div>
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-0">
         {rows.map((r) => {
           const inner = (
             <>
-              <span aria-hidden="true" className={`grid h-7 w-7 flex-none place-items-center rounded-full ${r.done ? "bg-correct text-white" : "bg-mist"}`}>
+              <span aria-hidden="true" className={`grid h-7 w-7 flex-none place-items-center rounded-full ${r.done ? "bg-correct text-white" : "bg-lilac text-violet-700"}`}>
                 {r.done && <CheckIcon size={13} />}
               </span>
-              <span className="min-w-0 flex-1 text-[15px]">
+              <span className="min-w-0 flex-1 text-[13.5px]">
                 <strong className="font-bold">{r.verb}:</strong> {r.text}
                 {r.done && <span className="sr-only"> (done)</span>}
               </span>
@@ -101,10 +101,16 @@ export function TodaySession({ course }: { course: Course }) {
               {!r.done && r.href && <ArrowRightIcon size={16} className="flex-none text-violet-700" />}
             </>
           );
-          const cls = `flex min-h-14 items-center gap-3 rounded-2xl px-4 py-2.5 ${r.done ? "bg-mint text-mint-ink" : "bg-white text-ink"}`;
-          return <li key={r.key}>{r.href && !r.done ? <Link href={r.href} className={`${cls} hover:bg-mist`}>{inner}</Link> : <div className={cls}>{inner}</div>}</li>;
+          const cls = `flex min-h-[61px] items-center gap-3 border-b border-[#EEEBF7] px-1 py-2.5 ${r.done ? "text-mint-ink" : "text-ink"}`;
+          return <li key={r.key}>{r.href && !r.done ? <Link href={r.href} className={`${cls} hover:bg-[#F8F7FD]`}>{inner}</Link> : <div className={cls}>{inner}</div>}</li>;
         })}
       </ul>
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        {left.find(r=>r.href) ? <Link href={left.find(r=>r.href)!.href!} className="alm-desk-btn">
+          {left.find(r=>r.href)!.key==="review"?"Review cards":left.find(r=>r.href)!.key==="answer"?"Start practice":"Start learning"} <ArrowRightIcon size={15}/>
+         </Link>:<span className="alm-desk-chip alm-chip-ready">✓ Today's plan complete</span>}
+        <span className="text-[12px] text-ink-muted">{left.length? `${left.length} step${left.length===1?"":"s"} remaining · ${minutes} min estimated` : "Your next session will appear here."}</span>
+      </div>
     </section>
   );
 }
