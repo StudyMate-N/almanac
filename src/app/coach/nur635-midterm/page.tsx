@@ -86,6 +86,11 @@ export default function MidtermRelease(){
   {loading?<p className="mt-6 text-sm">Checking Owner access…</p>:null}
   {error&&<p role="alert" className="mt-5 rounded-xl bg-rose p-4 text-sm">{error}</p>}
   {allowed&&<section className="alm-desk-card mt-5 p-5 sm:p-7">
+    <div className="mb-5 rounded-xl border border-hairline bg-[#F7F6FB] p-4">
+      <p className="text-sm font-bold">Preview the imported learning experience</p>
+      <p className="mt-2 text-xs text-ink-muted">Review the eight topic lessons, practice rationales, flashcards, exam rehearsal and outstanding video integration before releasing student access.</p>
+      <Link href="/coach/nur635-midterm/preview" className="mt-3 inline-flex min-h-11 items-center rounded-full bg-[#2A1B78] px-5 text-sm font-bold text-white">Open private course preview →</Link>
+    </div>
     <div className="flex flex-wrap justify-between gap-3">
       <div><h2 className="text-xl font-bold">Course release</h2><p className="mt-1 text-sm text-ink-body">Private pack · Clinical review signoff required to publish</p></div>
       <span className={`rounded-full px-3 py-2 text-xs font-bold ${published?"bg-mint text-mint-ink":"bg-lilac text-violet-700"}`}>{published?"Published to entitled students":"Private draft"}</span>
