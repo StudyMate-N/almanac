@@ -109,17 +109,17 @@ export function Runner({ title, questions: initial, mode, kind, minutes, backHre
   };
 
   const header = (
-    <header className="sticky top-0 z-10 bg-ground/95 px-4 pt-3.5 pb-3 backdrop-blur sm:px-6">
+    <header className="sticky top-0 z-10 border-b border-hairline bg-white/95 px-4 pb-3 pt-3 backdrop-blur sm:px-6">
       <div className="mx-auto flex max-w-2xl items-center gap-3">
         <Link href={backHref} aria-label="Close" className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white text-ink hover:bg-mist">
           <XIcon size={18} />
         </Link>
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-semibold text-violet-600">{title}</p>
-          <p className="font-display text-[17px] font-semibold">{finished ? "Results" : `Question ${index + 1} of ${set.length}`}</p>
+          <p className="font-display text-[17px] font-bold">{finished ? "Results" : `Question ${index + 1} of ${set.length}`}</p>
         </div>
         {minutes && !finished ? (
-          <span className={`rounded-full px-3 py-1 text-sm font-bold ${timeLeft < 120 ? "bg-rose text-rose-ink" : "bg-white text-ink"}`} aria-label="Time left">
+          <span className={`rounded-full px-3 py-1 text-[13px] font-bold ${timeLeft < 120 ? "bg-rose text-rose-ink" : "bg-[#FFF4EC] text-[#9D3E0E]"}`} aria-label="Time left">
             {fmtClock(timeLeft)}
           </span>
         ) : (
@@ -201,7 +201,7 @@ export function Runner({ title, questions: initial, mode, kind, minutes, backHre
           </ol>
           <div className="flex flex-wrap gap-2.5">
             {missed.length > 0 && (
-              <button type="button" onClick={() => restart(missed)} className="inline-flex min-h-[52px] items-center rounded-full bg-tangerine px-6 font-bold text-ink hover:bg-[#ff8c4a]">
+              <button type="button" onClick={() => restart(missed)} className="alm-desk-btn">
                 Redo the {missed.length} missed
               </button>
             )}
@@ -224,7 +224,7 @@ export function Runner({ title, questions: initial, mode, kind, minutes, backHre
   return (
     <>
       {header}
-      <main className="mx-auto flex max-w-2xl flex-col gap-3.5 px-4 pt-1 pb-40 sm:px-6">
+      <main className="alm-focus mx-auto flex max-w-2xl flex-col gap-3.5 px-4 pb-40 pt-5 sm:px-6">
         {mode === "exam" && (
           <nav aria-label="Questions" className="flex flex-wrap gap-1.5">
             {set.map((x, i) => (
@@ -232,14 +232,14 @@ export function Runner({ title, questions: initial, mode, kind, minutes, backHre
                 key={x.id}
                 onClick={() => go(i)}
                 aria-current={i === index ? "true" : undefined}
-                className={`h-8 min-w-8 rounded-lg px-1.5 text-xs font-bold ${i === index ? "bg-violet text-white" : picks[x.id]?.length ? "bg-lilac text-violet-700" : "bg-white text-ink-muted"} ${state.flags[x.id] ? "ring-2 ring-tangerine" : ""}`}
+                className={`h-9 min-w-9 rounded-lg border px-1.5 text-xs font-bold ${i === index ? "border-violet bg-white text-violet-700" : picks[x.id]?.length ? "border-hairline bg-lilac text-violet-700" : "border-hairline bg-white text-ink-muted"} ${state.flags[x.id] ? "ring-2 ring-[#F2711C]" : ""}`}
               >
                 {i + 1}
               </button>
             ))}
           </nav>
         )}
-        <div className="flex flex-col gap-3 rounded-3xl bg-white p-5">
+        <div className="rounded-[18px] border border-hairline bg-white p-5">
           <div className="flex flex-wrap gap-2">
             <span className="rounded-full bg-mist px-2.5 py-0.5 text-[11px] font-bold text-ink-muted capitalize">{q.level}</span>
             <span className="rounded-full bg-mist px-2.5 py-0.5 text-[11px] font-bold text-ink-muted">{q.topic}</span>
@@ -257,7 +257,7 @@ export function Runner({ title, questions: initial, mode, kind, minutes, backHre
             let tone = chosen ? "border-violet bg-white" : "border-transparent bg-white hover:border-violet-200";
             if (isChecked) tone = right ? "border-correct bg-mint" : chosen ? "border-incorrect bg-rose" : "border-transparent bg-white";
             return (
-              <label key={o.id} className={`flex cursor-pointer flex-col gap-2 rounded-card border-2 p-3.5 ${tone}`}>
+              <label key={o.id} className={`flex cursor-pointer flex-col gap-2 rounded-[14px] border-2 p-3.5 ${tone}`}>
                 <span className="flex items-center gap-3">
                   <input type={q.type === "single" ? "radio" : "checkbox"} name={q.id} checked={chosen} onChange={() => toggle(o.id)} disabled={isChecked} className="sr-only" />
                   <span className={`grid h-8 w-8 flex-none place-items-center text-[13px] font-bold ${q.type === "single" ? "rounded-[10px]" : "rounded-md"} ${chosen ? "bg-violet text-white" : "bg-ground text-ink-muted"}`} aria-hidden="true">
@@ -284,7 +284,7 @@ export function Runner({ title, questions: initial, mode, kind, minutes, backHre
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" onClick={toggleFlag} aria-pressed={flagged} className={`min-h-10 rounded-full px-4 text-sm font-bold ${flagged ? "bg-tangerine text-ink" : "bg-white text-ink-muted"}`}>
+          <button type="button" onClick={toggleFlag} aria-pressed={flagged} className={`min-h-10 rounded-full px-4 text-sm font-bold ${flagged ? "bg-[#FFF4EC] text-[#9D3E0E]" : "bg-white text-ink-muted"}`}>
             {flagged ? "Flagged" : "Flag"}
           </button>
           <button type="button" onClick={() => setNoteOpen((v) => !v)} className="min-h-10 rounded-full bg-white px-4 text-sm font-bold text-ink-muted">
@@ -314,7 +314,7 @@ export function Runner({ title, questions: initial, mode, kind, minutes, backHre
         )}
       </main>
 
-      <footer className="fixed inset-x-0 bottom-0 bg-ground/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),18px)] backdrop-blur sm:px-6">
+      <footer className="fixed inset-x-0 bottom-0 border-t border-hairline bg-white/95 px-4 pb-[max(env(safe-area-inset-bottom),18px)] pt-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-2xl gap-2.5">
           {mode === "exam" ? (
             <>
