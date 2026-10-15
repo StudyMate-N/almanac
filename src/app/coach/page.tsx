@@ -302,6 +302,14 @@ export default function CoachConsole() {
       };
       setEmailTestResult(result.sent
         ?"Resend accepted the email from Almanac. Check the destination inbox and provider delivery status."
+        :response.status===403
+        ?result.reason==="session_expired"
+          ?"Your Owner session is invalid or expired. Sign out, then sign back in using your latest Owner code."
+          :result.reason==="origin_mismatch"
+          ?"Almanac detected an unexpected request origin. Refresh the current almanac-study.netlify.app page and try again."
+          :result.reason==="owner_required"
+          ?"This action needs an active Owner session. Sign in to the Owner account and try again."
+          :`Email check was blocked before sending (HTTP 403: ${result.reason||"authorization_error"}).`
         :result.configured===false
         ?`Almanac could not detect: ${result.missing?.join(", ")||"required mail settings"}. Check these settings in Netlify, then redeploy.`
         :result.providerStatus
