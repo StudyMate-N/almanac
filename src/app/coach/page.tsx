@@ -350,8 +350,8 @@ export default function CoachConsole() {
   const age = (d: string) => Math.round((Date.now() - new Date(d).getTime()) / 60000);
 
   return (
-    <div className="mx-auto max-w-5xl p-4 sm:p-8">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div className="alm-staff mx-auto max-w-5xl p-4 sm:p-8">
+      <header className="alm-staff-topbar mb-6 flex flex-wrap items-center justify-between gap-3">
         <Logo href="/coach" />
         <div className="flex items-center gap-3 text-sm">
           <span className="font-semibold">
