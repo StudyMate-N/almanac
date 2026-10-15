@@ -26,6 +26,12 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
  const [busy,setBusy]=useState(false);
  const [notice,setNotice]=useState("");
  const [copied,setCopied]=useState("");
+ useEffect(()=>{
+  if(!copied)return;
+  const timer=window.setTimeout(()=>setCopied(""),1600);
+  return()=>window.clearTimeout(timer);
+ },[copied]);
+
  const hasQuote=invoice.payableCadCents!==null&&invoice.payableCadCents>0;
  const expired=invoice.quoteValidUntil?Date.parse(invoice.quoteValidUntil)<Date.now():false;
  const canTransfer=Boolean(bank)&&hasQuote&&!expired&&invoice.paymentStatus!=="reported"&&invoice.paymentStatus!=="verified";
@@ -94,12 +100,14 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
   finally{setBusy(false);}
  }
 
- return <section className="rounded-tile border border-hairline bg-white p-5 sm:p-8 print:hidden" aria-label="Payment steps">
-  <p className="text-xs font-bold uppercase tracking-wide text-violet-700">MANUAL BANK TRANSFER</p>
-  <h2 className="mt-2 font-display text-2xl font-semibold">Pay your invoice, then send us the details.</h2>
+ return <section className="alm-card p-5 sm:p-6 print:hidden" aria-label="Payment steps">
+  <p className="alm-eyebrow">Manual bank transfer · Secure invoice</p>
+  <h2 className="mt-2 text-[26px] font-bold">Pay your invoice, then send us the details.</h2>
   <p className="mt-2 text-sm text-ink-body">Everything you need is here. Save your invoice, make a transfer, and report it below. We'll check the bank payment and issue your access code after verification.</p>
 
-  {!canTransfer?<div role="status" className="mt-5 rounded-2xl bg-mist p-5">
+  {!canTransfer?<div role="status" className={`mt-5 flex items-start gap-4 rounded-[14px] border p-5 ${completed?"alm-state-ready":reported?"alm-state-waiting":expired?"alm-state-expired":"border-hairline bg-mist"}`}>
+    <div className="hidden h-16 w-16 shrink-0 bg-contain bg-center bg-no-repeat sm:block" style={{backgroundImage:`url("/almanac-art/${completed?"state-payment-verified":reported?"state-payment-reported":expired?"state-quote-expired":"state-not-started"}.png")`}} aria-hidden="true"/>
+    <div className="min-w-0">
     <h3 className="font-semibold">{completed?"Bank payment verified":reported?"Payment report received":expired?"Your seven-day bank quote has expired":"Your CAD payment amount is not ready yet"}</h3>
     <p className="mt-2 text-sm text-ink-body">
      {completed?"Your payment has been confirmed. Do not send a second transfer. Sign in using the learning access code issued by staff.":
@@ -108,10 +116,16 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
       "This invoice doesn't yet have a fixed CAD payable amount. Please don't transfer the USD catalog price. Contact support with your invoice reference."}
     </p>
     {hasQuote&&<p className="mt-3 text-sm text-ink-muted">Recorded invoice total: {cad(invoice.payableCadCents!)} · {invoice.invoiceRef}</p>}
+    {expired&&<div className="mt-4 flex flex-wrap gap-2">
+      <a href={`mailto:support@unemployedproff.com?subject=${encodeURIComponent("Updated Almanac invoice "+invoice.invoiceRef)}`}
+       className="alm-action">Request updated invoice →</a>
+      <a href="#payment-report" className="alm-action alm-action-secondary">I sent a transfer before expiry</a>
+    </div>}
+    </div>
   </div>:<>
-   <div className="mt-6 rounded-2xl bg-lilac p-5">
-    <p className="text-sm font-semibold">1 · Transfer this amount in CAD</p>
-    <p className="mt-2 font-display text-[34px] font-semibold">{cad(invoice.payableCadCents!)}</p>
+   <div className="mt-5 rounded-[14px] border border-[#FFCCB0] bg-[#FFF6F0] p-5">
+    <p className="text-[12px] font-bold text-[#A8430A]">1 · Transfer this amount in CAD</p>
+    <p className="mt-2 font-display text-[34px] font-extrabold">{cad(invoice.payableCadCents!)}</p>
     <p className="mt-1 text-xs text-ink-body">Fixed for invoice {invoice.invoiceRef} · USD list price: ${invoice.quoteUsd.toFixed(2)} · Pay by {invoice.quoteValidUntil?new Date(invoice.quoteValidUntil).toLocaleDateString("en-US"):"the deadline on your invoice"}</p>
     <div className="mt-3 flex flex-wrap gap-2">
      <button type="button" onClick={()=>void copy((invoice.payableCadCents!/100).toFixed(2),"amount")} className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-violet-700">
@@ -123,7 +137,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
     </div>
     <p className="mt-3 text-xs text-ink-muted">The invoice uses the Bank of Canada reference rate published on {invoice.rateDate||"the rate date shown"}, locked when the invoice was created. Your bank may charge transfer fees; request that the full invoiced CAD amount reaches the beneficiary.</p>
    </div>
-   <div className="mt-4 rounded-2xl border border-hairline p-5">
+   <div className="mt-4 rounded-[14px] border border-hairline bg-white p-5">
     <div className="flex flex-wrap items-center justify-between gap-2">
      <h3 className="font-semibold">2 · Bank details</h3>
      <button type="button" onClick={()=>void copy(instructions,"all")} className="rounded-full bg-lilac px-4 py-2 text-xs font-semibold text-violet-700">
@@ -147,7 +161,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
     <p className="mt-4 text-xs text-ink-muted">The account beneficiary is {bank!.beneficiary}, receiving payments for Almanac services. If your bank requests information not shown here (such as international routing details), contact us before sending money.</p>
    </div>
   </>}
-  <div className="mt-5 rounded-2xl border border-hairline p-5">
+  <div id="payment-report" className="mt-5 rounded-[14px] border border-hairline bg-white p-5">
    <h3 className="font-semibold">3 · Tell us you've paid</h3>
    {completed?<p className="mt-2 text-sm text-ink-body">Your payment has been verified. Access is issued by Almanac staff using the email associated with your invoice.</p>:
     reported?<p className="mt-2 text-sm text-ink-body">Your transfer report is recorded. Staff will independently verify the bank receipt and issue access when it matches. Contact support if you need to correct a reference.</p>:
@@ -175,7 +189,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
    {notice&&<p role="status" className="mt-3 rounded-xl bg-mist p-3 text-sm text-ink-body">{notice}</p>}
    {invoice.paymentStatus==="reported"&&<p className="mt-3 rounded-xl bg-mist p-3 text-sm text-ink-body">Payment reported. We are waiting for confirmation in the receiving account. Reporting a transfer does not itself verify payment.</p>}
   </div>
-  <div className="mt-5 rounded-2xl bg-mist p-5">
+  <div className="mt-5 rounded-[14px] bg-[#F6F4FB] p-5">
    <h3 className="font-semibold">Need help? Choose a contact method.</h3>
    <p className="mt-2 text-sm text-ink-body">Mention invoice {invoice.invoiceRef} when contacting support. You don't need to share your private invoice link or banking credentials.</p>
    <div className="mt-4 flex flex-wrap gap-3">
