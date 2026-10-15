@@ -61,15 +61,16 @@ function TodayRail({course}:{course:Course}) {
  </div>;
 }
 export default function Today() {
- const {profile}=useStudent();
+ const {profile,authorizedCourses}=useStudent();
  const name=firstName(profile);
+ const availableCourses=openCourses.filter(course=>authorizedCourses.includes(course.id));
  return <div className="mx-auto max-w-[1110px]">
   <PageHeader eyebrow={new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})} title={name?`Hi, ${name}`:"Today"}/>
   <p className="-mt-2 mb-6 text-[13px] text-ink-muted">A clearer view of what to learn and what comes next.</p>
   <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_294px]">
     <div className="space-y-5">
-      {openCourses.map(course=><section key={course.id}>
-       {openCourses.length>1&&<h2 className="mb-3 text-[19px] font-bold">{course.title}</h2>}
+      {availableCourses.map(course=><section key={course.id}>
+       {availableCourses.length>1&&<h2 className="mb-3 text-[19px] font-bold">{course.title}</h2>}
        <TodaySession course={course}/>
       </section>)}
       <section className="alm-desk-card p-5">
@@ -82,7 +83,7 @@ export default function Today() {
         </div>
       </section>
     </div>
-    <aside className="space-y-4">{openCourses.map(course=><TodayRail key={course.id} course={course}/>)}</aside>
+    <aside className="space-y-4">{availableCourses.map(course=><TodayRail key={course.id} course={course}/>)}</aside>
   </div>
  </div>;
 }
