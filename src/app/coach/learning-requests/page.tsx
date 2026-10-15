@@ -174,7 +174,7 @@ export default function LearningRequestsPage() {
     {key:"reports",label:"Reports",href:"/coach?tab=reports"},
     {key:"students",label:"Learners",href:"/coach?tab=students"},
     {key:"signups",label:"Sign-ups",href:"/coach?tab=signups"},
-    ...(role==="owner"?[{key:"nur635",label:"NUR-635 midterm",href:"/coach/nur635-midterm"}]:[]),
+    ...(role==="owner"?[{key:"invite",label:"Invite a learner",href:"/coach/external-enrollment"},{key:"nur635",label:"NUR-635 midterm",href:"/coach/nur635-midterm"}]:[]),
   ];
   return (
     <StaffShell items={nav} user={label||"Staff"} role={role}>

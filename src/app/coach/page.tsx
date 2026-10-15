@@ -374,7 +374,7 @@ export default function CoachConsole() {
     { key: "reports", label: "Reports", badge: inbox?.reports.length ?? 0, onClick: () => go("reports"), active: tab === "reports" },
     { key: "students", label: "Learners", onClick: () => go("students"), active: tab === "students" },
     { key: "signups", label: "Sign-ups", onClick: () => go("signups"), active: tab === "signups" },
-    ...(admin.role === "owner" ? [{ key: "nur635", label: "NUR-635 midterm", href: "/coach/nur635-midterm" }] : []),
+    ...(admin.role === "owner" ? [{ key: "invite", label: "Invite a learner", href: "/coach/external-enrollment" }, { key: "nur635", label: "NUR-635 midterm", href: "/coach/nur635-midterm" }] : []),
   ];
   const now = new Date();
   const hello = now.getHours() < 12 ? "Good morning" : now.getHours() < 18 ? "Good afternoon" : "Good evening";

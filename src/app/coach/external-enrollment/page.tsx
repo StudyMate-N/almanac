@@ -2,6 +2,7 @@
 import Link from "next/link";
 import {useEffect,useState} from "react";
 import {COACH_KEY} from "@/lib/store";
+import {StaffShell} from "@/components/staff-shell";
 import {friendlyError,rpc} from "@/lib/api";
 
 type InvitationResult={
@@ -14,6 +15,7 @@ const externalNote="Owner-confirmed enrollment following payment outside Almanac
 
 export default function ExternalEnrollmentPage(){
  const [staff,setStaff]=useState<{token:string;role:string}|null>(null);
+ const [who,setWho]=useState<{label?:string;role?:string}>({});
  const [name,setName]=useState("");
  const [email,setEmail]=useState("");
  const [course,setCourse]=useState("advanced-pharmacology");
@@ -23,7 +25,8 @@ export default function ExternalEnrollmentPage(){
  const [result,setResult]=useState<InvitationResult|null>(null);
  useEffect(()=>{
   try{
-   const saved=JSON.parse(localStorage.getItem(COACH_KEY)||"null") as {token?:string;role?:string}|null;
+   const saved=JSON.parse(localStorage.getItem(COACH_KEY)||"null") as {token?:string;role?:string;label?:string}|null;
+   setWho({label:saved?.label,role:saved?.role});
    if(saved?.token&&saved.role==="owner")setStaff({token:saved.token,role:saved.role});
   }catch{/* Sign in to Coach first. */}
  },[]);
@@ -50,12 +53,22 @@ export default function ExternalEnrollmentPage(){
   "For assistance, reply to this message.",
   "Best,","Almanac Support","support@unemployedproff.com"].join("\n"):null;
  const mailto=result&&invitation?`mailto:${result.email}?subject=${encodeURIComponent(SUBJECT)}&body=${encodeURIComponent(invitation)}`:null;
- return <main className="alm-staff mx-auto max-w-[840px] px-4 pb-24 pt-8 sm:px-6">
-   <Link href="/coach/learning-requests" className="text-sm font-bold text-violet-700">← Learning orders &amp; payments</Link>
-   <header className="mt-5 rounded-[18px] bg-[#2A1B78] p-6 text-white sm:p-8">
-    <p className="text-xs font-bold uppercase tracking-wider text-white/70">Owner · Learner accounts</p>
-    <h1 className="mt-2 font-display text-3xl font-bold">Invite an approved learner</h1>
-    <p className="mt-3 text-sm leading-6 text-white/80">Create course access for a payment handled outside Almanac. This does not create or change an invoice, payment record or order.</p>
+ const nav=[
+  {key:"today",label:"Today",href:"/coach"},
+  {key:"requests",label:"Learning requests",href:"/coach/learning-requests"},
+  {key:"review",label:"Content review",href:"/coach?tab=review"},
+  {key:"inbox",label:"Learner questions",href:"/coach?tab=inbox"},
+  {key:"reports",label:"Reports",href:"/coach?tab=reports"},
+  {key:"students",label:"Learners",href:"/coach?tab=students"},
+  {key:"signups",label:"Sign-ups",href:"/coach?tab=signups"},
+  {key:"invite",label:"Invite a learner",href:"/coach/external-enrollment",active:true},
+  {key:"nur635",label:"NUR-635 midterm",href:"/coach/nur635-midterm"},
+ ];
+ return <StaffShell items={nav} user={who.label||"Staff"} role={who.role}><main className="alm-staff mx-auto max-w-[840px] px-4 pb-24 pt-6 sm:px-10 sm:pt-8">
+   <header className="flex flex-col gap-1">
+    <p className="text-[11px] font-extrabold tracking-[.12em] text-violet-700 uppercase">Owner · Learner accounts</p>
+    <h1 className="font-display text-[28px] leading-[1.05] font-bold tracking-[-.04em] sm:text-[36px]">Invite an approved learner</h1>
+    <p className="mt-1 text-[14px] leading-6 text-ink-body">Create course access for a payment handled outside Almanac. This does not create or change an invoice, payment record or order.</p>
    </header>
    {!staff?<section className="alm-desk-card mt-5 p-6">
     <p role="alert">An active Owner session is required for this operation.</p>
@@ -99,5 +112,5 @@ export default function ExternalEnrollmentPage(){
     {mailto&&<a href={mailto} className="alm-desk-btn mt-5">Prepare welcome email →</a>}
     <p className="mt-4 text-xs text-ink-muted">Confirm that the course pack is published and test learner sign-in before sending any invitation. This screen does not send email automatically.</p>
    </section>}
- </main>;
+ </main></StaffShell>;
 }

@@ -87,6 +87,7 @@ export default function MidtermRelease(){
   {key:"reports",label:"Reports",href:"/coach?tab=reports"},
   {key:"students",label:"Learners",href:"/coach?tab=students"},
   {key:"signups",label:"Sign-ups",href:"/coach?tab=signups"},
+  {key:"invite",label:"Invite a learner",href:"/coach/external-enrollment"},
   {key:"nur635",label:"NUR-635 midterm",href:"/coach/nur635-midterm",active:true},
  ];
  return <StaffShell items={nav} user={who.label||"Staff"} role={who.role}><main className="alm-staff mx-auto max-w-[960px] px-4 pb-24 pt-6 sm:px-10 sm:pt-8">
