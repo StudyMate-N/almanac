@@ -13,6 +13,7 @@ import { StaffCoursePack } from "@/components/site/staff-course-pack";
 import { ENHANCEMENTS, PREFERENCES, type Enhancement } from "@/lib/learning-offers";
 import { parseConfirmedCadCents } from "@/lib/payment-confirmation";
 
+type ExternalPaid = {name:string;email:string;courseId:string;verifiedExternallyAt:string;active:boolean;recordedBy:string};
 type RequestRow = {
   id: string; name: string; email: string; course_id: string | null;
   subject: string; goal: string; kind: string; delivery_method: string;
@@ -33,6 +34,7 @@ export default function LearningRequestsPage() {
   const [token, setToken] = useState("");
   const [role,setRole]=useState("");
   const [rows, setRows] = useState<RequestRow[]>([]);
+  const [externalPaid,setExternalPaid] = useState<ExternalPaid[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshBusy, setRefreshBusy] = useState(false);
@@ -64,6 +66,8 @@ export default function LearningRequestsPage() {
     }
     setToken(stored.token);
     setRole(stored.role||"");
+    void rpc<ExternalPaid[]>("learning_external_paid_list", { p_token: stored.token })
+      .then(setExternalPaid).catch(() => {});
     rpc<RequestRow[]>("learning_requests_list", { p_token: stored.token })
       .then(data => { setRows(data); setLastUpdated(new Date()); })
       .catch(e => setError(friendlyError(e)))
@@ -87,6 +91,8 @@ export default function LearningRequestsPage() {
     try {
       const updated = await rpc<RequestRow[]>("learning_requests_list", { p_token: token });
       setRows(updated);
+      const external = await rpc<ExternalPaid[]>("learning_external_paid_list", { p_token: token });
+      setExternalPaid(external);
       setLastUpdated(new Date());
       setError("");
     } catch (e) {
@@ -151,6 +157,15 @@ export default function LearningRequestsPage() {
           {refreshBusy ? "Refreshing…" : "Refresh payment reports"}
         </button>
       </div>
+      <section className="mt-5 rounded-2xl border border-hairline bg-white p-4 sm:p-5">
+        <h2 className="font-semibold">Paid outside Almanac · Enrolled learners ({externalPaid.filter(e=>e.active).length})</h2>
+        <p className="mt-1 text-xs text-ink-muted">These learners have approved course access without a fabricated invoice or bank-transfer record. The enrollment is recorded separately from online orders.</p>
+        {externalPaid.length===0?<p className="mt-3 text-sm text-ink-muted">No external paid enrollments recorded yet.</p>:
+          <div className="mt-3 space-y-2">{externalPaid.map(e=><div key={e.email+e.courseId} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-hairline px-4 py-3 text-sm">
+            <div><p className="font-semibold">{e.name}</p><p className="text-xs text-ink-muted">{e.email} · {e.courseId}</p></div>
+            <span className="text-xs font-bold text-violet-700">{e.active?"Approved · external paid":"Access revoked"}</span>
+          </div>)}</div>}
+      </section>
       {error && <p role="alert" className="mt-4 rounded-card bg-peach p-4 text-sm text-peach-ink">{error} <Link href="/coach" className="underline">Coach sign-in</Link></p>}
       {loading ? <p className="mt-8 text-ink-muted">Loading requests…</p> : rows.length === 0 ? <p className="mt-8 rounded-card bg-white p-5">No requests to display.</p> : (
         <div className="mt-6 space-y-4">
