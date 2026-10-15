@@ -30,7 +30,7 @@ export function Sidebar() {
         <Logo href="/app" />
       </div>
       <nav aria-label="Main" className="flex flex-col gap-0.5">
-        {items.filter(({label})=>label!=="Orders").map(({ href, label, Icon, match }) => {
+        {items.map(({ href, label, Icon, match }) => {
           const active = match(pathname);
           return (
             <Link
@@ -42,7 +42,7 @@ export function Sidebar() {
               <Icon />
               {label}
               {label === "Cards" && due > 0 && <span className="ml-auto rounded-full bg-[#FFF4EC] px-2.5 py-0.5 text-[11px] font-bold text-[#9D3E0E]">{due}</span>}
-              {label === "Orders" && <span className="ml-auto rounded-full bg-mint px-2 py-0.5 text-[10px] font-bold text-mint-ink">Open</span>}
+              
             </Link>
           );
         })}
