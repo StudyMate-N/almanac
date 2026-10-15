@@ -5,14 +5,16 @@ import { useParams } from "next/navigation";
 import { courseById, moduleById } from "@/content/course";
 import { REVIEWER } from "@/lib/config";
 import { useCourse } from "@/lib/use-course";
+import { useStudent } from "@/lib/store";
 
 export default function Guide() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const { lessons, cards } = useCourse();
+  const { authorizedCourses } = useStudent();
   const mod = moduleById(moduleId);
   const ls = lessons.filter((l) => l.moduleId === moduleId);
   const cs = cards.filter((c) => c.moduleId === moduleId);
-  if (!mod || ls.length === 0)
+  if (!mod || !authorizedCourses.includes(mod.courseId) || ls.length === 0)
     return (
       <p className="rounded-tile bg-white p-6">
         This study guide opens once its lessons are approved. <Link href={mod ? `/app/courses/${mod.courseId}` : "/app/courses"} className="font-bold text-violet-600">Back</Link>
