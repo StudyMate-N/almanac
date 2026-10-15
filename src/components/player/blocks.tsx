@@ -27,14 +27,14 @@ export const toSec = (t: string) => t.split(":").reduce((a, b) => a * 60 + Numbe
 export function Corrections({ clip, seek }: { clip: Clip; seek: (at: string) => void }) {
   if (!clip.corrections.length) return null;
   return (
-    <details className="rounded-card bg-peach px-4 py-3 text-[15px]">
-      <summary className="cursor-pointer font-bold text-peach-ink">
+    <details className="rounded-[14px] border border-hairline bg-white px-4 py-3 text-[14px]">
+      <summary className="cursor-pointer font-bold text-violet-700">
         {clip.corrections.length} correction{clip.corrections.length > 1 ? "s" : ""} to this clip
       </summary>
       <ul className="mt-3 flex flex-col gap-2.5">
         {clip.corrections.map((c) => (
           <li key={c.at} className="rounded-2xl bg-white p-3.5">
-            <button onClick={() => seek(c.at)} className="mb-1 rounded-full bg-peach px-2.5 py-0.5 text-xs font-bold text-peach-ink">
+            <button onClick={() => seek(c.at)} className="mb-1 rounded-full bg-mist px-2.5 py-0.5 text-xs font-bold text-violet-700">
               At {c.at}
             </button>
             <p className="text-ink-muted line-through decoration-1">{c.said}</p>
