@@ -5,7 +5,7 @@ The earlier Vercel project `almanac` defines `NEXT_PUBLIC_MEDIA_BASE` for all it
 
 `https://svanrxmo5kfcdkbq.public.blob.vercel-storage.com/media`
 
-The Netlify project's production build variable `NEXT_PUBLIC_MEDIA_BASE` has been restored to the **same** base URL. No video files were altered or transcoded.
+The Netlify site variable `NEXT_PUBLIC_MEDIA_BASE` has been restored in the **all** environment context and build scope, pointing to the **same** base URL. An additional build is required whenever this public Next.js variable is changed. No video files were altered or transcoded.
 
 ## Existing assets
 Eleven MP4s named `foundations-01.mp4` through `foundations-11.mp4`, with matching JPEG posters and VTT captions, were checked against the original Vercel Blob media store on October 15, 2026. All 33 objects returned HTTP 200.
