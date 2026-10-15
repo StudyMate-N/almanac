@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LogoMark } from "@/components/brand";
 import { ArrowRightIcon, XIcon } from "@/components/icons";
-import { BlockView } from "@/components/player/blocks";
+import { BlockView, VideoReviewNotes } from "@/components/player/blocks";
 import { CheckGroup } from "@/components/player/topic-check";
 import { FocusProgress } from "@/components/focus-bar";
 import { kindLabel, Outline } from "@/components/player/outline";
@@ -13,7 +13,6 @@ import { VideoLedTopic, videoLedBlocks } from "@/components/player/video-led";
 import { ReportButton, TutorButton } from "@/components/tutor";
 import { courseById, lessonById, lessons, modulesInCourse, moduleById, questionById } from "@/content/course";
 import type { Card, Lesson, Question } from "@/content/types";
-import { REVIEWER } from "@/lib/config";
 import { minutesFor } from "@/lib/minutes";
 import { useStudent } from "@/lib/store";
 
@@ -23,6 +22,13 @@ export default function Player() {
   const { lessonId } = useParams<{ lessonId: string }>();
   const { state, answers, update, isVisible, isApproved, preview, authorizedCourses } = useStudent();
   const [drawer, setDrawer] = useState(false);
+  const [videoFocus, setVideoFocus] = useState(false);
+  const scrollToVideo = () => {
+    const target = document.querySelector<HTMLElement>("[data-patho-video-anchor]");
+    if (!target) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: reduceMotion ? "instant" : "smooth", block: "start" });
+  };
   const page = lessonById(lessonId);
   const mod = page ? moduleById(page.moduleId) : undefined;
   const course = mod ? courseById(mod.courseId) : undefined;
@@ -57,7 +63,16 @@ export default function Player() {
   useEffect(() => {
     window.scrollTo({ top: 0 });
     setDrawer(false);
+    setVideoFocus(false);
   }, [page?.id]);
+
+  useEffect(() => {
+    if (!videoFocus || !open) return;
+    const frame = requestAnimationFrame(() => scrollToVideo());
+    return () => cancelAnimationFrame(frame);
+    // Scroll only when switching into focus, not on playback or progress changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoFocus, page?.id, open]);
 
   useEffect(() => {
     setReachedEnd(false);
@@ -98,6 +113,8 @@ export default function Player() {
   const approved = isApproved(page.id, page);
   // A topic page with a question-stop clip is video-led; without one (or without media) it reads.
   const videoClips = videoLedBlocks(page);
+  const clipIds = page.blocks.filter((b) => b.t === "video").map((b) => b.t === "video" ? b.clip : "");
+  const containsVideo = clipIds.length > 0;
   // Topic pages are titled "5.3 Obstructive disease": the number goes in the breadcrumb.
   const topicNum = page.kind === "topic" ? page.title.match(/^\d+\.\d+(?=\s)/)?.[0] : undefined;
   const sectionLabel = mod.kind === "section" ? `Section ${mod.number}` : mod.kind === "start" ? "Start here" : "Final review";
@@ -125,6 +142,12 @@ export default function Player() {
               {mod.kind === "section" ? `${sectionLabel}: ${mod.title}` : mod.title}
             </p>
           </div>
+          {containsVideo && open && (
+            <button type="button" onClick={() => setVideoFocus((v) => !v)} aria-pressed={videoFocus}
+              className="hidden min-h-10 items-center rounded-full border border-[#D9D2F3] bg-white px-4 text-[12px] font-bold text-violet-deep hover:bg-mist sm:inline-flex">
+              {videoFocus ? "Exit video focus" : "Focus video"}
+            </button>
+          )}
           <FocusProgress value={coursePages.length ? done / coursePages.length : 0} label={`${done} of ${coursePages.length} pages`} />
           <button onClick={() => setDrawer(true)} className="grid h-11 w-11 flex-none place-items-center rounded-full border border-hairline text-[18px] text-ink hover:bg-mist lg:hidden" aria-haspopup="dialog" aria-label="Course outline">
             ☰
@@ -147,20 +170,30 @@ export default function Player() {
                 <XIcon size={16} />
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-6">{outline}</div>
+            <div data-outline-scroll className="min-h-0 flex-1 overflow-y-auto px-3 pb-6">{outline}</div>
           </div>
         </div>
       )}
 
-      <div className="mx-auto grid max-w-[1440px] gap-5 px-4 pb-16 pt-5 sm:px-6 lg:grid-cols-[268px_minmax(0,1fr)] xl:grid-cols-[288px_minmax(0,1fr)_272px] xl:gap-7">
-        <aside className="sticky top-[80px] hidden h-[calc(100dvh-96px)] overflow-y-auto pr-1 lg:block">{outline}</aside>
+      {videoFocus && containsVideo && open && (
+        <button type="button" onClick={scrollToVideo} aria-label="Return to the current video"
+          className="fixed bottom-5 right-5 z-30 min-h-12 rounded-full border border-white/30 bg-violet-deep px-5 text-[13px] font-bold text-white shadow-lg hover:bg-violet focus-visible:outline-offset-4">
+          ↑ Return to video
+        </button>
+      )}
+      <div className={`mx-auto grid gap-5 px-4 pb-16 pt-5 sm:px-6 ${videoFocus ? "max-w-[1060px] grid-cols-1" : "max-w-[1440px] lg:grid-cols-[268px_minmax(0,1fr)] xl:grid-cols-[288px_minmax(0,1fr)_272px] xl:gap-7"}`}>
+        {!videoFocus && <aside data-outline-scroll className="sticky top-[80px] hidden h-[calc(100dvh-96px)] overflow-y-auto pr-1 lg:block">{outline}</aside>}
 
         <main className="min-w-0">
-          <article className="alm-lesson-content mx-auto max-w-[760px]">
+          <article className={`alm-lesson-content mx-auto w-full ${videoFocus ? "max-w-[900px]" : "max-w-[760px]"}`}>
             <nav aria-label="Breadcrumb" className="mb-1.5 text-[13px] font-medium text-ink-muted">
               {mod.kind !== "section" ? sectionLabel : topicNum ? `${sectionLabel} · Topic ${topicNum}` : page.groupTitle === page.title ? `${sectionLabel} · ${mod.title}` : `${sectionLabel} · ${page.groupTitle}`}
             </nav>
             <h1 className="font-display text-[26px] leading-[1.08] font-bold tracking-[-.035em] sm:text-[34px]">{topicNum ? page.title.slice(topicNum.length).trim() : page.title}</h1>
+            {containsVideo && open && <button type="button" onClick={() => setVideoFocus((v) => !v)} aria-pressed={videoFocus}
+              className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full border border-[#D9D2F3] bg-white px-4 text-[13px] font-bold text-violet-700 sm:hidden">
+              {videoFocus ? "← Return to lesson layout" : "Focus on video ↗"}
+            </button>}
             <div className="mt-2.5 mb-5 flex flex-wrap gap-2 text-[12.5px] font-bold">
               <span className={`rounded-full px-3 py-1 ${videoClips ? "bg-[#FFE9DC] text-[#A8430A]" : "border border-hairline bg-white text-violet-700"}`}>{videoClips ? "Video topic" : kindLabel[page.kind]}</span>
               <span className="rounded-full border border-hairline bg-white px-3 py-1 text-ink">About {minutesFor(page)} min</span>
@@ -174,19 +207,19 @@ export default function Player() {
                   </span>
                 )
               )}
-              {preview && <span className={`rounded-full px-3 py-1 ${approved ? "bg-mint text-correct" : "bg-[#FFE9DC] text-[#A8430A]"}`}>{approved ? `Approved by ${REVIEWER.name}` : "Awaiting nurse review (preview)"}</span>}
+              {preview && <span className={`rounded-full px-3 py-1 ${approved ? "bg-mint text-correct" : "bg-[#FFE9DC] text-[#A8430A]"}`}>{approved ? "Approved for release (preview)" : "Awaiting content review (preview)"}</span>}
             </div>
 
             {!open ? (
               <div className="rounded-[16px] border border-hairline bg-white p-6 text-ink-body">
                 <p className="font-display text-xl font-semibold text-ink">This page opens once it&apos;s approved</p>
                 <p className="mt-1">
-                  Every page is checked by {REVIEWER.name}, {REVIEWER.credentials}, before students see it.
+                  This lesson is awaiting its content approval before it can be released to learners.
                 </p>
               </div>
             ) : (
               videoClips ? (
-                <VideoLedTopic page={page} videos={videoClips} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} />
+                <VideoLedTopic page={page} videos={videoClips} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} focusMode={videoFocus} />
               ) : (
               <div className="flex flex-col gap-6">
                 {page.blocks.map((b, i) => {
@@ -203,8 +236,9 @@ export default function Player() {
                     return <CheckGroup key={i} qs={run} pageId={page.id} onDone={() => document.querySelector('[aria-label="Submit and compare"]')?.scrollIntoView({ behavior: "smooth", block: "start" })} />;
                   }
                   const eq = b.t === "keypoints" && prev?.t === "eq" ? prev.text : undefined;
-                  return <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} eq={eq} />;
+                  return <BlockView key={i} b={b} pageId={page.id} visibleQ={visibleQ} visibleCards={visibleCards} onComplete={markDone} eq={eq} groupVideoCorrections={clipIds.length > 1} />;
                 })}
+                {clipIds.length > 1 && <VideoReviewNotes clipIds={clipIds} />}
               </div>
               )
             )}
@@ -237,13 +271,13 @@ export default function Player() {
             </div>
           </article>
         </main>
-        <aside className="sticky top-[80px] hidden h-[calc(100dvh-100px)] flex-col gap-4 overflow-y-auto xl:flex">
+        {!videoFocus && <aside className="sticky top-[80px] hidden h-[calc(100dvh-100px)] flex-col gap-4 overflow-y-auto xl:flex">
           <div id="player-chapters" className="empty:hidden" />
           {page.source && (
-            <section className="rounded-[16px] border border-hairline bg-white p-4">
-              <p className="text-[11px] font-extrabold tracking-[.12em] text-ink-muted">SOURCE</p>
-              <p className="mt-1.5 text-[13px] leading-normal text-ink-body">{page.source}</p>
-            </section>
+            <details className="rounded-[16px] border border-hairline bg-white p-4">
+              <summary className="cursor-pointer text-[12px] font-extrabold text-violet-700">Source & reference</summary>
+              <p className="mt-3 text-[13px] leading-normal text-ink-body">{page.source}</p>
+            </details>
           )}
           <section className="flex flex-col gap-2 rounded-[16px] border border-hairline bg-white p-4 [&_button]:min-h-11 [&_button]:w-full [&_button]:justify-center [&_button]:rounded-[12px]">
             <p className="text-[11px] font-extrabold tracking-[.12em] text-ink-muted">STUCK?</p>
@@ -252,7 +286,7 @@ export default function Player() {
               <ReportButton itemId={page.id} itemType="page" />
             </div>
           </section>
-        </aside>
+        </aside>}
       </div>
     </div>
   );
