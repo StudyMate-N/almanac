@@ -1,19 +1,19 @@
 import Link from "next/link";
 
-/** Placeholder mark: violet rounded square, white ring, tangerine dot. */
+/** Almanac approved public mark: violet square, white ring and orange accent dot. */
 export function LogoMark({ size = 32 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="10" fill="var(--color-violet)" />
+      <rect width="32" height="32" rx="9" fill="#5B3DF5" />
       <circle cx="16" cy="16" r="8" fill="none" stroke="#fff" strokeWidth="2.2" />
-      <circle cx="18" cy="14" r="2.6" fill="var(--color-tangerine)" />
+      <circle cx="22" cy="10" r="3.25" fill="#F2711C" />
     </svg>
   );
 }
 
 export function Logo({ href = "/", size = 32, textClass = "text-xl" }: { href?: string; size?: number; textClass?: string }) {
   return (
-    <Link href={href} className={`flex items-center gap-2.5 font-display font-semibold text-ink ${textClass}`}>
+    <Link href={href} className={`flex items-center gap-2 font-display font-extrabold tracking-[-.045em] text-ink ${textClass}`}>
       <LogoMark size={size} />
       <span>Almanac</span>
     </Link>
