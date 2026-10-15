@@ -44,6 +44,7 @@ type Ctx = {
   answers: Answer[];
   approvals: Record<string, string>;
   approvalsLoaded: boolean;
+  authorizedCourses: string[];
   /** A coach or reviewer is signed in on this device: show items awaiting review. */
   preview: boolean;
   offline: boolean;
@@ -96,6 +97,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [approvals, setApprovals] = useState<Record<string, string>>({});
   const [approvalsLoaded, setApprovalsLoaded] = useState(false);
+  const [authorizedCourses, setAuthorizedCourses] = useState<string[]>([]);
   const [preview, setPreview] = useState(false);
   const [offline, setOffline] = useState(false);
   const cache = useRef<Cache | null>(null);
@@ -148,10 +150,11 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
 
   const load = useCallback(async (tok: string) => {
     try {
-      const [me, remote, list] = await Promise.all([
+      const [me, remote, list, entitlements] = await Promise.all([
         rpc<Profile>("pilot_me", { p_token: tok }),
         rpc<Record<string, { value: unknown }>>("state_get", { p_token: tok }),
         rpc<Answer[]>("answers_list", { p_token: tok }),
+        rpc<string[]>("learning_authorized_courses", { p_token: tok }),
       ]);
       const local = read<Cache>(CACHE_KEY);
       const sameStudent = local?.profileId === me.id;
@@ -165,6 +168,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       cache.current = { profileId: me.id, state: merged, dirty: sameStudent ? local!.dirty : [], pending, answers: list };
       persist();
       setProfile(me);
+      setAuthorizedCourses(Array.isArray(entitlements) ? entitlements : []);
       setState(merged);
       setAnswers([...list, ...pending]);
       setStatus("ready");
@@ -175,6 +179,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       if (e instanceof ApiError && e.unauthorized) {
         write(TOKEN_KEY, null);
         setToken(null);
+        setAuthorizedCourses([]);
         setStatus("signed-out");
         return;
       }
@@ -240,6 +245,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     cache.current = null;
     setToken(null);
     setProfile(null);
+    setAuthorizedCourses([]);
     setState(EMPTY);
     setAnswers([]);
     setStatus("signed-out");
@@ -277,8 +283,8 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const isVisible = useCallback((id: string, item: unknown) => preview || approvals[id] === hashOf(item), [approvals, preview]);
 
   const value = useMemo<Ctx>(
-    () => ({ status, token, profile, state, answers, approvals, approvalsLoaded, preview, offline, isVisible, isApproved, signIn, signOut, update, addAnswers, saveProfile }),
-    [status, token, profile, state, answers, approvals, approvalsLoaded, preview, offline, isVisible, isApproved, signIn, signOut, update, addAnswers, saveProfile],
+    () => ({ status, token, profile, state, answers, approvals, approvalsLoaded, authorizedCourses, preview, offline, isVisible, isApproved, signIn, signOut, update, addAnswers, saveProfile }),
+    [status, token, profile, state, answers, approvals, approvalsLoaded, authorizedCourses, preview, offline, isVisible, isApproved, signIn, signOut, update, addAnswers, saveProfile],
   );
 
   return <StudentContext.Provider value={value}>{children}</StudentContext.Provider>;
