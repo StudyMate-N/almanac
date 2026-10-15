@@ -41,7 +41,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
   const offer=OFFERS[kind];
   const quote=useMemo(()=>calculateQuote({kind,speed,enhancements}),[kind,speed,enhancements]);
   const speedAvailable=isSpeedAvailable(kind,speed,enhancements);
-  const visibleEnhancements=ENHANCEMENT_KEYS.filter(key=>ENHANCEMENTS[key].max[kind]>0);
+  const visibleEnhancements=ENHANCEMENT_KEYS;
 
   function switchPackage(next:OfferKind) {
     setKind(next);
@@ -93,11 +93,11 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
     finally {setBusy(false);}
   }
 
-  if(submitted)return <section className="mt-10 rounded-tile border border-hairline bg-white p-6 sm:p-10" role="status">
-    <p className="text-sm font-bold text-violet-700">REQUEST RECEIVED</p>
-    <h2 className="mt-2 font-display text-3xl font-semibold">Your invoice is ready.</h2>
+  if(submitted)return <section className="alm-card mx-auto mt-7 max-w-[750px] p-6 sm:p-8" role="status">
+    <p className="alm-eyebrow">Request received · Invoice created</p>
+    <h2 className="mt-2 text-[29px] font-bold">Your invoice is ready.</h2>
     <p className="mt-3 text-ink-body">Your package contents and selected extras have been saved with your price. Open your invoice to review the details and payment instructions when available.</p>
-    <dl className="mt-6 grid gap-3 rounded-card bg-mist p-5 text-sm">
+    <dl className="mt-5 grid gap-2 rounded-[14px] bg-mist p-4 text-[13px]">
       <div className="flex flex-wrap justify-between gap-2"><dt>Reference</dt><dd className="break-all font-semibold">{submitted.invoiceRef}</dd></div>
       <div className="flex justify-between"><dt>Catalog total (USD)</dt><dd className="font-semibold">{usd(submitted.quoteUsd)}</dd></div>
       <div className="flex justify-between"><dt>Payable amount (CAD)</dt><dd className="font-semibold">{new Intl.NumberFormat("en-CA",{style:"currency",currency:"CAD"}).format(submitted.payableCadCents/100)}</dd></div>
@@ -120,15 +120,15 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
     <p className="mt-4 text-sm text-ink-muted">No payment has been taken. Your CAD amount is fixed on your private invoice. After payment is verified, staff issue a learning access code. Your delivery period begins when payment and required materials have been received.</p>
   </section>;
 
-  return <form onSubmit={submit} className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_310px] lg:items-start">
-    <div className="space-y-6">
-      <section className="rounded-tile bg-white p-5 sm:p-7" aria-labelledby="request-scope">
-        <h2 id="request-scope" className="font-display text-2xl font-semibold">1. What should we prepare?</h2>
+  return <form onSubmit={submit} className="alm-request mt-6 grid gap-4 pb-[100px] lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:pb-0">
+    <div className="space-y-4">
+      <section className="alm-card p-5 sm:p-6" aria-labelledby="request-scope">
+        <div className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#2A1B78] font-display font-bold text-white">1</span><h2 id="request-scope" className="text-[22px] font-bold">What should we prepare?</h2></div>
         <p className="mt-2 text-sm text-ink-body">Choose a complete starting package. Each one already includes its essential learning materials.</p>
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           {PACKAGE_KEYS.map(key=><button key={key} type="button" aria-pressed={kind===key} onClick={()=>switchPackage(key)}
-            className={`min-h-24 rounded-2xl border-2 p-3 text-left transition-colors ${kind===key?"border-violet bg-lilac":"border-hairline bg-white hover:bg-mist"}`}>
-            <span className="block text-sm font-semibold">{OFFERS[key].title}</span>
+            className={`min-h-[105px] rounded-[13px] border p-3 text-left transition-colors ${kind===key?"border-[#5B3DF5] bg-[#ECE7FF] shadow-[inset_0_0_0_1px_#5B3DF5]":"border-hairline bg-white hover:bg-mist"}`}>
+            <span className="mb-2 block h-7 w-[58px] rounded-md bg-[#E6E0F8] bg-cover bg-center" style={{backgroundImage:`url("/almanac-art/package-${key==="resource"?"focused":key==="exam"?"exam":"complete"}.png")`}} aria-hidden="true"/><span className="block text-[13px] font-bold">{OFFERS[key].title}</span>
             <span className="mt-1 block text-sm text-ink-muted">From {usd(OFFERS[key].baseUsd)}</span>
           </button>)}
         </div>
@@ -173,8 +173,8 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
         </div>
       </section>
 
-      <section className="rounded-tile bg-white p-5 sm:p-7" aria-labelledby="request-materials">
-        <h2 id="request-materials" className="font-display text-2xl font-semibold">2. Your learning package.</h2>
+      <section className="alm-card p-5 sm:p-6" aria-labelledby="request-materials">
+        <div className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#2A1B78] font-display font-bold text-white">2</span><h2 id="request-materials" className="text-[22px] font-bold">Your learning package</h2></div>
         <p className="mt-2 text-sm text-ink-body">Everything listed here is included. Personalize your study experience without paying twice for the essentials.</p>
 
         <div className="mt-5 rounded-card bg-mist p-4 sm:p-5">
@@ -208,7 +208,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
           <div className="mt-4 space-y-3">
             {visibleEnhancements.map(key=>{
               const extra=ENHANCEMENTS[key],max=extra.max[kind],count=enhancements[key];
-              return <div key={key} className={`rounded-2xl border p-4 ${count>0?"border-violet bg-lilac":"border-hairline"}`}>
+              return <div key={key} className={`rounded-[13px] border p-4 ${max===0?"border-hairline bg-mist opacity-60":count>0?"border-violet bg-lilac":"border-hairline bg-white"}`}>
                 <div className="flex flex-wrap justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <h4 className="font-semibold">{extra.title}</h4>
@@ -216,26 +216,26 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
                   </div>
                   <div className="text-right">
                     <p className="whitespace-nowrap text-sm font-semibold text-violet-700">+{usd(extra.unitUsd)} each</p>
-                    <p className="text-xs text-ink-muted">Max {max}</p>
+                    <p className="text-xs text-ink-muted">{max===0?`Not available with ${offer.title}`:`Max ${max}`}</p>
                   </div>
                 </div>
                 <div className="mt-3 flex items-center justify-end gap-3">
-                  <button type="button" aria-label={`Remove one ${extra.title}`} disabled={count===0}
+                  <button type="button" aria-label={`Remove one ${extra.title}`} disabled={count===0||max===0}
                     onClick={()=>changeQuantity(key,-1)} className="h-10 w-10 rounded-full border border-hairline bg-white text-lg disabled:opacity-35">−</button>
                   <span className="w-5 text-center font-semibold" aria-live="polite">{count}</span>
-                  <button type="button" aria-label={`Add one ${extra.title}`} disabled={count>=max}
+                  <button type="button" aria-label={`Add one ${extra.title}`} disabled={count>=max||max===0}
                     onClick={()=>changeQuantity(key,1)} className="h-10 w-10 rounded-full border border-hairline bg-white text-lg disabled:opacity-35">+</button>
                 </div>
               </div>;
             })}
           </div>
-          {visibleEnhancements.length===1 && kind==="resource" && <p className="mt-3 text-sm text-ink-muted">Need more modules or exam simulations? Choose the Exam Preparation Pack or Complete Course above.</p>}
+          {kind==="resource" && <p className="mt-3 text-sm text-ink-muted">Need more modules or exam simulations? Choose the Exam Preparation Pack or Complete Course above.</p>}
         </div>
         {kind==="course" && <p className="mt-4 text-xs text-ink-muted">AI tutor access is being verified separately and is not yet a guaranteed inclusion.</p>}
       </section>
 
-      <section className="rounded-tile bg-white p-5 sm:p-7" aria-labelledby="request-delivery">
-        <h2 id="request-delivery" className="font-display text-2xl font-semibold">3. Choose your delivery.</h2>
+      <section className="alm-card p-5 sm:p-6" aria-labelledby="request-delivery">
+        <div className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#2A1B78] font-display font-bold text-white">3</span><h2 id="request-delivery" className="text-[22px] font-bold">Choose your delivery</h2></div>
         <fieldset className="mt-4 space-y-3">
           <legend className="sr-only">Delivery method</legend>
           {([
@@ -252,8 +252,8 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
         </p>}
       </section>
 
-      <section className="rounded-tile bg-white p-5 sm:p-7" aria-labelledby="request-urgency">
-        <h2 id="request-urgency" className="font-display text-2xl font-semibold">4. When do you need it?</h2>
+      <section className="alm-card p-5 sm:p-6" aria-labelledby="request-urgency">
+        <div className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#2A1B78] font-display font-bold text-white">4</span><h2 id="request-urgency" className="text-[22px] font-bold">When do you need it?</h2></div>
         <p className="mt-2 text-sm text-ink-body">Your full package stays included at every speed. Larger enhancements may require more time.</p>
         <div className="mt-4 grid grid-cols-3 gap-2">
           {SPEED_KEYS.map(key=>{
@@ -272,8 +272,8 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
         <p className="mt-3 text-sm text-ink-muted">Timelines are in calendar days, beginning after payment verification and receipt of all required materials. Express availability also depends on production capacity before payment activation.</p>
       </section>
 
-      <section className="rounded-tile bg-white p-5 sm:p-7" aria-labelledby="request-contact">
-        <h2 id="request-contact" className="font-display text-2xl font-semibold">5. Your details</h2>
+      <section className="alm-card p-5 sm:p-6" aria-labelledby="request-contact">
+        <div className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#2A1B78] font-display font-bold text-white">5</span><h2 id="request-contact" className="text-[22px] font-bold">Your details</h2></div>
         <p className="mt-2 text-sm text-ink-body">So we can identify your request and follow up on its preparation.</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-semibold">Name
@@ -296,9 +296,9 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
       </section>
     </div>
 
-    <aside className="rounded-tile border border-hairline bg-white p-5 lg:sticky lg:top-5" aria-label="Your request summary">
-      <p className="text-xs font-bold uppercase tracking-wide text-violet-700">YOUR PACKAGE</p>
-      <h2 className="mt-2 font-display text-2xl font-semibold">{offer.title}</h2>
+    <aside className="alm-card p-5 lg:sticky lg:top-5" aria-label="Your request summary">
+      <p className="alm-eyebrow">Your package</p>
+      <h2 className="mt-2 text-[23px] font-bold">{offer.title}</h2>
       <p className="mt-1 text-sm text-ink-muted">{quote.units} learning {quote.units===1?"module":"modules"} · Core materials included</p>
       <dl className="mt-5 space-y-3 text-sm">
         <div className="flex justify-between gap-2"><dt>Package</dt><dd>{usd(quote.baseUsd)}</dd></div>
@@ -309,17 +309,24 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
         <div className="flex justify-between gap-2"><dt>Delivery: {SPEEDS[speed].title}</dt><dd>+{usd(quote.urgencyUsd)}</dd></div>
         <div className="border-t border-hairline pt-3">
           <dt className="text-ink-muted">Total list price (USD)</dt>
-          <dd className="mt-1 font-display text-[38px] font-semibold leading-tight">{usd(quote.totalUsd)}</dd>
+          <dd className="mt-1 font-display text-[34px] font-extrabold leading-tight">{usd(quote.totalUsd)}</dd>
         </div>
         <div className="flex justify-between gap-2 rounded-2xl bg-mist p-3"><dt>Turnaround</dt><dd className="font-semibold">{quote.days} calendar days</dd></div>
       </dl>
-      <p className="mt-3 text-xs text-ink-muted">Preference: {PREFERENCES[learningPreference]}</p>
+      <p className="mt-3 text-[12px] text-ink-muted">Preference: {PREFERENCES[learningPreference]} · Complimentary</p>
       {error && <p role="alert" className="mt-4 rounded-xl bg-rose p-3 text-sm text-rose-ink">{error}</p>}
       <button type="submit" disabled={busy||!speedAvailable||!termsAccepted}
-        className="mt-5 min-h-14 w-full rounded-full bg-violet px-5 font-bold text-white hover:bg-violet-600 disabled:cursor-not-allowed disabled:opacity-50">
+        className="alm-action mt-5 w-full disabled:cursor-not-allowed disabled:opacity-50">
         {busy?"Saving your request…":"Review and create invoice →"}
       </button>
       <p className="mt-3 text-xs leading-relaxed text-ink-muted">Your itemized invoice will include your package, quantities, and delivery choice. The invoice will show the CAD amount payable, payment reference and bank instructions. No payment is taken when you submit this request.</p>
     </aside>
+    <div className="fixed inset-x-4 bottom-3 z-30 rounded-2xl border border-[#C9BEF7] bg-white p-3 shadow-[0_10px_36px_rgba(42,27,120,.18)] lg:hidden">
+     <div className="flex items-center justify-between gap-3">
+      <div><span className="block text-[11px] text-ink-muted">Package total · USD</span><strong className="font-display text-[25px]">{usd(quote.totalUsd)}</strong></div>
+      <button type="submit" disabled={busy||!speedAvailable||!termsAccepted}
+       className="alm-action min-w-[160px] disabled:opacity-50">{busy?"Saving…":"Create invoice →"}</button>
+     </div>
+    </div>
   </form>;
 }
