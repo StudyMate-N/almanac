@@ -138,15 +138,15 @@ export function Review() {
   const roundSize = session ? Math.min(ROUND, session.inRound + left) : ROUND;
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 sm:px-6">
-      <header className="flex flex-col gap-3 pt-3.5 pb-3">
+    <div className="alm-focus mx-auto flex min-h-dvh w-full max-w-[680px] flex-col px-4 sm:px-6">
+      <header className="flex flex-col gap-3 border-b border-hairline pb-4 pt-3.5">
         <div className="flex items-center gap-3">
           <Link href="/app" aria-label="End review" className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white text-ink hover:bg-mist">
             <XIcon size={18} />
           </Link>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-violet-600">{session && session.graded + left > ROUND ? `Cards · Round ${session.round}` : "Cards"}</p>
-            <p className="font-display text-[17px] font-semibold" aria-live="polite">
+            <p className="alm-desk-eyebrow">{session && session.graded + left > ROUND ? `Cards · Round ${session.round}` : "Cards"}</p>
+            <p className="font-display text-[18px] font-bold" aria-live="polite">
               {!session ? "Loading…" : left === 0 ? "Done for today" : `${left} left · about ${minutes(left)} min`}
             </p>
           </div>
@@ -161,6 +161,10 @@ export function Review() {
             <UndoIcon size={18} />
           </button>
         </div>
+        {session && <div className="flex flex-wrap items-center gap-2">
+          <span className="alm-desk-chip alm-chip-due">{left} due</span>
+          <span className="alm-desk-chip alm-chip-ready">{state.deck?.log?.[dayKey()] ?? 0} reviewed today</span>
+        </div>}
         {session && left > 0 && (
           <div aria-hidden="true" className="flex gap-1">
             {Array.from({ length: roundSize }, (_, i) => (
@@ -190,7 +194,7 @@ export function Review() {
             />
 
             {/* One action spot: the same place before and after the flip, so the hand never travels. */}
-            <div className="flex min-h-[92px] flex-col justify-end gap-2">
+            <div className="flex min-h-[90px] flex-col justify-end gap-2">
               {flipped && intervals ? (
                 <>
                   <div className="grid grid-cols-4 gap-2" role="group" aria-label="How well did you recall it?">
@@ -200,7 +204,7 @@ export function Review() {
                         type="button"
                         onClick={() => grade(g.grade)}
                         aria-keyshortcuts={String(g.grade)}
-                        className={`flex min-h-[64px] flex-col items-center justify-center gap-0.5 rounded-[18px] ${g.tone} hover:brightness-95 ${g.grade === Rating.Good ? "ring-2 ring-correct/40" : ""}`}
+                        className={`flex min-h-[62px] flex-col items-center justify-center gap-0.5 rounded-[14px] border border-hairline ${g.tone} hover:brightness-95 ${g.grade === Rating.Good ? "ring-2 ring-violet/30" : ""}`}
                       >
                         <span className="text-[15px] font-bold">{g.label}</span>
                         <span className="text-xs font-semibold opacity-80">{intervals[g.grade]}</span>
@@ -288,7 +292,7 @@ function FlashCard({
       onPointerUp={onUp}
       onPointerCancel={onUp}
       style={{ transform: dx ? `translateX(${dx}px) rotate(${dx / 30}deg)` : undefined, touchAction: flipped ? "pan-y" : undefined }}
-      className={`relative flex max-h-[560px] min-h-[300px] flex-1 flex-col overflow-hidden rounded-tile bg-white motion-safe:animate-card-in ${dx ? "" : "transition-transform duration-200"} ${flipped ? "" : "cursor-pointer"}`}
+      className={`relative flex max-h-[580px] min-h-[310px] flex-1 flex-col overflow-hidden rounded-[20px] border border-hairline bg-white shadow-[0_8px_25px_rgba(42,27,120,.05)] motion-safe:animate-card-in ${dx ? "" : "transition-transform duration-200"} ${flipped ? "" : "cursor-pointer"}`}
     >
       {dx !== 0 && (
         <>
