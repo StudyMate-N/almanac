@@ -3,6 +3,7 @@ import Link from "next/link";
 import {useCallback,useEffect,useState} from "react";
 import {rpc} from "@/lib/api";
 import {useStudent} from "@/lib/store";
+import {nur635VideoUrl} from "@/lib/nur635-video";
 
 type Question={stem:string;options:string[];correctIndex:number;explanation:string};
 type Flashcard={front:string;back:string};
@@ -24,7 +25,10 @@ export default function Nur635Midterm(){
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState("");
  const [moduleIdx,setModuleIdx]=useState(0);
- const [mode,setMode]=useState<"lesson"|"practice"|"cards"|"exam">("lesson");
+ const [mode,setMode]=useState<"lesson"|"practice"|"cards"|"exam"|"video">("lesson");
+ const [videoUrl,setVideoUrl]=useState<string|null>(null);
+ const [videoBusy,setVideoBusy]=useState(false);
+ const [videoError,setVideoError]=useState("");
  const [practiceIdx,setPracticeIdx]=useState(0);
  const [cardIdx,setCardIdx]=useState(0);
  const [revealed,setRevealed]=useState(false);
@@ -60,6 +64,17 @@ export default function Nur635Midterm(){
   return()=>clearInterval(t);
  },[examStarted]);
 
+ useEffect(()=>{
+  if(mode!=="video"||!token||!entitled||!pack)return;
+  let active=true;setVideoUrl(null);setVideoError("");
+  if(moduleIdx===3){setVideoBusy(false);return;}
+  setVideoBusy(true);
+  void nur635VideoUrl(token,moduleIdx+1)
+   .then(url=>{if(active)setVideoUrl(url);})
+   .catch(e=>{if(active)setVideoError(e instanceof Error?e.message:"Video unavailable.");})
+   .finally(()=>{if(active)setVideoBusy(false);});
+  return()=>{active=false};
+ },[mode,token,entitled,pack,moduleIdx]);
  const current=pack?.modules[moduleIdx];
  const pract=current?.practice||[];
  const cards=current?.flashcards||[];
@@ -112,20 +127,31 @@ export default function Nur635Midterm(){
       className={`w-full rounded-xl px-3 py-3 text-left text-sm ${moduleIdx===i?"bg-lilac font-semibold text-violet-700":"bg-mist text-ink-body"}`}>
       <span className="block text-xs">Module {i+1}</span><span className="mt-1 block">{m.title}</span>
      </button>)}</div>
-     <Link href="/app/orders" className="mt-6 block text-sm font-semibold text-violet-700 underline">Videos, slides & downloads →</Link>
+     <Link href="/app/orders" className="mt-6 block text-sm font-semibold text-violet-700 underline">Your downloads & orders →</Link>
     </aside>
     <section className="min-w-0 rounded-tile bg-white p-5 sm:p-7">
      <p className="text-xs font-semibold uppercase text-violet-700">Module {moduleIdx+1}</p>
      <h2 className="mt-2 font-display text-2xl font-semibold">{current?.title}</h2>
      <nav aria-label="Learning activities" className="mt-6 flex flex-wrap gap-2">
       {([
-       ["lesson","Lesson"],["practice","Practice"],["cards","Flashcards"],
+       ["lesson","Lesson"],["video","Video"],["practice","Practice"],["cards","Flashcards"],
        ["exam","Exam simulations"]
       ] as const).map(([key,label])=><button key={key} type="button"
        disabled={key==="exam"&&!pack.simulations?.length}
        onClick={()=>{setMode(key);setError("");}}
        className={`rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-40 ${mode===key?"bg-violet text-white":"bg-mist text-ink-body"}`}>{label}</button>)}
      </nav>
+     {mode==="video"&&<div className="mt-6">
+       <h3 className="font-display text-xl font-semibold">Topic {moduleIdx+1} · Video overview</h3>
+       <p className="mt-2 text-sm text-ink-body">Watch the explanation, then return to your lesson and test your understanding.</p>
+       {moduleIdx===3?<div className="mt-5 rounded-xl bg-[#FFF3E8] p-5 text-sm text-[#8B491B]">A dedicated video for Topic 4 is not available yet. Continue with the lesson and interactive practice.</div>:
+        videoBusy?<p className="mt-5 rounded-xl bg-mist p-5 text-sm">Preparing video playback…</p>:
+        videoError?<p role="alert" className="mt-5 rounded-xl bg-rose p-5 text-sm">{videoError}</p>:
+        videoUrl?<video key={videoUrl} className="mt-5 aspect-video w-full rounded-xl bg-black" controls playsInline preload="metadata" controlsList="nodownload">
+          <source src={videoUrl} type="video/mp4"/>Your browser cannot play this video.
+        </video>:<p className="mt-5 rounded-xl bg-mist p-5 text-sm">The video for this topic is not available yet.</p>}
+       <button type="button" onClick={()=>setMode("lesson")} className="mt-6 rounded-full bg-violet px-5 py-3 text-sm font-bold text-white">Continue to the lesson →</button>
+      </div>}
      {mode==="lesson"&&<div className="mt-6">
       <h3 className="font-display text-xl font-semibold">Understand this module</h3>
       {(current?.objectives||[]).length>0&&<div className="mt-4 rounded-xl bg-mist p-4"><p className="font-semibold">Learning objectives</p>
