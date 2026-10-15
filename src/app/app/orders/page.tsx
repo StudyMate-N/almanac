@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {WorkspaceShell} from "@/components/workspace-shell";
 import { useCallback, useEffect, useState } from "react";
 import { rpc } from "@/lib/api";
 import { useStudent } from "@/lib/store";
@@ -14,6 +15,23 @@ type Order={
 type Resource={id:string;name:string;kind:string;moduleNumber:number|null;size:number;releasedAt:string};
 const endpoint=`${SUPABASE_URL}/functions/v1/learning-deliverables`;
 const date=(v:string)=>new Date(v).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"});
+const describeStatus=(r:Order)=>{
+ if(r.deliveredAt||r.status==="delivered")return "Delivered";
+ if(r.packPublished||r.releasedCount>0)return "Available in your workspace";
+ if(r.status==="review")return "Quality review";
+ if(r.productionStartedAt||r.status==="in_production")return "Being prepared";
+ if(r.planStatus==="shared")return "Learning plan shared";
+ if(r.paymentStatus==="reported")return "Bank transfer being verified";
+ if(r.paymentStatus==="verified")return "Awaiting preparation";
+ return "Awaiting payment";
+};
+const paymentLabel=(status:string)=>status==="verified"?"Verified":status==="reported"?"Transfer reported":"Awaiting verification";
+const chip=(r:Order)=>{
+ const s=describeStatus(r);
+ return r.deliveredAt||r.packPublished||r.releasedCount>0?"alm-chip-ready":
+  r.productionStartedAt||r.status==="in_production"||r.status==="review"?"alm-chip-building":"alm-chip-pending";
+};
+
 export default function LearningOrdersPage(){
  const {token,status}=useStudent();
  const [orders,setOrders]=useState<Order[]>([]);
@@ -93,13 +111,13 @@ export default function LearningOrdersPage(){
   finally{setDownloading(null);}
  }
  const current=orders.find(r=>r.id===selected);
- return <main className="mx-auto max-w-[1100px] px-4 pb-24 pt-8 sm:px-6">
+ return <WorkspaceShell><div className="mx-auto max-w-[1110px]">
   <div className="flex flex-wrap items-center justify-between gap-3">
-   <div><p className="text-xs font-bold uppercase tracking-widest text-violet-700">YOUR ALMANAC SPACE</p>
-    <h1 className="mt-2 font-display text-3xl font-semibold">Your learning orders</h1>
+   <div><p className="alm-desk-eyebrow">Learning workspace / Orders</p>
+    <h1 className="mt-2 text-[29px] font-bold">Your learning orders</h1>
     <p className="mt-2 text-sm text-ink-body">Track what we're preparing and open the materials released for you.</p></div>
-   <div className="flex gap-3"><Link className="rounded-full bg-white px-4 py-3 text-sm font-semibold" href="/app">Learning tools →</Link>
-    <button type="button" onClick={()=>void load()} disabled={busy} className="rounded-full bg-violet px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">Refresh status</button></div>
+   <div className="flex gap-3"><Link className="alm-desk-btn alm-desk-btn-secondary" href="/app">Learning tools →</Link>
+    <button type="button" onClick={()=>void load()} disabled={busy} className="alm-desk-btn disabled:opacity-50">Refresh status</button></div>
   </div>
   {claim&&<section className="mt-6 rounded-card border border-violet bg-lilac p-5">
     <h2 className="font-display text-xl font-semibold">Keep your learning in one workspace</h2>
@@ -116,30 +134,49 @@ export default function LearningOrdersPage(){
    <p className="mt-3 text-sm text-ink-body">If you're waiting on payment confirmation, check your private invoice. Your course order will appear here once staff verify your transfer.</p>
    <Link href="/courses" className="mt-4 inline-block font-semibold text-violet-700 underline">Browse courses →</Link>
   </section>:null}
-  {orders.length>0&&<div className="mt-6 grid gap-5 md:grid-cols-[270px_1fr]">
+  {orders.length>0&&<div className="mt-5 grid gap-4 md:grid-cols-[265px_1fr]">
    <aside className="space-y-2" aria-label="Your orders">
     {orders.map(r=><button type="button" key={r.id} onClick={()=>void choose(r.id)}
-     className={`w-full rounded-card border p-4 text-left ${selected===r.id?"border-violet bg-lilac":"border-hairline bg-white"}`}>
+     className={`w-full rounded-[15px] border p-4 text-left ${selected===r.id?"border-violet bg-lilac":"border-hairline bg-white hover:bg-mist"}`}>
      <span className="text-xs text-ink-muted">{r.invoiceRef}</span>
      <strong className="mt-1 block">{r.subject}</strong>
-     <span className="mt-2 block text-xs text-ink-body">{r.status.replaceAll("_"," ")} · {r.releasedCount} resources</span>
+     <span className={`alm-desk-chip mt-2 ${chip(r)}`}>{describeStatus(r)}</span><span className="ml-2 text-[11px] text-ink-muted">{r.releasedCount} resources</span>
     </button>)}
    </aside>
-   {current&&<section className="rounded-tile bg-white p-5 sm:p-7">
+   {current&&<section className="alm-desk-card p-5 sm:p-6">
     <p className="text-xs font-bold uppercase tracking-wide text-violet-700">{current.invoiceRef}</p>
-    <h2 className="mt-2 font-display text-2xl font-semibold">{current.subject}</h2>
+    <h2 className="mt-2 text-[24px] font-bold">{current.subject}</h2><span className={`alm-desk-chip mt-2 ${chip(current)}`}>{describeStatus(current)}</span>
     <p className="mt-2 text-sm text-ink-body">
      {current.moduleCount} learning {current.moduleCount===1?"module":"modules"} · {current.kind.replaceAll("_"," ")}
     </p>
-    <div className="mt-5 grid gap-3 sm:grid-cols-3">
-     <div className="rounded-xl bg-mist p-4"><p className="text-xs text-ink-muted">Payment</p><p className="mt-1 font-semibold">Verified</p></div>
+    <div className="mt-5 grid gap-2 sm:grid-cols-3">
+     <div className="rounded-xl bg-mist p-4"><p className="text-xs text-ink-muted">Payment</p><p className="mt-1 font-semibold">{paymentLabel(current.paymentStatus)}</p></div>
      <div className="rounded-xl bg-mist p-4"><p className="text-xs text-ink-muted">Preparation</p><p className="mt-1 font-semibold">{current.productionStartedAt?"Underway":"Awaiting start"}</p></div>
      <div className="rounded-xl bg-mist p-4"><p className="text-xs text-ink-muted">Target delivery</p>
       <p className="mt-1 font-semibold">{current.deliveryDueAt?date(current.deliveryDueAt):"To be confirmed"}</p></div>
     </div>
-    {current.planStatus==="shared"&&<p className="mt-4 rounded-xl bg-lilac p-4 text-sm">
-     Your learning plan is ready for approval. Contact support with your invoice reference for the private review link if you don't have it.
-    </p>}
+    {current.planStatus==="shared"&&<div role="status" className="mt-4 rounded-xl border border-[#DAD2F9] bg-lilac p-4 text-[13px]">
+     <strong className="text-violet-700">Your learning plan is ready for review.</strong>
+     <p className="mt-1 text-ink-body">Use your private invoice link to review the proposed plan and request corrections. If you need that link reissued, contact support with your invoice reference.</p>
+     <a href={`mailto:support@unemployedproff.com?subject=${encodeURIComponent("Learning plan link "+current.invoiceRef)}`}
+       className="mt-2 inline-block font-bold text-violet-700 underline">Get help opening your plan →</a>
+    </div>}
+    <div className="alm-desk-card mt-4 bg-[#FBFAFE] p-4">
+     <h3 className="text-[15px] font-bold">Your order timeline</h3>
+     <ol className="mt-3">
+      {[
+        ["Request received",true],
+        ["Payment verified",current.paymentStatus==="verified"],
+        ["Course preparation",Boolean(current.productionStartedAt)],
+        ["Quality review",current.status==="review"||current.status==="delivered"||Boolean(current.deliveredAt)],
+        ["Ready in your workspace",Boolean(current.packPublished||current.releasedCount>0||current.deliveredAt)]
+      ].map(([label,finished],i,all)=><li key={String(label)} className="alm-timeline-row">
+        <span className={`alm-timeline-dot ${finished?"done":all.slice(0,i).every(x=>x[1])?"current":""}`}>{finished?"✓":i+1}</span>
+        <span className={`flex-1 ${finished?"font-semibold text-ink":"text-ink-muted"}`}>{label}</span>
+        {finished&&<span className="text-[11px] font-semibold text-mint-ink">Complete</span>}
+      </li>)}
+     </ol>
+    </div>
     {current.deliveredAt&&<p className="mt-4 rounded-xl bg-mist p-4 text-sm font-semibold">
      Released on {date(current.deliveredAt)}. Your materials remain available below.
     </p>}
@@ -152,7 +189,7 @@ export default function LearningOrdersPage(){
         Start learning →</Link>
       </div>:
       <p className="mt-5 rounded-xl bg-mist p-4 text-sm text-ink-body">Interactive lessons and practice will appear here after staff quality review. Any completed downloadable files remain available below.</p>}
-    <h3 className="mt-7 font-display text-xl font-semibold">Your released materials</h3>
+    <h3 className="mt-7 text-[20px] font-bold">Your released materials</h3>
     {busy?<p className="mt-3 text-sm text-ink-muted">Loading…</p>:
      files.length===0?<div className="mt-3 rounded-xl border border-hairline p-5 text-sm text-ink-body">
       Nothing has been released yet. We'll make each approved resource available here. You do not need to submit another purchase.
@@ -167,5 +204,5 @@ export default function LearningOrdersPage(){
     <p className="mt-5 text-xs text-ink-muted">Need help? Email support@unemployedproff.com and include {current.invoiceRef}. Only files released to your order appear here.</p>
    </section>}
   </div>}
- </main>;
+ </div></WorkspaceShell>;
 }
