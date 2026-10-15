@@ -95,10 +95,10 @@ export default function Player() {
   const outline = <Outline modules={modules} currentId={page.id} isDone={isDone} isOpen={isOpen} onNavigate={() => setDrawer(false)} />;
 
   return (
-    <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-hairline/70 bg-ground/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-[1320px] items-center gap-3 px-4 sm:px-6">
-          <Link href={`/app/courses/${course.id}`} aria-label="Close the course player" className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white hover:bg-mist">
+    <div className="alm-focus min-h-dvh">
+      <header className="sticky top-0 z-30 border-b border-hairline bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-[60px] max-w-[1440px] items-center gap-3 px-4 sm:px-6">
+          <Link href={`/app/courses/${course.id}`} aria-label="Close the course player" className="grid h-10 w-10 flex-none place-items-center rounded-full border border-hairline bg-white hover:bg-mist">
             <XIcon size={18} />
           </Link>
           <span className="hidden sm:block">
@@ -110,7 +110,7 @@ export default function Player() {
               {mod.kind === "section" ? `${sectionLabel}: ${mod.title}` : mod.title}
             </p>
           </div>
-          <span className="hidden items-center gap-2 rounded-full bg-white py-1 pr-3.5 pl-1.5 text-[13px] font-bold text-ink-muted md:inline-flex">
+          <span className="hidden items-center gap-2 rounded-full border border-hairline bg-[#F7F6FB] py-1 pr-3.5 pl-1.5 text-[12px] font-bold text-ink-muted md:inline-flex">
             <Ring done={done} total={coursePages.length} size={26} />
             {done} of {coursePages.length} pages
           </span>
@@ -135,20 +135,22 @@ export default function Player() {
         </div>
       )}
 
-      <div className="mx-auto flex max-w-[1320px] gap-8 px-4 pt-6 pb-24 sm:px-6">
-        <aside className="sticky top-[88px] hidden h-[calc(100dvh-112px)] w-[320px] flex-none overflow-y-auto pr-1 lg:block">{outline}</aside>
+      <div className="mx-auto grid max-w-[1440px] gap-5 px-4 pb-16 pt-5 sm:px-6 lg:grid-cols-[268px_minmax(0,1fr)] xl:grid-cols-[288px_minmax(0,1fr)_252px] xl:gap-7">
+        <aside className="sticky top-[80px] hidden h-[calc(100dvh-96px)] overflow-y-auto pr-1 lg:block">
+         <p className="alm-desk-eyebrow mb-3">Course outline</p>{outline}
+       </aside>
 
-        <main className="min-w-0 flex-1">
-          <article className="mx-auto max-w-[720px]">
+        <main className="min-w-0">
+          <article className="alm-lesson-content mx-auto max-w-[760px]">
             <nav aria-label="Breadcrumb" className="mb-2 text-[13px] font-semibold text-ink-muted">
               {mod.kind !== "section" ? sectionLabel : topicNum ? `${sectionLabel} · Topic ${topicNum}` : page.groupTitle === page.title ? `${sectionLabel} · ${mod.title}` : `${sectionLabel} · ${page.groupTitle}`}
             </nav>
-            <h1 className="font-display text-[clamp(30px,4vw,38px)] leading-[1.12] font-semibold">{topicNum ? page.title.slice(topicNum.length).trim() : page.title}</h1>
-            <div className="mt-3 mb-7 flex flex-wrap gap-2 text-[13px] font-bold">
+            <h1 className="font-display text-[clamp(28px,3vw,34px)] leading-[1.12] font-bold">{topicNum ? page.title.slice(topicNum.length).trim() : page.title}</h1>
+            <div className="mb-6 mt-3 flex flex-wrap gap-2 text-[12px] font-bold">
               <span className="rounded-full bg-white px-3 py-1 text-violet-700">{videoClips ? "Video topic" : kindLabel[page.kind]}</span>
               <span className="rounded-full bg-white px-3 py-1 text-ink-muted">About {minutesFor(page)} min</span>
               {isDone(page.id) ? (
-                <span className="rounded-full bg-mint px-3 py-1 text-mint-ink">Done</span>
+                <span role="status" className="rounded-full bg-mint px-3 py-1 text-mint-ink">✓ Marked done</span>
               ) : (
                 open &&
                 checksLeft > 0 && (
@@ -193,16 +195,16 @@ export default function Player() {
             )}
 
             {open && (
-              <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-hairline pt-5 text-sm text-ink-muted">
+              <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-hairline pt-5 text-[13px] text-ink-muted xl:hidden">
                 <TutorButton lessonId={page.id} label="Ask the tutor about this page" />
                 <ReportButton itemId={page.id} itemType="page" />
                 {page.source && <span className="basis-full pt-1 text-[13px]">Source: {page.source}</span>}
               </div>
             )}
 
-            <div ref={endRef} className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div ref={endRef} className="mt-6 flex flex-wrap items-stretch justify-between gap-3 border-t border-hairline pt-5">
               {prev ? (
-                <Link href={`/app/learn/${prev.id}`} className="flex flex-col rounded-tile bg-white p-5 hover:bg-mist">
+                <Link href={`/app/learn/${prev.id}`} className="flex min-h-[51px] min-w-[175px] flex-col justify-center rounded-xl border border-hairline bg-white px-4 py-2 hover:bg-mist">
                   <span className="text-[12px] font-bold text-ink-muted">Previous</span>
                   <span className="font-display text-[17px] leading-snug font-semibold">{prev.shortTitle ?? prev.title}</span>
                 </Link>
@@ -210,7 +212,7 @@ export default function Player() {
                 <span />
               )}
               {next && (
-                <Link href={`/app/learn/${next.id}`} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} className="flex items-center gap-3 rounded-tile bg-tangerine p-5 text-ink hover:bg-tangerine-700">
+                <Link href={`/app/learn/${next.id}`} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} className="flex min-h-[51px] min-w-[175px] items-center gap-3 rounded-xl bg-violet px-4 py-2 text-white hover:bg-violet-600">
                   <span className="min-w-0 flex-1">
                     <span className="block text-[12px] font-extrabold">Next</span>
                     <span className="block font-display text-[17px] leading-snug font-semibold">{next.shortTitle ?? next.title}</span>
@@ -221,6 +223,20 @@ export default function Player() {
             </div>
           </article>
         </main>
+        <aside className="sticky top-[80px] hidden h-[calc(100dvh-100px)] space-y-4 overflow-y-auto xl:block">
+          <section className="alm-desk-card p-4">
+            <p className="alm-desk-eyebrow">Your page</p>
+            <h2 className="mt-2 text-[16px] font-bold">{videoClips?"Video lesson":"Lesson notes"}</h2>
+            <p className="mt-2 text-[12px] text-ink-body">About {minutesFor(page)} min · {sectionLabel}</p>
+            <p className="mt-3 text-[12px] text-ink-muted">{isDone(page.id)?"This page is marked complete.":"Continue reading and complete the available learning checks."}</p>
+          </section>
+          {page.source&&<section className="alm-desk-card p-4"><p className="alm-desk-eyebrow">Source</p><p className="mt-2 text-[12px] text-ink-body">{page.source}</p></section>}
+          <section className="alm-desk-card space-y-3 p-4">
+            <p className="alm-desk-eyebrow">Need a hand?</p>
+            <TutorButton lessonId={page.id} label="Ask the tutor about this page"/>
+            <ReportButton itemId={page.id} itemType="page"/>
+          </section>
+        </aside>
       </div>
     </div>
   );
