@@ -16,6 +16,14 @@ assert.equal(approvedRequestOrigin(request(internal,live+".evil.example")),false
 assert.equal(approvedRequestOrigin(request(live+"/api/learning-requests",live)),true,"Direct production URLs must work");
 assert.equal(approvedRequestOrigin(request("http://localhost:3000/api/learning-requests","http://localhost:3000")),true,"Local development must work");
 assert.equal(emailLoginBaseUrl(request(internal,null)),live,"Server requests must not embed internal proxy URLs in access emails");
+const originalNodeEnv=process.env.NODE_ENV;
+try{
+ process.env.NODE_ENV="production";
+ assert.equal(approvedRequestOrigin(request("http://localhost:3000/api/learning-requests","http://localhost:3000")),false,"Production must not trust localhost browser origins");
+}finally{
+ if(originalNodeEnv===undefined)delete process.env.NODE_ENV;
+ else process.env.NODE_ENV=originalNodeEnv;
+}
 assert.equal(approvedRequestOrigin(request(internal,null)),true,"Non-browser API clients remain allowed by the existing policy");
 const original=process.env.DEPLOY_URL;
 try{
