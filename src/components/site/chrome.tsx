@@ -37,7 +37,7 @@ export function SiteFooter() {
      </div>
      <nav aria-label="Explore" className="flex flex-col gap-2 text-[12px] text-white/80"><strong className="text-[13px] text-white">Explore</strong><Link href="/courses">Courses &amp; resources</Link><Link href="/request">Request a course</Link><Link href="/how-it-works">How it works</Link></nav>
      <nav aria-label="Account and help" className="flex flex-col gap-2 text-[12px] text-white/80"><strong className="text-[13px] text-white">Your account</strong><Link href="/app">Learning workspace</Link><Link href="/help">Help center</Link><Link href="/contact">Contact support</Link></nav>
-     <nav aria-label="Legal" className="flex flex-col gap-2 text-[12px] text-white/80"><strong className="text-[13px] text-white">Information</strong><Link href="/privacy">Privacy policy</Link><Link href="/terms">Terms of service</Link><a href="mailto:support@unemployedproff.com">Email support</a></nav>
+     <nav aria-label="Legal" className="flex flex-col gap-2 text-[12px] text-white/80"><strong className="text-[13px] text-white">Information</strong><Link href="/privacy">Privacy policy</Link><Link href="/terms">Terms of service</Link><a href="mailto:almanacstudy.support@gmail.com">Email support</a></nav>
     </div>
     <div className="flex flex-wrap justify-between gap-3 pt-5 text-[11px] text-white/60"><span>© 2026 Almanac. Learning, organized around you.</span><span>Independent learning support. Not affiliated with any school or publisher.</span></div>
   </div>
