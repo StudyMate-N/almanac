@@ -68,6 +68,7 @@ Follow `OPERATING_SYSTEM.md`, `media-manifest.schema.json`, and the reviewer gat
 - `ROLLOUT_6_WEEKS.md` — phased shipping, gates and acceptance criteria.
 - `PLATFORM_INTEGRATION_BACKLOG.md` — concrete repo-aligned engineering tasks.
 - `media-manifest.schema.json` — machine-readable learning object + media variant contract.
+- `PROTOTYPE_HANDOFF.md` — two actually produced lightweight prototype files (an interactive linked PowerPoint story and a standalone offline HTML game), packaged for download in the conversation; GitHub contains related source specifications.
 - `pilots/EXPLAIN_TEST_MULTIMODAL_PILOT.md` — public/internal multi-format worked example without borrowed NR 601 material.
 - `EVIDENCE_AND_RISKS.md` — relevant research and claims not justified by it.
 - `.agents/skills/almanac-responsive-media/SKILL.md` — agent/reviewer workflow; no direct public autonomy.
