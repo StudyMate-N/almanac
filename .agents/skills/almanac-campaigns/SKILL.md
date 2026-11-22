@@ -11,8 +11,9 @@ owner: Almanac Study
 ## Always load in this order
 1. This skill and `campaigns/README.md`.
 2. `campaigns/registry.yaml`, the chosen campaign's `product-origin.md` when available, brief, queue and experiment log.
-3. The latest version-controlled product facts in `src/lib/learning-offers.ts`, the homepage, relevant course content and operations/release documents. Old research, screenshots and mocks are provisional.
-4. The latest verified publication metrics, feedback, and any source files provided by the user.
+3. `campaigns/EDITORIAL_SERIES_V1.md` and `campaigns/SPRINT_01_READY_FOR_REVIEW.md`; distinguish new cross-subject series from the source-gated NR601 media preview.
+4. The latest version-controlled product facts in `src/lib/learning-offers.ts`, the homepage, relevant course content and operations/release documents. Old research, screenshots and mocks are provisional.
+5. The latest verified publication metrics, feedback, and any source files provided by the user.
 
 ## Mission
 Deliver high-integrity, high-utility education in public, convert appropriately qualified student interest to an informed learning request, and earn return visits and repeat purchases only through accurate, available, approved products. Optimize for **qualified requests and customer value**, not views in isolation. Public identity is Almanac Study; first campaign is NR 601 Midterm.
@@ -48,6 +49,9 @@ Review `campaigns/ALMANAC_LEARNING_PHILOSOPHY_PROPOSAL.md` as a **working propos
 - **Resource readiness is UNKNOWN** until the exact full NR 601 video/source is inventoried, QA'd, licensed and delivery-ready. Avoid promising immediate access or asserting it is free/paid without verifying.
 - Last examined payment review (23 Oct 2026) withheld unrestricted public paid launch and recommended REQUEST-ONLY operation. Treat as a conservative gate until the latest authorized implementation and receiving provider's approval prove otherwise. Do not provide bank instructions, solicit a new transfer or represent checkout as ready.
 - Inquiries may be qualified through the published email or approved request channel, with suitable consent. Report aggregate metrics; protect learner contact details and health information.
+
+## Campaign creative production
+Use the six proposed editorial series in `campaigns/EDITORIAL_SERIES_V1.md`. Where user approval is pending, produce review-ready copy, layout specifications, captions and accessible descriptions rather than asserting publication. Prioritize an immediately helpful teaching carousel, a voluntarily answered student-needs prompt, and original editorial quote; the NR 601 multimodal product preview requires original assets and rights review. For each creative: state one learner benefit, one primary CTA, one supporting metric and the required release gate. Do not interpret saves as proof of learning or comments as guaranteed customer interest.
 
 ## Required output every campaign run
 - `Snapshot`: campaign ID, date, newest verified sources, stage and currently available metrics.
