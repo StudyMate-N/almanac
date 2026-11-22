@@ -1,4 +1,4 @@
-# Almanac Study — Campaign Mode v1.0.0
+# Almanac Study — Campaign Mode v1.1.0
 
 **Status:** Created 22 November 2026. Operational planning activated; this document does **not** imply new posts, product delivery, a paid campaign, approved checkout, or an always-running agent. The real first Facebook video is already published by the user.
 
@@ -6,7 +6,8 @@
 - Product repository: `StudyMate-N/almanac`, development baseline `feat/custom-learning-orders-v1`.
 - Marketing operations in `campaigns/`. Automation can propose changes; these files remain authoritative only after review/merge.
 - Agent procedure: `.agents/skills/almanac-campaigns/SKILL.md`.
-- Initial campaign: `campaigns/NR601-001/`.
+- Initial campaign: `campaigns/NR601-001/`, with a source-origin record at `campaigns/NR601-001/product-origin.md`.
+- **Origin correction (22 Nov):** NR 601 began as a four-topic midterm preparation pack from approximately 17 user-reported mixed reference items processed through NotebookLM into multiple learning formats. Katz/Lawton was an opening excerpt, *not* the campaign's entire topic. This report is not a verified inspection of those original materials.
 - User's Facebook screenshots establish: Almanac Study page, original Katz/Lawton NR 601 video, social CTA address, and a four-hour snapshot of 360 views / 4 shares. They do not establish sales, leads, paid conversions, approved medical content or resource inventory.
 
 ## Product posture
@@ -62,11 +63,11 @@ Every item gets one lane, one learner problem, one primary CTA and one measurabl
 
 ## Files
 - `registry.yaml`: campaigns and verified first-post baseline.
-- `NR601-001/brief.md`: campaign proposition, segment and funnel.
+- `NR601-001/brief.md` and `NR601-001/product-origin.md`: campaign proposition, real source-to-product origin, segment and funnel.
 - `NR601-001/queue.md`: production assignments, review gates and sample copy.
 - `NR601-001/experiments.md`: falsifiable hypotheses and decision log.
 - `metrics/README.md` and `metrics/NR601-001.csv`: metric definitions and observations.
 - `visual-system.md`: provisional cross-format design principles.
 
 ## Initial action needed from owner
-Verify whether the full NR 601 midterm video exists, is cleared for distribution and is free or paid; confirm the receiving email's operational handling; supply first inquiry counts and subsequent metrics when available. These gaps do **not** prevent drafting the next educational posts.
+Confirm the actual four topic titles and their source/document list, the NotebookLM export formats and which items are reusable and reviewed. Verify whether the full NR 601 midterm video exists, is cleared for distribution and is free or paid; confirm the receiving email's operational handling; supply first inquiry counts and subsequent metrics when available. These gaps do **not** prevent drafting the next educational posts.
