@@ -1,17 +1,22 @@
 # NR601-001 — Reviewable production queue
 
+**New origin context (22 Nov 2026):** The first published Katz/Lawton video was a single opening excerpt from a student-directed, **four-topic NR 601 midterm pack**, reportedly created using ~17 reference materials and NotebookLM-generated study formats. The **priority is now a source-backed map of all four topics and the actual output inventory**, not another Katz/Lawton post. See [product-origin.md](./product-origin.md). The queue below is provisional and must not imply all its future assets are produced or approved.
+
 **Legend:** PUBLISHED (user-confirmed; link pending), DRAFT, NEEDS REVIEW, APPROVED, BLOCKED. No row other than P01 is published or approved.
 
 | ID | Format / lane | Working concept | Primary CTA | Status | Review dependency |
 |---|---|---|---|---|---|
 | P01 | Existing video / Demonstrate | Katz or Lawton? Know which one slips first. | Email about NR 601 midterm video | PUBLISHED (user-reported) | Full video availability must be checked before delivering |
-| P02 | 5-slide carousel / Teach | Katz vs Lawton: basic vs instrumental ADLs | Save for revision | DRAFT | Clinical reviewer + original wording + art |
+| P02 | 5-slide carousel / Teach | Katz vs Lawton: basic vs instrumental ADLs (optional secondary) | Save for revision | DRAFT / DEPRIORITIZED | Clinical reviewer + original wording + art |
 | P03 | 1-image quiz + answer card / Practise | Which assessment approach fits the scenario? | Reply with reasoning; return for answer | DRAFT | Original practice item + clinical reviewer |
-| P04 | 4-slide carousel / Teach | How to read a functional assessment question | Save checklist | PLANNED | Subject-matter accuracy |
-| P05 | Short video / Demonstrate | What makes a good exam rationale? | Ask about NR 601 resources | PLANNED | Sample rights + product readiness |
-| P06 | 4-slide preview / Demonstrate | Inside an Almanac learning pack | Inquire about course resources | BLOCKED | Verified accessible approved NR 601 asset |
+| P04 | Four-topic coverage map / Demonstrate | What the NR 601 midterm study package actually covers | Ask about NR 601 resource formats | PRIORITY / BLOCKED ON INVENTORY | Verified actual topic titles, source permissions, scope and clinical review |
+| P05 | Short video / Demonstrate | One study topic, multiple learning modes: notes, recall, quiz, audio | Ask about NR 601 resources | PLANNED | Genuine NotebookLM export + source/clinical/rights review |
+| P06 | Multi-format pack preview / Demonstrate | Inside the four-topic NR 601 learning experience | Inquire about course resources | BLOCKED | Verified export and reviewable commercial release assets |
 | P07 | Editorial quote / Retain | Don't just remember the answer. Understand the distinction. | Follow for the next concept | DRAFT | Brand review |
 | P08 | Text / Connect | What course or exam are you preparing for? | Send subject to published inbox | PLANNED | Confirm inquiry-response capacity |
+
+## P00 — First new production priority: product-to-post inventory
+Required before writing a four-topic overview: acquire actual source inventory, precise four topic titles/objectives, available NotebookLM outputs, ownership/reuse permissions, educational review and content location. Draft a content matrix `topic x format x original source x approval status x sampleability`. Prepare a true product demonstration from the verified matrix, not a generic mockup. This does **not** block brainstorming, but blocks claims or assets that pretend the pack is complete and approved.
 
 ## P02 — Carousel script for clinical/editorial review
 **Format:** 1080 x 1350 px, 5 slides; all lines remain editable until approval.
