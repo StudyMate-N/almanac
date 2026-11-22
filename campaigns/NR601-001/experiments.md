@@ -1,0 +1,39 @@
+# NR601-001 — Experiment & learning register
+
+## EXP-001: Teach before selling
+**Status:** PRE-REGISTERED, no test result.
+**Question:** Does a standalone educational carousel following a course-specific video generate more qualified NR 601 inquiries per 1000 views than a direct resource teaser alone?
+**Mechanism:** Students experience the utility before receiving a product request.
+**Conditions:** Compare posts from same audience/topic/time window where possible; do not compare 4h performance with 7d performance.
+**Intervention:** P02 teaches one accurate concept and makes saving the primary CTA; P05 demonstrates the product if asset approved.
+**Measures:** inbound requests referring to each post, qualified-course inquiries, 24h and 72h shares/saves and reach/views when available. Source attribution will be incomplete if students do not mention the post.
+**Decision rule:** With small counts, report directional signals and uncertainty. Change only one content variable per test. Do not treat share/view ratios as paid conversion.
+
+## EXP-002: Practice and return
+**Status:** PRE-REGISTERED, requires clinical approval.
+**Question:** Does an original single-question challenge followed by an explained answer encourage a second visit and a substantive comment?
+**Intervention:** P03 in two installments (question and explanation) with answer rationale.
+**Measures:** substantive comments, explanation post reach, return interest if measurable, inquiries.
+**Risk:** The tactic is invalid if a misleading or unreviewed answer goes public.
+
+## EXP-003: Request signal by subject
+**Status:** PRE-REGISTERED.
+**Question:** Which course/exam subjects appear in students' inbound email subjects, and are those requests within Almanac's production capacity?
+**Intervention:** P08 transparent invitation for other course/exam requests using the address already posted.
+**Measures:** aggregate subject categories (no names or addresses), qualified demand, real offer feasibility.
+**Gate:** no unsupported offer or payment promise; no special access to personal inbox is presumed.
+
+## Results
+2026-11-22 — Baseline P01 first ~4h: 360 visible views, 4 visible shares; screenshot user-supplied. No attribution, email lead count, conversion data or later post performance available. **No experiment is yet concluded.**
+
+## Weekly reflection template
+Date: ____.
+New evidence: ____.
+Which post and exact publishing time: ____.
+Post age used for comparison: ____.
+Reach/views/shares/saves/comments: ____.
+Qualified inquiries/verified sales (if available): ____.
+Confounders (promotion, timing, topic, thumbnail): ____.
+Inference: strong / tentative / inconclusive.
+Decision: repeat / revise / stop / request data.
+Proposed skill/creative update and approval: ____.
