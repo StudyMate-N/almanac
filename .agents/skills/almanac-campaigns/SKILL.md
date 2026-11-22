@@ -1,11 +1,11 @@
 ---
 name: almanac-campaigns
 description: Operate Almanac Study content campaigns from the actual product and evidence: plan, draft, review, publish only with authorization, measure and iterate.
-version: 1.1.0
+version: 1.2.0
 owner: Almanac Study
 ---
 
-# Almanac Campaign Mode — Project skill v1.1.0
+# Almanac Campaign Mode — Project skill v1.2.0
 **Activation:** "Almanac campaign mode", "run Almanac campaign", "review Almanac posts", or "iterate Campaign NR601-001". This is a repository-resident project skill, not a claim that a ChatGPT runtime skill is installed.
 
 ## Always load in this order
@@ -16,6 +16,9 @@ owner: Almanac Study
 
 ## Mission
 Deliver high-integrity, high-utility education in public, convert appropriately qualified student interest to an informed learning request, and earn return visits and repeat purchases only through accurate, available, approved products. Optimize for **qualified requests and customer value**, not views in isolation. Public identity is Almanac Study; first campaign is NR 601 Midterm.
+
+## Philosophical direction — provisional
+Review `campaigns/ALMANAC_LEARNING_PHILOSOPHY_PROPOSAL.md` as a **working proposal**, not finalized brand language. Next-generation direction: learning support should respond to learner goals, trusted source material, evidence of progress and further questions. Campaigns should be **first acts of learning**, not mere billboards: provide complete free educational insight, help the learner identify next steps, and use authentic inquiries to inform future resources. Do not infer outcomes or market a deployed adaptive tutor that does not exist. Approved site and social wording remain in force pending explicit brand approval.
 
 ## State machine
 `DRAFT -> FACT_CHECK -> SUBJECT_REVIEW -> DESIGN_REVIEW -> APPROVED -> SCHEDULED -> PUBLISHED -> MEASURED -> ITERATED`.
