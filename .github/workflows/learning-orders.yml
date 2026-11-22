@@ -14,8 +14,12 @@ on:
       - ".github/workflows/learning-orders.yml"
   workflow_dispatch:
 
+# Both jobs are mandatory checks for release readiness. When the backend is
+# inaccessible, remote-smoke fails rather than pretending security checks passed.
+# Separating them keeps local regressions and upstream outages independently visible.
 jobs:
-  verify:
+  local-verification:
+    name: Local integrity / build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,10 +31,20 @@ jobs:
       - run: node --experimental-strip-types scripts/check-learning-offers.mjs
       - run: node --experimental-strip-types scripts/check-request-origin.mjs
       - run: node --experimental-strip-types scripts/check-payment-confirmation.mjs
-      # Validate all local integrity and build gates before network-dependent
-      # checkout health checks, so unrelated remote outages cannot mask failures.
       - run: node scripts/check-almanac-contact-isolation.mjs
       - run: npm run typecheck
       - run: npm run build
+
+  remote-integration:
+    name: Live backend / unauthorized-access probes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # Explicitly fail if the backend is inactive or unreachable.
+      # This remains a release BLOCKER until real negative probes pass.
       - run: node scripts/check-private-endpoints.mjs
       - run: node scripts/check-checkout-health.mjs
