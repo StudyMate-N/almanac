@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/site/chrome";
+import { approvedAlmanacWhatsAppNumber } from "@/lib/almanac-contact";
 
 export const metadata: Metadata = { title: "Contact Almanac", description: "Get in touch with Almanac about learning resources, access or a request." };
 
 export default function ContactPage() {
-  const digits=(process.env.ALMANAC_WHATSAPP_NUMBER??"12057279363").replace(/[^0-9]/g,"");
-  const whatsApp=/^[1-9][0-9]{7,14}$/.test(digits)?
+  const digits=approvedAlmanacWhatsAppNumber(
+    process.env.ALMANAC_WHATSAPP_NUMBER,
+    process.env.ALMANAC_WHATSAPP_APPROVED,
+  );
+  const whatsApp=digits?
     "https://wa.me/"+digits+"?text="+encodeURIComponent("Hello Almanac, I need help with a learning course or request.") : null;
   return <div className="alm-public min-h-screen"><SiteHeader/>
     <main className="mx-auto max-w-[880px] px-4 pb-24 pt-8 sm:px-6">
