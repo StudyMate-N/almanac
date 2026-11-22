@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ALMANAC_SUPPORT_EMAIL } from "@/lib/almanac-contact";
 import { useMemo, useState, type FormEvent } from "react";
 import {
   ENHANCEMENTS, EMPTY_ENHANCEMENTS, OFFERS, PREFERENCES, SPEEDS,
@@ -107,7 +108,7 @@ export function RequestBuilder({initialCourseId,initialSubject}:{initialCourseId
     {submitted.notification?.customerSent
        ?<p className="mt-4 rounded-xl bg-mist p-4 text-sm text-ink-body">A copy of your private invoice link was sent to your email address. Check your inbox and spam folder.</p>
        :<p className="mt-4 rounded-xl border border-hairline bg-lilac p-4 text-sm text-ink-body">
-        <strong>Save your private invoice link.</strong> Automatic email delivery isn't available for this order. Use the copy button below or bookmark the invoice page. If you lose the link, email support@unemployedproff.com with the invoice reference above.</p>}
+        <strong>Save your private invoice link.</strong> Automatic email delivery isn't available for this order. Use the copy button below or bookmark the invoice page. If you lose the link, email {ALMANAC_SUPPORT_EMAIL} with the invoice reference above.</p>}
     {uploadProgress&&<p role="status" className="mt-4 rounded-xl bg-mist p-3 text-sm text-ink-body">{uploadProgress}</p>}
     <div className="mt-6 flex flex-wrap items-center gap-3">
       <Link href={`/invoice?id=${encodeURIComponent(submitted.id)}&token=${encodeURIComponent(submitted.invoiceToken)}`}

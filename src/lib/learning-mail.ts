@@ -1,13 +1,18 @@
+import { ALMANAC_SUPPORT_EMAIL, isCrossBrandEmail } from "@/lib/almanac-contact";
+
 /**
  * Transactional email is opt-in until a verified sending domain and provider key
  * are configured. Order creation never depends on email delivery.
  */
-export const SUPPORT_EMAIL="support@unemployedproff.com";
+export const SUPPORT_EMAIL = ALMANAC_SUPPORT_EMAIL;
 const FROM=process.env.ALMANAC_EMAIL_FROM||"";
 const API_KEY=process.env.ALMANAC_RESEND_API_KEY||"";
-const OPS=process.env.ALMANAC_OPERATIONS_EMAIL||SUPPORT_EMAIL;
+const rawOps=process.env.ALMANAC_OPERATIONS_EMAIL||"";
+// A legacy cross-brand operations address must never receive Almanac order notices.
+const OPS=rawOps && !isCrossBrandEmail(rawOps) ? rawOps : SUPPORT_EMAIL;
 const DOMAIN=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const validSender=(value:string)=>{
+ if(isCrossBrandEmail(value))return false;
  if(DOMAIN.test(value))return true;
  const match=value.match(/^[A-Za-z0-9 .'-]{1,80}\s+<([^<>]+)>$/);
  return Boolean(match&&DOMAIN.test(match[1]));

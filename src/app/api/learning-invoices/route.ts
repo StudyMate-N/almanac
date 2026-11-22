@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/config";
+import { approvedAlmanacWhatsAppNumber } from "@/lib/almanac-contact";
 
 const HEADERS = { "Cache-Control": "no-store, private", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow" };
 const uuid = /^[0-9a-f-]{36}$/i;
@@ -34,8 +35,10 @@ export async function GET(request: NextRequest) {
     });
     if(!res.ok) return NextResponse.json({error:"Invoice not found."},{status:404,headers:HEADERS});
     const invoice = await res.json();
-    const rawWhatsApp=(process.env.ALMANAC_WHATSAPP_NUMBER||"12057279363").replace(/[^0-9]/g,"");
-    const whatsappNumber=/^[1-9][0-9]{7,14}$/.test(rawWhatsApp)?rawWhatsApp:null;
+    const whatsappNumber=approvedAlmanacWhatsAppNumber(
+      process.env.ALMANAC_WHATSAPP_NUMBER,
+      process.env.ALMANAC_WHATSAPP_APPROVED,
+    );
     return NextResponse.json({invoice,bank:credentials(invoice),whatsappNumber}, {headers:HEADERS});
   } catch {
     return NextResponse.json({error:"Invoice service is temporarily unavailable."},{status:503,headers:HEADERS});
