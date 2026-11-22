@@ -48,7 +48,7 @@ footer{color:#59657d;font-size:13px;margin-top:22px}
 <section class="panel" aria-labelledby="goalTitle"><p class="tag">01 / Your goal</p><h2 id="goalTitle">What are you preparing for?</h2>
 <label>Course or learning goal (optional draft)<input id="goal" type="text" placeholder="e.g. Four-topic midterm review" maxlength="140"></label>
 <label>What sort of learning support?
-<select id="journey"><option value="existing">Self-study with an existing approved resource</option><option value="custom">Request new custom study material</option></select></label>
+<select id="journey"><option value="custom" selected>Request new custom study material</option><option value="existing">Self-study with an existing approved resource</option></select></label>
 <p id="journeyNote" class="muted">Content availability and access rights must be checked against a released catalogue. This demo does not grant access.</p>
 </section>
 <section class="panel" aria-labelledby="pathTitle"><p class="tag">02 / Your experience</p><h2 id="pathTitle">Choose how you want to begin</h2>
@@ -65,13 +65,13 @@ footer{color:#59657d;font-size:13px;margin-top:22px}
 <label class="check"><input id="quiet" type="checkbox"> Prefer low-bandwidth / text-first access</label>
 <p class="muted">These are preferences, not fixed learning styles. You can change them later. Optional formats never replace clear explanations and evidence of understanding.</p>
 </section>
-<section class="panel" aria-labelledby="scopeTitle"><p class="tag">03 / Package scope</p><h2 id="scopeTitle">Essentials are included</h2>
+<section id="scopePanel" class="panel" aria-labelledby="scopeTitle"><p class="tag">03 / Package scope</p><h2 id="scopeTitle">Essentials are included</h2>
 <label>Custom production package used for the sample quote
 <select id="kind"><option value="resource">Focused Study Module</option><option value="exam" selected>Exam Preparation Pack</option><option value="course">Complete Course</option></select></label>
 <div id="includes" class="plan" aria-live="polite"></div>
 <p class="muted">The prices below mirror an inspected development specification, not evidence that a catalog item is on sale or that a receiving payment route is approved.</p>
 </section>
-<section class="panel" aria-labelledby="extrasTitle"><p class="tag">04 / Only if you need extra production</p><h2 id="extrasTitle">Add meaningful scope, not duplicated formats</h2>
+<section id="extrasPanel" class="panel" aria-labelledby="extrasTitle"><p class="tag">04 / Only if you need extra production</p><h2 id="extrasTitle">Add meaningful scope, not duplicated formats</h2>
 <div class="numrow"><label for="deep" style="margin:0">Extra deep-dive video <small>+$35 each; existing included video stays included</small></label><input id="deep" type="number" min="0" max="2" value="0"></div>
 <div class="numrow"><label for="exam" style="margin:0">Extra original exam simulation <small>+$39 each where offered</small></label><input id="exam" type="number" min="0" max="2" value="0"></div>
 <div class="numrow"><label for="unit" style="margin:0">Extra complete learning module <small>+$59 each where offered</small></label><input id="unit" type="number" min="0" max="4" value="0"></div>
@@ -121,6 +121,7 @@ function render(){
 const v=values(),p=cfg[v.kind],start=document.querySelector('input[name="start"]:checked').value;
 const journey=el("journey").value;
 el("journeyNote").textContent=journey==="existing"?"Select from a genuinely released resource catalog when available. This prototype cannot quote access to prebuilt content.":"A new content-production request requires staff feasibility and source/rights checks; it is not an instant generation promise.";
+el("scopePanel").hidden=journey==="existing";el("extrasPanel").hidden=journey==="existing";
 el("includes").innerHTML="<b>Included essentials</b><ul>"+p.included.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
 el("quotedName").textContent=p.name;
 const bounds="Maximum extras: "+p.max.deep+" deep video(s), "+p.max.exam+" simulation(s), "+p.max.unit+" additional module(s).";
@@ -128,8 +129,9 @@ el("bounds").textContent=bounds+" All limitations are checked before quote.";
 const valid=permitted(v),extras=v.d.deep*35+v.d.exam*39+v.d.unit*59,subtotal=p.base+extras,amount=Math.round(subtotal*factors[v.speed]);
 const data=[["Base package",money(p.base)],["Additional production",money(extras)],["Turnaround modifier",valid?money(amount-subtotal):"Not permitted"],["Expected days",valid?p.days[v.speed]+" calendar days":"Not permitted"]];
 el("pricebreak").innerHTML=data.map(row=>"<div><span>"+row[0]+"</span><strong>"+row[1]+"</strong></div>").join("");
-el("total").textContent=valid?money(amount):"Unavailable configuration";el("total").className=valid?"price":"price invalid";
-el("requestGate").textContent=!valid?"This combination is blocked by the same production constraints used in the observed package validator. Change speed or extras.":"Sample quote only. For an existing self-study resource, its actual access price is separately governed. No checkout, capacity promise or automatic order.";
+el("total").textContent=journey==="existing"?"Catalog price: not approved":(valid?money(amount):"Unavailable configuration");el("total").className=(journey==="existing"||!valid)?"price invalid":"price";
+if(journey==="existing"){el("quotedName").textContent="Ready-made self-study resource";el("pricebreak").innerHTML="<p>Content access, availability and prices depend on an actual approved catalog item. Custom-production prices do not apply here.</p>";}
+el("requestGate").textContent=journey==="existing"?"A self-study course is available only if a real reviewed and entitled item exists; no purchase or access is granted here.":(!valid?"This combination is blocked by the observed production constraints. Change speed or extras.":"Custom-production quote preview only; no checkout, capacity promise or automatic order.");
 const first={balanced:"Read a concise orientation, then try a practice item.",reading:"Begin with a verified written explanation.",video:"Watch a reviewed narrated overview, if released for your package.",practice:"Try a reviewed question to identify a starting gap."}[start];
 const focus={overview:"Make a topic map and explain the main relationship.",misconceptions:"Compare two easily confused concepts and explain the difference.",recall:"Close your notes and recall one key idea.",application:"Apply the idea to one new, original question."}[el("focus").value];
 const t=el("minutes").value,quiet=el("quiet").checked;
@@ -138,7 +140,7 @@ el("studyPlan").innerHTML="<p><b>Your "+t+"-minute starting session</b></p><ol><
 function exportDraft(){
 const v=values();if(!permitted(v)){alert("Choose a permitted configuration before exporting.");return}
 const interests=[...document.querySelectorAll('input[name="interest"]:checked')].map(x=>x.value);
-const obj={prototype:true,version:"0.1",journey:el("journey").value,subject_or_goal:el("goal").value.slice(0,140),kind:v.kind,speed:v.speed,enhancements:{deep_video:v.d.deep,exam_sim:v.d.exam,unit:v.d.unit},learning_preferences:{start:document.querySelector('input[name="start"]:checked').value,session_minutes:Number(el("minutes").value),focus:el("focus").value,low_bandwidth:el("quiet").checked},research_interests_only:interests,not_an_order:true,no_payment_taken:true};
+const existing=el("journey").value==="existing";const obj={prototype:true,version:"0.1",journey:el("journey").value,subject_or_goal:el("goal").value.slice(0,140),kind:existing?null:v.kind,speed:existing?null:v.speed,enhancements:existing?null:{deep_video:v.d.deep,exam_sim:v.d.exam,unit:v.d.unit},learning_preferences:{start:document.querySelector('input[name="start"]:checked').value,session_minutes:Number(el("minutes").value),focus:el("focus").value,low_bandwidth:el("quiet").checked},research_interests_only:interests,not_an_order:true,no_payment_taken:true};
 const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="almanac-self-study-draft.json";a.click();URL.revokeObjectURL(u);
 }
 const controls=document.querySelectorAll("input,select");controls.forEach(x=>x.addEventListener("change",render));
