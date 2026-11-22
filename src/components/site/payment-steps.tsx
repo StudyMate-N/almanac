@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { SUPABASE_URL } from "@/lib/config";
+import { ALMANAC_SUPPORT_EMAIL } from "@/lib/almanac-contact";
 
 export type PaymentBank={
  name:string;address:string;institution:string;transit:string;
@@ -117,7 +118,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
     </p>
     {hasQuote&&<p className="mt-3 text-sm text-ink-muted">Recorded invoice total: {cad(invoice.payableCadCents!)} · {invoice.invoiceRef}</p>}
     {expired&&<div className="mt-4 flex flex-wrap gap-2">
-      <a href={`mailto:support@unemployedproff.com?subject=${encodeURIComponent("Updated Almanac invoice "+invoice.invoiceRef)}`}
+      <a href={`mailto:${ALMANAC_SUPPORT_EMAIL}?subject=${encodeURIComponent("Updated Almanac invoice "+invoice.invoiceRef)}`}
        className="alm-action">Request updated invoice →</a>
       <a href="#payment-report" className="alm-action alm-action-secondary">I sent a transfer before expiry</a>
     </div>}
@@ -201,7 +202,7 @@ export function PaymentSteps({invoice,bank,id,token,whatsappNumber,onRefresh}:{
     {whatsappUrl&&<a href={whatsappUrl} rel="noreferrer" target="_blank" className="inline-flex min-h-12 items-center rounded-full bg-[#186C4C] px-5 font-semibold text-white">
       Continue on WhatsApp ↗</a>}
     <a className="inline-flex min-h-12 items-center rounded-full border border-hairline bg-white px-5 font-semibold text-violet-700"
-     href={`mailto:support@unemployedproff.com?subject=${encodeURIComponent("Almanac invoice "+invoice.invoiceRef)}&body=${encodeURIComponent("Hello, I need help with invoice "+invoice.invoiceRef+".")}`}>
+     href={`mailto:${ALMANAC_SUPPORT_EMAIL}?subject=${encodeURIComponent("Almanac invoice "+invoice.invoiceRef)}&body=${encodeURIComponent("Hello, I need help with invoice "+invoice.invoiceRef+".")}`}>
       Email support ↗</a>
    </div>
    {whatsappUrl&&<p className="mt-3 text-xs text-ink-muted">WhatsApp opens with your invoice reference filled in. If you choose to send a receipt there, it leaves Almanac's private upload system; the secure form above is recommended.</p>}
