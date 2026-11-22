@@ -37,3 +37,10 @@ Confounders (promotion, timing, topic, thumbnail): ____.
 Inference: strong / tentative / inconclusive.
 Decision: repeat / revise / stop / request data.
 Proposed skill/creative update and approval: ____.
+
+
+## EXP-004: Public teaching and needs feedback (Sprint 01)
+**Status:** PRE-REGISTERED, no social distribution outcome verified.
+**Hypothesis:** A standalone explanation routine (S01) creates more practical learning engagement (saves, substantive explanations in comments) than a pure brand statement (S02), while the needs prompt (S03) yields more specific themes about topics or bottlenecks. They have distinct outcomes: do not treat them as randomized A/B equivalents.
+**Data needed:** native Facebook metrics at comparable post ages; voluntary comment themes without personal information; inbound source-attributed resource inquiries.
+**Decision:** prefer repetition of a format only when it provides useful learning signals, not simply high views. Unmeasured learning gains remain unknown. The authentic NR 601 product demonstration (S04) remains blocked until source and output inventory and clinical rights review are complete.
