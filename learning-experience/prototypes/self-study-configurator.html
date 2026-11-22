@@ -138,7 +138,7 @@ const t=el("minutes").value,quiet=el("quiet").checked;
 el("studyPlan").innerHTML="<p><b>Your "+t+"-minute starting session</b></p><ol><li>"+(quiet?"Use a readable low-data version. ":"")+first+"</li><li>"+focus+"</li><li>Check understanding using original retrieval or application.</li><li>Read the explanation for any missed reasoning.</li><li>Schedule a short revisit or choose another authorized topic.</li></ol><p class='muted'>Keep core concept checks. Skip optional music, story, game or video if unhelpful; doing so does not imply mastery.</p>";
 }
 function exportDraft(){
-const v=values();if(!permitted(v)){alert("Choose a permitted configuration before exporting.");return}
+const v=values();if(el("journey").value==="custom"&&!permitted(v)){alert("Choose a permitted custom-production configuration before exporting.");return}
 const interests=[...document.querySelectorAll('input[name="interest"]:checked')].map(x=>x.value);
 const existing=el("journey").value==="existing";const obj={prototype:true,version:"0.1",journey:el("journey").value,subject_or_goal:el("goal").value.slice(0,140),kind:existing?null:v.kind,speed:existing?null:v.speed,enhancements:existing?null:{deep_video:v.d.deep,exam_sim:v.d.exam,unit:v.d.unit},learning_preferences:{start:document.querySelector('input[name="start"]:checked').value,session_minutes:Number(el("minutes").value),focus:el("focus").value,low_bandwidth:el("quiet").checked},research_interests_only:interests,not_an_order:true,no_payment_taken:true};
 const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="almanac-self-study-draft.json";a.click();URL.revokeObjectURL(u);
