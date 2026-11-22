@@ -2,6 +2,7 @@
 import {useState} from "react";
 import {rpc} from "@/lib/api";
 import {SUPABASE_URL} from "@/lib/config";
+import {ALMANAC_SUPPORT_EMAIL} from "@/lib/almanac-contact";
 export function StaffRecoveryPanel({token,role,orderId,email,invoiceRef,quoteValidUntil,paymentStatus}:{
  token:string;role:string;orderId:string;email:string;invoiceRef:string;quoteValidUntil?:string|null;paymentStatus:string;
 }) {
@@ -41,8 +42,8 @@ export function StaffRecoveryPanel({token,role,orderId,email,invoiceRef,quoteVal
  }
  if(role!=="owner")return null;
  const body=result?.type==="invoice"||result?.type==="quote"?
-  `Hello,\n\nYour Almanac invoice link for ${invoiceRef} has been ${result?.type==="quote"?"refreshed with a new CAD amount":"reissued"}. Your previous link no longer works. ${result?.amountCents?"New payable amount: CAD "+(result.amountCents/100).toFixed(2)+".":""}\n\nPrivate invoice: ${result.url}\n\nFor help contact support@unemployedproff.com.`:
-  `Hello,\n\nYour Almanac access code for ${invoiceRef} has been reset. Your old code and signed-in sessions no longer work.\n\nNew access code: ${result?.secret}\nSign in: ${typeof window!=="undefined"?window.location.origin:""}/app/orders\n\nFor help contact support@unemployedproff.com.`;
+  `Hello,\n\nYour Almanac invoice link for ${invoiceRef} has been ${result?.type==="quote"?"refreshed with a new CAD amount":"reissued"}. Your previous link no longer works. ${result?.amountCents?"New payable amount: CAD "+(result.amountCents/100).toFixed(2)+".":""}\n\nPrivate invoice: ${result.url}\n\nFor help contact ${ALMANAC_SUPPORT_EMAIL}.`:
+  `Hello,\n\nYour Almanac access code for ${invoiceRef} has been reset. Your old code and signed-in sessions no longer work.\n\nNew access code: ${result?.secret}\nSign in: ${typeof window!=="undefined"?window.location.origin:""}/app/orders\n\nFor help contact ${ALMANAC_SUPPORT_EMAIL}.`;
  return <div className="mt-4 rounded-xl border border-hairline bg-white p-4">
   <p className="font-semibold">Account and invoice recovery · Owner only</p>
   <p className="mt-1 text-xs text-ink-muted">Use only after confirming the requester controls the email address on the invoice. Resetting access invalidates earlier credentials.</p>

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { rpc } from "@/lib/api";
 import { useStudent } from "@/lib/store";
 import { SUPABASE_URL } from "@/lib/config";
+import { ALMANAC_SUPPORT_EMAIL } from "@/lib/almanac-contact";
 
 type Order={
  id:string;invoiceRef:string;subject:string;kind:string;moduleCount:number;
@@ -67,7 +68,7 @@ export default function LearningOrdersPage(){
    setClaimNotice("This order is now linked to your existing Almanac account.");
    await load();
   }catch{
-   setClaimNotice("We couldn't link this order. You must be signed in with an account using the same email address as the paid invoice. For help, contact support@unemployedproff.com.");
+   setClaimNotice(`We couldn't link this order. You must be signed in with an account using the same email address as the paid invoice. For help, contact ${ALMANAC_SUPPORT_EMAIL}.`);
   }finally{setClaimBusy(false);}
  }
 
@@ -201,7 +202,7 @@ export default function LearningOrdersPage(){
         className="h-10 rounded-[12px] border-[1.5px] border-violet px-4 text-[13.5px] font-bold text-violet-700 hover:bg-lilac disabled:opacity-50">
         {downloading===f.id?"Preparing…":"Download"}</button>
       </li>)}</ul>}
-     <p className="mt-4 text-xs text-ink-muted">Need help? Email support@unemployedproff.com and include {current.invoiceRef}. Only files released to your order appear here.</p>
+     <p className="mt-4 text-xs text-ink-muted">Need help? Email {ALMANAC_SUPPORT_EMAIL} and include {current.invoiceRef}. Only files released to your order appear here.</p>
     </section>}
   </div>}
  </div></WorkspaceShell>;

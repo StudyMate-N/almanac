@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {SiteHeader,SiteFooter} from "@/components/site/chrome";
 import {modulesInCourse} from "@/content/course";
+import {ALMANAC_SUPPORT_EMAIL} from "@/lib/almanac-contact";
 const ID="advanced-pathophysiology";
 
 const included=[
@@ -70,7 +71,7 @@ export function PathoPage() {
        <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#D2C8FF]">Approved learner access</p>
        <h2 className="mt-3 text-[29px] font-bold">Build understanding, one module at a time.</h2>
        <p className="mt-3 max-w-[610px] text-[14px] text-white/80">Request the full course or a focused learning resource. You'll see your package, delivery timeline and price before creating an invoice. Existing paid learners can continue in their workspace.</p>
-       <p className="mt-4 text-[12px] text-white/75">Need assistance? <a className="font-bold text-white underline" href="mailto:support@unemployedproff.com">Contact Almanac support</a>.</p>
+       <p className="mt-4 text-[12px] text-white/75">Need assistance? <a className="font-bold text-white underline" href={`mailto:${ALMANAC_SUPPORT_EMAIL}`}>Contact Almanac support</a>.</p>
      </div>
      <div className="flex flex-col gap-3">
        <Link href="/request?course=advanced-pathophysiology" className="alm-action border-white bg-white text-[#2A1B78] hover:bg-[#F6F4FB]">Choose your learning package →</Link>

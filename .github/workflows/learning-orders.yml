@@ -9,6 +9,7 @@ on:
       - "scripts/check-private-endpoints.mjs"
       - "scripts/check-request-origin.mjs"
       - "scripts/check-payment-confirmation.mjs"
+      - "scripts/check-almanac-contact-isolation.mjs"
       - "package*.json"
       - ".github/workflows/learning-orders.yml"
   workflow_dispatch:
@@ -26,7 +27,10 @@ jobs:
       - run: node --experimental-strip-types scripts/check-learning-offers.mjs
       - run: node --experimental-strip-types scripts/check-request-origin.mjs
       - run: node --experimental-strip-types scripts/check-payment-confirmation.mjs
-      - run: node scripts/check-checkout-health.mjs
-      - run: node scripts/check-private-endpoints.mjs
+      # Validate all local integrity and build gates before network-dependent
+      # checkout health checks, so unrelated remote outages cannot mask failures.
+      - run: node scripts/check-almanac-contact-isolation.mjs
       - run: npm run typecheck
       - run: npm run build
+      - run: node scripts/check-private-endpoints.mjs
+      - run: node scripts/check-checkout-health.mjs

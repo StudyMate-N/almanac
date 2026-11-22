@@ -8,7 +8,9 @@ import { join, relative } from "node:path";
 
 const root = new URL("../", import.meta.url);
 const sourceDir = new URL("../src/", import.meta.url);
-const forbiddenEmail = ["support", "@", "unemployedproff.com"].join("");
+// Any reference to the other brand in live application code must be reviewed.
+// The only permitted reference is the explicit denylist in almanac-contact.ts.
+const forbiddenDomain = "unemployedproff.com";
 const oldNumber = ["1205", "727", "9363"].join("");
 const allowOneDenialPolicy = "lib/almanac-contact.ts";
 const problems = [];
@@ -22,7 +24,9 @@ async function walk(dir) {
     scanned++;
     const path = relative(new URL("../src/", import.meta.url).pathname, loc).replaceAll("\\", "/");
     const body = await readFile(loc, "utf8");
-    if (body.toLowerCase().includes(forbiddenEmail)) problems.push(path + ": forbidden legacy support address");
+    if (path !== allowOneDenialPolicy && body.toLowerCase().includes(forbiddenDomain)) {
+      problems.push(path + ": cross-brand domain found outside the blocklist");
+    }
     if (path !== allowOneDenialPolicy && body.replace(/[^0-9]/g, "").includes(oldNumber)) {
       problems.push(path + ": legacy shared WhatsApp digits");
     }
