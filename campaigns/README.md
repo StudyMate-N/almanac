@@ -2,6 +2,9 @@
 
 **Status:** Created 22 November 2026. Operational planning activated; this document does **not** imply new posts, product delivery, a paid campaign, approved checkout, or an always-running agent. The real first Facebook video is already published by the user.
 
+## Strategic compass — working proposal, not yet approved
+See [Almanac Responsive Learning Doctrine](./ALMANAC_LEARNING_PHILOSOPHY_PROPOSAL.md). The provisional thesis is **"The future of education isn't simply more content. It's learning that responds."** The post is not the product: each campaign should teach something useful in public, guide a learner to the next purposeful learning step, and treat learner feedback as a product-development signal. Do not replace existing brand copy or claim currently unbuilt adaptive capability until the owner approves.
+
 ## Source of truth
 - Product repository: `StudyMate-N/almanac`, development baseline `feat/custom-learning-orders-v1`.
 - Marketing operations in `campaigns/`. Automation can propose changes; these files remain authoritative only after review/merge.
