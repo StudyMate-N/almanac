@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { ALMANAC_SUPPORT_EMAIL } from "@/lib/almanac-contact";
 import { SourceMaterialUploader } from "@/components/site/source-material-uploader";
 import { PaymentSteps, type PaymentBank } from "@/components/site/payment-steps";
 import { LearningPlanReview, type LearningPlan } from "@/components/site/learning-plan-review";
@@ -117,13 +118,13 @@ export function PrintableInvoice({id,token}:{id:string;token:string}) {
             </p>
           </> : <p className="mt-3 text-sm text-ink-body">
             Bank-transfer instructions are withheld because the original CAD quote has expired, the payment has already been reported, or the amount is not yet confirmed. Do not send a new transfer until current instructions are visible. Contact support with the invoice reference for help.
-            Contact <a className="font-semibold text-violet-700 underline" href={`mailto:support@unemployedproff.com?subject=${encodeURIComponent(invoice.invoiceRef)}`}>Almanac support</a> with your invoice reference.
+            Contact <a className="font-semibold text-violet-700 underline" href={`mailto:${ALMANAC_SUPPORT_EMAIL}?subject=${encodeURIComponent(invoice.invoiceRef)}`}>Almanac support</a> with your invoice reference.
           </p>}
         </section>
         <div className="mt-6 border-t border-hairline pt-4 text-xs text-ink-muted">
           <p>Payment status: <strong>{invoice.paymentStatus==="verified"?"Verified":invoice.paymentStatus==="reported"?"Reported · awaiting verification":"Awaiting payment"}</strong></p>
           <p className="mt-2">Learning package status: <strong>{prepLabel}</strong>. Check this private invoice link for updates recorded by staff.</p>
-          <p className="mt-2">This is a payment invoice, not a payment receipt. Access codes are issued only after payment verification. For questions, email support@unemployedproff.com.</p>
+          <p className="mt-2">This is a payment invoice, not a payment receipt. Access codes are issued only after payment verification. For questions, email {ALMANAC_SUPPORT_EMAIL}.</p>
         </div>
       </article>
       {invoice.paymentStatus==="verified"&&<section className="rounded-tile border border-hairline bg-white p-5 sm:p-7 print:hidden">
