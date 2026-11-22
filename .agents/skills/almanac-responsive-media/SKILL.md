@@ -15,6 +15,15 @@ status: draft_project_resident_skill
 3. Existing code and approved content (`README.md`, `src/content/patho/author.ts`, `src/lib/learning-offers.ts`, `src/lib/deck.ts`, /coach approval conventions).
 4. Campaign Mode in draft PR #5 for public editorial work. Do not claim PRs merged, platforms accessible or features deployed.
 
+## Learner-controlled self-service overlay
+Before selecting any format, consult `learning-experience/SELF_SERVICE_STUDY_DOCTRINE.md`, `SELF_SERVICE_RULES_AND_PRICING.md`, `SELF_SERVICE_PRODUCT_ROADMAP.md`, and `STUDY_RECIPES.md`.
+- The learner may choose study goal, starting mode, focus and pace within an actual available entitlement; no extra price for preference changes.
+- Keep required accurate explanations, reviewed original practice, meaningful feedback and accessibility safeguards intact. Never award 'mastery' from passive views, a purchased media format, or an opt-out of testing.
+- Quote only current approved package/extra scope through existing code and server-side revalidation; new story/game/music production has **no approved SKU**.
+- Make recommendations transparent, explain why, and provide an override. Audio/music preferences are not proof of a fixed 'auditory learning style'.
+- Pilot via `learning-experience/prototypes/self-study-configurator.html` without asserting live production or checkout access.
+- Where demand suggests product changes, log evidence and draft reviewed work; no automatic paid offering or deployment.
+
 ## Each request: select objective and purposeful transformation
 1. Identify audience, learner goal, rights and source provenance, existing comprehension evidence, time and format constraints.
 2. Locate one objective with reviewed claims. If unavailable, create design-only or openly draft example; do not invent source-derived content.
