@@ -1,16 +1,16 @@
 ---
 name: almanac-campaigns
 description: Operate Almanac Study content campaigns from the actual product and evidence: plan, draft, review, publish only with authorization, measure and iterate.
-version: 1.0.0
+version: 1.1.0
 owner: Almanac Study
 ---
 
-# Almanac Campaign Mode — Project skill v1.0.0
+# Almanac Campaign Mode — Project skill v1.1.0
 **Activation:** "Almanac campaign mode", "run Almanac campaign", "review Almanac posts", or "iterate Campaign NR601-001". This is a repository-resident project skill, not a claim that a ChatGPT runtime skill is installed.
 
 ## Always load in this order
 1. This skill and `campaigns/README.md`.
-2. `campaigns/registry.yaml` and the chosen campaign's brief, queue and experiment log.
+2. `campaigns/registry.yaml`, the chosen campaign's `product-origin.md` when available, brief, queue and experiment log.
 3. The latest version-controlled product facts in `src/lib/learning-offers.ts`, the homepage, relevant course content and operations/release documents. Old research, screenshots and mocks are provisional.
 4. The latest verified publication metrics, feedback, and any source files provided by the user.
 
@@ -20,6 +20,15 @@ Deliver high-integrity, high-utility education in public, convert appropriately 
 ## State machine
 `DRAFT -> FACT_CHECK -> SUBJECT_REVIEW -> DESIGN_REVIEW -> APPROVED -> SCHEDULED -> PUBLISHED -> MEASURED -> ITERATED`.
 `BLOCKED` can be reached from any pre-publication state. No transition is implicit; record reason, evidence and timestamp. Draft and research can be autonomously proposed. Only authorized owners can approve or publish.
+
+## Resource-to-campaign fidelity (new in 1.1.0)
+- The core unit is a verified **learner need and learning package**. Social clips are excerpts, not necessarily entire campaigns.
+- For NR601-001, the user describes a **four-topic midterm bundle** assembled from approximately **17 mixed reference documents**, processed with **NotebookLM** into multiple outputs (notes, questions, quizzes, flashcards, audio). This is a *user report*, not inspection of those assets. Katz/Lawton was one opening lecture excerpt.
+- Rebuild the source pack's topic map and actual available output inventory **before** assigning future posts to specific topics or claiming a complete commercial product. Do not invent the four topic titles or exact asset counts.
+- Choose multiple excerpt formats across the four validated topics over time, not a repetitive series around the first video hook. Show the breadth of the learning experience.
+- Distinguish the authenticity/accuracy of each source from the right to reuse it. Studocu/Course Hero hosting does not itself grant commercial reuse rights.
+- Do not cross-contaminate NR601 materials with NUR-635 or other Almanac courses.
+- Clinical qualification: a potentially overbroad clip hook is a check-for-context, not proof of error; evaluate the actual script and cited source before issuing a correction or public claim.
 
 ## Each run
 1. **Reconcile:** inspect current repo, approved product claims, campaign registry, actual social-post screenshot/link and metric freshness. Never assume social account analytics access or current checkout status. Classify facts as VERIFIED / USER_REPORTED / PROPOSED / UNVERIFIED.
