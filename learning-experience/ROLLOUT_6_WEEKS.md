@@ -1,6 +1,14 @@
 # Six-week starting rollout + scaling gates
 **These are planning horizons, not a promise of unattended execution or launch dates.** The user can accelerate/slow per team capacity; actual progress must be checked and reported. Start with existing Almanac media offers and pilot content; do not rebrand or replace homepage immediately.
 
+## Self-service as a cross-cutting workstream
+- **Start with the actual package builder.** Its existing packaged scope, start preferences, delivery and priced extras provide the pricing skeleton; do not create a second contradictory checkout.
+- **Week 1–2:** validate local configurator prototype, transparent quote limits, study objective and learning preference prompts; wire a private learner-path prototype only after source and entitlement checks. No billing.
+- **Week 3–4:** test choice of start modes and session lengths against one fixed reviewed learning objective; inspect comprehension, task completion, option fatigue and meaningful override, preserving FSRS.
+- **Week 5–6:** if safe, pilot persistent changeable study preferences and a compact 'Today' choice gateway; validate server-side permissions, offline recovery, no price effect and exact-version course release.
+- **Scaling:** separate already-released self-study catalogs from newly commissioned bespoke courses. Existing catalog item pricing remains undefined until approved, and music/stories/games require explicit rights, educational utility and commercial support before standalone SKUs.
+- **Fundamental distinction:** learners control how they experience entitled material; Almanac controls verified objectives, factual integrity, entitlement and price of new production.
+
 ## Preflight: first 48h of active work — content and channel audit
 - Inventory actual program content, products and 17-reported NR 601 source items if available; reconcile distinct NR 601 vs NUR-635 vs current pathophysiology pilot.
 - Inspect current MP4/VTT/poster configuration and which existing videos are real vs placeholder; catalog PPTX, notes, audio, NotebookLM exports and supported delivery paths.
