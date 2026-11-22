@@ -10,11 +10,11 @@ export const ALMANAC_SUPPORT_EMAIL = "almanacstudy.support@gmail.com";
 
 /** Legacy shared channel identified in the provider's Nov 2026 review. */
 const LEGACY_CROSS_BRAND_WHATSAPP = "12057279363";
-const CROSS_BRAND_EMAIL_DOMAIN = "unemployedproff.com";
+const CROSS_BRAND_EMAIL_DOMAIN = "@unemployedproff.com";
 
-/** Never use a known cross-brand email as the support or transactional sender. */
+/** Never use the known other brand as the support or transactional sender. */
 export function isCrossBrandEmail(value: string): boolean {
-  return new RegExp(`(^|[<@\\s])[^@<\\s]*@?${CROSS_BRAND_EMAIL_DOMAIN.replace(".", "\\.")}([>\\s]|$)`, "i").test(value);
+  return value.toLowerCase().includes(CROSS_BRAND_EMAIL_DOMAIN);
 }
 
 /**
