@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Logo } from "@/components/brand";
 import { friendlyError } from "@/lib/api";
+import { ALMANAC_SUPPORT_EMAIL } from "@/lib/almanac-contact";
 import { useStudent } from "@/lib/store";
 
 /** Shows the sign-in screen until an approved paid learner is signed in. */
@@ -114,7 +115,7 @@ function SignIn() {
               </div>
               <div className="rounded-[12px] bg-mist px-3.5 py-3">
                 <p className="text-[14px] font-bold">Paid outside Almanac, or lost your code</p>
-                <p className="text-[13px] text-ink-body">Contact support@unemployedproff.com for your invitation. Include your invoice reference if you have one.</p>
+                <p className="text-[13px] text-ink-body">Contact {ALMANAC_SUPPORT_EMAIL} for your invitation. Include your invoice reference if you have one.</p>
               </div>
             </div>
           </details>
