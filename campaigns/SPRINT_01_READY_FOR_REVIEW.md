@@ -1,6 +1,8 @@
 # Almanac Study — Launch Sprint 01: Learning that responds
-**Date:** 22 Nov 2026 · **State:** creative and editorial drafts, not published, not approved.
+**Date:** 22 Nov 2026 · **State:** S01/S02/S03 artwork produced for review; none published or owner-approved. S04/S05 still blocked pending real-source review.
 **Campaign relationship:** Continue NR601-001, but grow a **cross-subject Almanac public learning series** around the first Facebook video. A strong initial post is evidence of distribution, not evidence that a multi-format product is sale-ready.
+
+**Production status (22 Nov 2026):** S01 five-slide carousel, S02 quote card and S03 four-option learning-needs card have now been **rendered to 1080×1350 PNG files**, shipped to the owner through downloadable conversation ZIPs, and recorded in [Sprint 01 production handoff](./SPRINT_01_ASSET_RELEASE.md). This changes their state to **ARTWORK PRODUCED / WAITING BRAND REVIEW**, not PUBLISHED or formally approved. The publication and rights gates remain unchanged.
 
 ## S01 — The Explain Test (carousel, 5 slides)
 **Series:** THINK BEFORE YOU TURN / learning technique. **Status:** copy ready for brand owner review; not published.
