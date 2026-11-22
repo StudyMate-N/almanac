@@ -68,7 +68,7 @@ export default function LearningOrdersPage(){
    setClaimNotice("This order is now linked to your existing Almanac account.");
    await load();
   }catch{
-   setClaimNotice("We couldn't link this order. You must be signed in with an account using the same email address as the paid invoice. For help, contact ${ALMANAC_SUPPORT_EMAIL}.");
+   setClaimNotice(`We couldn't link this order. You must be signed in with an account using the same email address as the paid invoice. For help, contact ${ALMANAC_SUPPORT_EMAIL}.`);
   }finally{setClaimBusy(false);}
  }
 
