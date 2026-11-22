@@ -4,6 +4,7 @@ import {useEffect,useState} from "react";
 import {COACH_KEY} from "@/lib/store";
 import {StaffShell} from "@/components/staff-shell";
 import {friendlyError,rpc} from "@/lib/api";
+import {ALMANAC_SUPPORT_EMAIL} from "@/lib/almanac-contact";
 
 type InvitationResult={
   status:"created"|"existing_account"|"already_enrolled";
@@ -51,7 +52,7 @@ export default function ExternalEnrollmentPage(){
   "Open the learning space, enter your access code, and select your course.",
   "Your progress will be saved as you study.","",
   "For assistance, reply to this message.",
-  "Best,","Almanac Support","support@unemployedproff.com"].join("\n"):null;
+  "Best,","Almanac Support",ALMANAC_SUPPORT_EMAIL].join("\n"):null;
  const mailto=result&&invitation?`mailto:${result.email}?subject=${encodeURIComponent(SUBJECT)}&body=${encodeURIComponent(invitation)}`:null;
  const nav=[
   {key:"today",label:"Today",href:"/coach"},
