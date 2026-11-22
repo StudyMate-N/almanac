@@ -1,0 +1,18 @@
+name: Learner-controlled study path checks
+on:
+  pull_request:
+    paths:
+      - "src/lib/study-path.ts"
+      - "scripts/check-study-path.mjs"
+      - ".github/workflows/study-path.yml"
+  workflow_dispatch:
+
+jobs:
+  verify-study-path:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --experimental-strip-types scripts/check-study-path.mjs
