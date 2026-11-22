@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Almanac Study — Build Your Learning Path (Prototype)</title>
+<style>
+:root{--cream:#f6f2e8;--navy:#192c4e;--blue:#2457dc;--orange:#eb7052;--edge:#d8dce8;--white:#fffefa}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--navy);font:16px/1.48 system-ui,-apple-system,sans-serif}
+main{max-width:1050px;margin:auto;padding:28px 18px 70px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{font-size:21px;font-weight:850;letter-spacing:-.035em}.brand b{color:var(--blue)}
+.tag{font-weight:750;color:#49618c;font-size:12px;letter-spacing:.11em;text-transform:uppercase}.pill{border:1px solid #b0bedf;border-radius:999px;padding:6px 11px;font-size:12px}
+h1{font-size:clamp(34px,5vw,54px);line-height:1.08;max-width:760px;letter-spacing:-.04em;margin:38px 0 12px}
+h2{font-size:21px;margin:0 0 12px}p{margin:8px 0 13px}.lead{font-size:18px;max-width:750px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;margin-top:25px;align-items:start}
+.panel{background:var(--white);border:1px solid var(--edge);border-radius:18px;padding:22px;margin-bottom:15px;box-shadow:0 3px 12px #172a4a0d}
+label{font-weight:650;display:block;margin-bottom:12px}select,input[type=text]{display:block;width:100%;padding:11px;border-radius:10px;border:1px solid #b9c4d6;margin-top:6px;background:white;color:var(--navy);font:inherit}
+.options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.option{background:#f9fafc;border:1px solid var(--edge);padding:13px;border-radius:11px;cursor:pointer;font-size:14px}
+.option input{accent-color:var(--blue);margin-right:6px}
+.option:has(input:checked){background:#eaf0ff;border-color:#779df6}
+.option:focus-within{outline:3px solid #bed2ff}
+small,.muted{font-size:13px;color:#566780;font-weight:400}
+.full{grid-column:1/-1}.sum{position:sticky;top:18px}
+button{font:inherit;cursor:pointer;border-radius:11px;border:1px solid #97aacc;background:white;color:var(--navy);padding:10px 12px}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #a6c8ff;outline-offset:2px}
+button.primary{background:var(--blue);border-color:var(--blue);color:white;font-weight:750;width:100%}
+button.ghost{width:100%;margin-top:9px}
+.price{font-size:38px;font-weight:830;letter-spacing:-.035em}.price.invalid{font-size:20px;color:#a34228}
+.pricebreak{border-top:1px solid var(--edge);padding-top:12px;margin-top:13px;font-size:14px}
+.pricebreak div{display:flex;justify-content:space-between;gap:14px;margin:7px 0}
+.pricebreak dd{margin:0;font-weight:650}
+ul{padding-left:18px;margin-top:6px}li{margin:4px 0}
+.notice{border-left:4px solid var(--orange);background:#fff5ee;padding:11px 14px;border-radius:7px;font-size:13px}
+.check{display:flex;align-items:flex-start;font-size:14px;gap:9px;font-weight:500}.check input{accent-color:var(--blue);margin-top:4px}
+.numrow{display:grid;grid-template-columns:minmax(0,1fr) 80px;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #e7e7ed}
+.numrow input{width:75px;padding:8px;border:1px solid var(--edge);border-radius:9px;font:inherit}
+.plan{background:#f3f6fd;border-radius:10px;padding:16px;font-size:14px}.plan li{padding-bottom:5px}
+.guard{font-size:12px;color:#526783}
+footer{color:#59657d;font-size:13px;margin-top:22px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sum{position:static}}
+@media(max-width:510px){.options{grid-template-columns:1fr}.panel{padding:18px}}
+</style></head>
+<body><main>
+<header><div class="brand"><b>✦</b> Almanac Study</div><span class="pill">Self-service concept · Not a checkout</span></header>
+<p class="tag" style="margin-top:38px">Learning that responds</p>
+<h1>Build a study path that works around your goal.</h1>
+<p class="lead">Choose a sensible starting point, shape your study routine, and understand what your package includes. Core explanations and practice stay protected.</p>
+<div class="layout"><div>
+<section class="panel" aria-labelledby="goalTitle"><p class="tag">01 / Your goal</p><h2 id="goalTitle">What are you preparing for?</h2>
+<label>Course or learning goal (optional draft)<input id="goal" type="text" placeholder="e.g. Four-topic midterm review" maxlength="140"></label>
+<label>What sort of learning support?
+<select id="journey"><option value="existing">Self-study with an existing approved resource</option><option value="custom">Request new custom study material</option></select></label>
+<p id="journeyNote" class="muted">Content availability and access rights must be checked against a released catalogue. This demo does not grant access.</p>
+</section>
+<section class="panel" aria-labelledby="pathTitle"><p class="tag">02 / Your experience</p><h2 id="pathTitle">Choose how you want to begin</h2>
+<div class="options" role="group" aria-label="Starting study mode">
+<label class="option"><input type="radio" name="start" value="balanced" checked>Balanced route<br><small>Explanation and practice</small></label>
+<label class="option"><input type="radio" name="start" value="reading">Read first<br><small>Written lesson / notes</small></label>
+<label class="option"><input type="radio" name="start" value="video">Watch first<br><small>Narrated visual overview</small></label>
+<label class="option"><input type="radio" name="start" value="practice">Practise first<br><small>Check what you know</small></label>
+</div>
+<label style="margin-top:14px">Session length
+<select id="minutes"><option value="15">15 minutes — quick check</option><option value="30" selected>30 minutes — standard</option><option value="45">45 minutes — deeper session</option></select></label>
+<label>Where would you like more focus?
+<select id="focus"><option value="overview">Build a clear overview</option><option value="misconceptions">Correct confusing concepts</option><option value="recall">Remember and retrieve</option><option value="application">Apply ideas to new problems</option></select></label>
+<label class="check"><input id="quiet" type="checkbox"> Prefer low-bandwidth / text-first access</label>
+<p class="muted">These are preferences, not fixed learning styles. You can change them later. Optional formats never replace clear explanations and evidence of understanding.</p>
+</section>
+<section class="panel" aria-labelledby="scopeTitle"><p class="tag">03 / Package scope</p><h2 id="scopeTitle">Essentials are included</h2>
+<label>Custom production package used for the sample quote
+<select id="kind"><option value="resource">Focused Study Module</option><option value="exam" selected>Exam Preparation Pack</option><option value="course">Complete Course</option></select></label>
+<div id="includes" class="plan" aria-live="polite"></div>
+<p class="muted">The prices below mirror an inspected development specification, not evidence that a catalog item is on sale or that a receiving payment route is approved.</p>
+</section>
+<section class="panel" aria-labelledby="extrasTitle"><p class="tag">04 / Only if you need extra production</p><h2 id="extrasTitle">Add meaningful scope, not duplicated formats</h2>
+<div class="numrow"><label for="deep" style="margin:0">Extra deep-dive video <small>+$35 each; existing included video stays included</small></label><input id="deep" type="number" min="0" max="2" value="0"></div>
+<div class="numrow"><label for="exam" style="margin:0">Extra original exam simulation <small>+$39 each where offered</small></label><input id="exam" type="number" min="0" max="2" value="0"></div>
+<div class="numrow"><label for="unit" style="margin:0">Extra complete learning module <small>+$59 each where offered</small></label><input id="unit" type="number" min="0" max="4" value="0"></div>
+<label style="margin-top:15px">Requested production timeline
+<select id="speed"><option value="standard">Standard · 1×</option><option value="priority">Priority · 1.4×</option><option value="express">Express · 1.9× (where allowed)</option></select></label>
+<p id="bounds" class="guard" role="status"></p>
+<fieldset style="margin-top:16px;border:1px solid var(--edge);border-radius:10px;padding:13px">
+<legend style="font-weight:700">Future learning formats you'd like to explore</legend>
+<label class="check"><input type="checkbox" name="interest" value="audio"> Audio-first companion lessons</label>
+<label class="check"><input type="checkbox" name="interest" value="stories"> Stories / decision scenarios</label>
+<label class="check"><input type="checkbox" name="interest" value="games"> Practice games</label>
+<label class="check"><input type="checkbox" name="interest" value="music"> Original musical memory cues</label>
+<p class="muted">Interest only. These are not additional priced features or promised deliverables, and selecting them doesn't change this quote.</p>
+</fieldset></section>
+<section class="panel" aria-labelledby="planTitle"><p class="tag">05 / Your study recipe</p><h2 id="planTitle">A recommended path you can change</h2>
+<div class="plan" id="studyPlan" aria-live="polite"></div>
+<p class="muted">The route is a proposed guide, not measured personal mastery or a guarantee of results. After access, a future Almanac workspace could use approved lessons and actual practice history to suggest the next step.</p>
+</section>
+</div>
+<aside class="panel sum" aria-labelledby="quoteTitle"><p class="tag">Preview / Guardrails</p><h2 id="quoteTitle">Your learning package</h2>
+<div id="quotedName" style="font-weight:750;font-size:17px"></div>
+<p class="muted">Illustrative custom-production rate from current source code</p>
+<div class="price" id="total" aria-live="polite"></div>
+<div id="pricebreak" class="pricebreak"></div>
+<div class="notice" id="requestGate">This is not a checkout. No payment, invoice, request or account is created.</div>
+<p class="guard" style="margin-top:12px">Included learning essentials cannot be removed to cut price. Express production may be disallowed by package, enhancements and real capacity.</p>
+<button class="primary" type="button" id="save">Save draft learning preferences (JSON)</button>
+<button class="ghost" type="button" id="reset">Restore defaults</button>
+<p class="muted">The export stays on your device; nothing is sent to Almanac. Actual access, capacity, price and payment eligibility require official verification.</p>
+</aside></div>
+<footer>Almanac responsive self-study prototype · Local-only demo · No network calls, student records, checkout, sign-in, or live personalized recommendations.</footer></main>
+<script>
+const cfg={
+resource:{name:"Focused Study Module",base:49,days:{standard:5,priority:3,express:2},max:{deep:1,exam:0,unit:0},included:["1 structured module guide","1 narrated video overview (4–6 min)","1 visual summary","15 explained practice questions","15 review flashcards","Workspace / supported downloads"]},
+exam:{name:"Exam Preparation Pack",base:149,days:{standard:7,priority:5,express:3},max:{deep:2,exam:2,unit:0},included:["Up to 4 revision modules","2 narrated video overviews","Visual summaries and consolidated slide deck","40 explained practice questions","50-item timed rehearsal with feedback","40 flashcards and a study plan","Progress and workspace access"]},
+course:{name:"Complete Course",base:399,days:{standard:14,priority:7,express:3},max:{deep:3,exam:2,unit:4},included:["Up to 8 structured module lessons","8 narrated video overviews","8 slide summaries","120 explained practice questions","120 flashcards","80-item exam rehearsal","Study plan and progress workspace"]}
+};
+const prices={deep:35,exam:39,unit:59},factors={standard:1,priority:1.4,express:1.9};
+const el=id=>document.getElementById(id),money=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n);
+function values(){
+const kind=el("kind").value,speed=el("speed").value,d={};
+for(const k of ["deep","exam","unit"]){let val=Number(el(k).value);if(!Number.isFinite(val))val=0;val=Math.max(0,Math.min(cfg[kind].max[k],Math.floor(val)));el(k).max=cfg[kind].max[k];el(k).value=val;el(k).disabled=cfg[kind].max[k]===0;d[k]=val}
+return {kind,speed,d};
+}
+function permitted(v){return !(v.kind==="course"&&v.speed==="express")&&!(v.speed==="express"&&(v.d.unit>0||v.d.deep>1||v.d.exam>1))&&!(v.speed==="priority"&&v.d.unit>2)}
+function render(){
+const v=values(),p=cfg[v.kind],start=document.querySelector('input[name="start"]:checked').value;
+const journey=el("journey").value;
+el("journeyNote").textContent=journey==="existing"?"Select from a genuinely released resource catalog when available. This prototype cannot quote access to prebuilt content.":"A new content-production request requires staff feasibility and source/rights checks; it is not an instant generation promise.";
+el("includes").innerHTML="<b>Included essentials</b><ul>"+p.included.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+el("quotedName").textContent=p.name;
+const bounds="Maximum extras: "+p.max.deep+" deep video(s), "+p.max.exam+" simulation(s), "+p.max.unit+" additional module(s).";
+el("bounds").textContent=bounds+" All limitations are checked before quote.";
+const valid=permitted(v),extras=v.d.deep*35+v.d.exam*39+v.d.unit*59,subtotal=p.base+extras,amount=Math.round(subtotal*factors[v.speed]);
+const data=[["Base package",money(p.base)],["Additional production",money(extras)],["Turnaround modifier",valid?money(amount-subtotal):"Not permitted"],["Expected days",valid?p.days[v.speed]+" calendar days":"Not permitted"]];
+el("pricebreak").innerHTML=data.map(row=>"<div><span>"+row[0]+"</span><strong>"+row[1]+"</strong></div>").join("");
+el("total").textContent=valid?money(amount):"Unavailable configuration";el("total").className=valid?"price":"price invalid";
+el("requestGate").textContent=!valid?"This combination is blocked by the same production constraints used in the observed package validator. Change speed or extras.":"Sample quote only. For an existing self-study resource, its actual access price is separately governed. No checkout, capacity promise or automatic order.";
+const first={balanced:"Read a concise orientation, then try a practice item.",reading:"Begin with a verified written explanation.",video:"Watch a reviewed narrated overview, if released for your package.",practice:"Try a reviewed question to identify a starting gap."}[start];
+const focus={overview:"Make a topic map and explain the main relationship.",misconceptions:"Compare two easily confused concepts and explain the difference.",recall:"Close your notes and recall one key idea.",application:"Apply the idea to one new, original question."}[el("focus").value];
+const t=el("minutes").value,quiet=el("quiet").checked;
+el("studyPlan").innerHTML="<p><b>Your "+t+"-minute starting session</b></p><ol><li>"+(quiet?"Use a readable low-data version. ":"")+first+"</li><li>"+focus+"</li><li>Check understanding using original retrieval or application.</li><li>Read the explanation for any missed reasoning.</li><li>Schedule a short revisit or choose another authorized topic.</li></ol><p class='muted'>Keep core concept checks. Skip optional music, story, game or video if unhelpful; doing so does not imply mastery.</p>";
+}
+function exportDraft(){
+const v=values();if(!permitted(v)){alert("Choose a permitted configuration before exporting.");return}
+const interests=[...document.querySelectorAll('input[name="interest"]:checked')].map(x=>x.value);
+const obj={prototype:true,version:"0.1",journey:el("journey").value,subject_or_goal:el("goal").value.slice(0,140),kind:v.kind,speed:v.speed,enhancements:{deep_video:v.d.deep,exam_sim:v.d.exam,unit:v.d.unit},learning_preferences:{start:document.querySelector('input[name="start"]:checked').value,session_minutes:Number(el("minutes").value),focus:el("focus").value,low_bandwidth:el("quiet").checked},research_interests_only:interests,not_an_order:true,no_payment_taken:true};
+const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="almanac-self-study-draft.json";a.click();URL.revokeObjectURL(u);
+}
+const controls=document.querySelectorAll("input,select");controls.forEach(x=>x.addEventListener("change",render));
+el("kind").addEventListener("change",()=>{for(const k of ["deep","exam","unit"])el(k).value=0;el("speed").value="standard";render()});
+el("save").addEventListener("click",exportDraft);
+el("reset").addEventListener("click",()=>{location.reload()});
+render();
+</script>
+</body></html>
