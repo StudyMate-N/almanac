@@ -1,4 +1,4 @@
-# Almanac Study — Campaign Mode v1.1.0
+# Almanac Study — Campaign Mode v1.2.0
 
 **Status:** Created 22 November 2026. Operational planning activated; this document does **not** imply new posts, product delivery, a paid campaign, approved checkout, or an always-running agent. The real first Facebook video is already published by the user.
 
