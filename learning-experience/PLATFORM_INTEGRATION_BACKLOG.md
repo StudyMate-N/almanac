@@ -22,6 +22,20 @@
 | P2 | Optional original music cue player | reusable media variants | no autoplay, licensed original composition, text/speech alternative and outcome metric |
 | P3 | Translation/language support, advanced serious games, accessibility localization | broader product architecture | evidence and demand threshold first, separate rights and safety review |
 
+## Self-service extension (proposed)
+| Priority | Task | Existing anchor | Acceptance |
+|---|---|---|---|
+| P0 | Reconcile current package form vs live payment eligibility | `src/components/site/request-builder.tsx`, `src/lib/learning-offers.ts`, database RPC | Quote/provider/availability truth; request-only until authorized collection verified |
+| P0 | Guardrails decision contract | `learning-experience/SELF_SERVICE_RULES_AND_PRICING.md` | Included content cannot be unselected or double-priced, experimental media interest has no invented price |
+| P0 | User studies path prototype and usability | `prototypes/self-study-configurator.html`, `STUDY_RECIPES.md` | Learner understands included essentials, can identify next useful step and export draft preferences without checkout |
+| P1 | Study start mode + session preference editor | `PREFERENCES`, `src/lib/store.tsx`, `src/lib/plan.ts` | No price change; correct user-scoped persistence, offline merge, user override |
+| P1 | Three-action 'Today' gateway | `/app`, `/app/setup`, course planner | Continue suggested / Choose topic / Review missed with clear next-step explanation |
+| P1 | Entitlement-aware media selector | approved media manifest + Supabase authorization | Only released approved rights-cleared media shown, low-data fallback and no new product promises |
+| P1 | Protected understanding-state model | question bank, FSRS, progress | Watched != practised != validated understanding; stable card IDs and item approvals |
+| P2 | Consent-aware study-choice analytics | `src/lib/api.ts`, Supabase RPC | Reason codes, overrides and learning outcomes measured separately from marketing analytics |
+| P2 | Controlled A/B usability/outcome evaluation | reviewed objective and same content | Guided path vs flat resource browse; pre-specified transfer/retention/UX measures |
+| P3 | Optional priced novel media | later pricing/admin review | Only after value, permissions, commercial cost and staff capacity established |
+
 ## Engineering quality gates
 - No regression in `npm run typecheck`, `npm run build`, relevant unit/e2e and existing reviewer hash approvals.
 - Preserve stable IDs for graded cards/questions, due dates and learner events; migrate schemas with rollback.
