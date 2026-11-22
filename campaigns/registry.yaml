@@ -2,7 +2,7 @@ schema_version: 1
 program:
   id: ALMANAC-CAMPAIGNS
   name: Almanac Study Campaign Mode
-  version: 1.0.0
+  version: 1.1.0
   created_on: 2026-11-22
   mode: draft_and_review
   marketing_publication_autonomy: false
@@ -15,10 +15,19 @@ program:
   north_star: qualified_learning_resource_inquiries
 campaigns:
   - id: NR601-001
-    title: NR 601 Midterm — Katz vs Lawton
+    title: NR 601 Midterm — Four-Topic Learning Pack
     audience: NR 601 geriatric assessment learners
     platform: Facebook
-    stage: published_first_post_awaiting_measurement
+    stage: published_first_post_awaiting_source_pack_inventory_and_measurement
+    product_origin:
+      origin: learner_midterm_preparation
+      source_count_user_reported_approx: 17
+      source_status: not_inspected
+      organization: four_topics_user_reported_titles_unknown
+      production_tool: NotebookLM_user_reported
+      media_formats_user_reported: [study_notes, questions, quizzes, flashcards, audio]
+      first_video_role: opening_excerpt_not_full_course_theme
+      context_path: campaigns/NR601-001/product-origin.md
     first_post:
       identifier: FB-NR601-001-P01
       status: user_reported_published
@@ -43,7 +52,7 @@ campaigns:
       ownership_or_distribution_rights: unverified
       clinical_review: unverified
       availability_and_price: unverified
-    next_output: reviewable_Nr601_comparison_carousel_and_followup_quiz
+    next_output: source_grounded_four_topic_midterm_pack_overview_then_selected_snippets
     next_review_gate: clinical_and_owner_review
     scorecard_path: campaigns/metrics/NR601-001.csv
     experiment_log_path: campaigns/NR601-001/experiments.md
