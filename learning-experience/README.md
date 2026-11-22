@@ -3,6 +3,9 @@
 **State:** DESIGN / REVIEW, not production release or an approved change to public brand copy.  
 **Companion:** Campaign Mode draft PR #5, `ops/almanac-campaign-mode-v1`; this branch is intentionally separate so the public campaign and private learning architecture can be reviewed independently.
 
+## Learner control is a core component
+See [Self-service doctrine](./SELF_SERVICE_STUDY_DOCTRINE.md), [Rules and pricing](./SELF_SERVICE_RULES_AND_PRICING.md), [Five study recipes](./STUDY_RECIPES.md), and [Self-service roadmap](./SELF_SERVICE_PRODUCT_ROADMAP.md). The existing package builder already offers bounded custom-production configuration; the new proposal adds **post-entitlement self-study control** and a safer, user-understandable choice hierarchy. An [interactive nontransactional prototype](./prototypes/self-study-configurator.html) demonstrates scope, preferences and current source-code quote calculations. No live purchasing or study-engine feature was modified.
+
 ## Company objective
 **One learning foundation, many useful ways to learn, and one continuing evidence-based path forward.**
 
