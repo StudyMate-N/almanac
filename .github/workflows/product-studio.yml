@@ -1,0 +1,52 @@
+name: Almanac Product Studio — guide pilot acceptance
+
+on:
+  pull_request:
+    paths:
+      - "product-studio/**"
+      - "src/lib/learning-guide.ts"
+      - "src/components/guided-learning-entry.tsx"
+      - "src/app/app/**"
+      - "src/app/api/learning-requests/route.ts"
+      - "src/app/request/page.tsx"
+      - "scripts/check-learning-guide.mjs"
+      - "scripts/check-product-system.mjs"
+      - ".github/workflows/product-studio.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scenario-acceptance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Reproduce locked dependency installation
+        run: npm ci
+      - name: Evaluate learner guidance with failure and recovery scenarios
+        run: node --experimental-strip-types scripts/check-learning-guide.mjs
+      - name: Ensure measurable product contract and inactive legacy checkout
+        run: node scripts/check-product-system.mjs
+      - name: Preserve brand and current commercial rules
+        run: |
+          node scripts/check-almanac-contact-isolation.mjs
+          node --experimental-strip-types scripts/check-learning-offers.mjs
+          node --experimental-strip-types scripts/check-request-origin.mjs
+          node --experimental-strip-types scripts/check-payment-confirmation.mjs
+      - name: TypeScript and full refined Almanac build
+        run: |
+          npm run typecheck
+          npm run build
+      - name: Confirm live new order suspension without writing records
+        run: node scripts/check-checkout-health.mjs
