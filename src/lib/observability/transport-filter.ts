@@ -1,4 +1,4 @@
-import { allowlistedAlmanacEvent } from "./event-contract";
+import { allowlistedAlmanacEvent } from "./event-contract.ts";
 
 /**
  * PostHog adds automatic context properties to custom events. The original
