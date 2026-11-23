@@ -1,6 +1,6 @@
 # Almanac observability integration contract (draft)
 
-Status: **PR-level implementation started. Allowlisted event schema, tests, CI and empty configuration placeholders added; no SDK installed, no telemetry deployed, no production changes.**
+Status: **Staged on draft PR #15. Browser SDK installed with npm-generated lockfile, opt-in UI and tests added. No live event collection or production deployment.**
 
 Date: 2026-11-23
 
@@ -10,26 +10,38 @@ Date: 2026-11-23
 - Netlify: `almanac-study` frontend deployed; frontend readiness must not imply backend readiness.
 - Supabase project `pebkqsyfliytbowxzyun` is `INACTIVE` as of this audit.
 - Existing blocker [#11](https://github.com/StudyMate-N/almanac/issues/11) and draft release-check PR [#12](https://github.com/StudyMate-N/almanac/pull/12) govern backend recovery. Do **not** redefine unreachable checks as passed.
-- PostHog connection is available, but its organization currently lists only `Default project` (ID 760516), with no ingested events. That destination is **not yet confirmed** as Almanac-owned. Do not copy the token or emit events until the destination is approved.
+- PostHog organization is restricted to one project. The user explicitly approved renaming the unused project ID `760516` to **Almanac — Pilot**; the rename is verified. Region remains **US Cloud**. At the time of this work, no events were ingested. Project setting `anonymize_ips` is **false**; this is an open privacy-review item before public traffic.
 
-## Implemented in draft PR #15 (2026-11-23)
+## Implemented on draft PR #15 (2026-11-23)
 
-- Added `src/lib/observability/event-contract.ts` with seven strictly allowlisted events and safe enum-only property values. It has no network requests or third-party SDK dependency.
-- Added `scripts/check-observability-contract.mjs` with five Node tests for validity, unknown-event rejection, PII stripping, invalid enum rejection and no network calls. All five passed in the local isolated test, plus strict `tsc --noEmit` for the contract module.
-- Added `npm run test:telemetry`, `.env.example` with blank analytics placeholders, and a scoped GitHub Actions privacy-contract job. Hosted CI must pass separately; local tests are not a release approval.
-- The connected PostHog organization's `organizations_projects` limit is **1**, already used by the unused `Default project` (ID 760516, no ingested events). A separate project cannot be created under the current plan. Updating the default project's name/settings requires the user's explicit confirmation and is not authorized by this draft.
-- **No SDK is installed or capturing events.** An analytics destination and consent review are prerequisites for instrumentation.
+- Installed PostHog's browser SDK with `npm install --save posthog-js@1` on GitHub Actions, using the project's checked-out npm workspace. Both `package.json` and npm-generated `package-lock.json` are committed. Locked SDK version: **1.453.2**.
+- Next.js `src/instrumentation-client.ts` calls a guarded initializer: it is inactive unless `NEXT_PUBLIC_ALMANAC_ANALYTICS_ENABLED=true`, valid token/host values exist and the visitor **explicitly grants consent**. Empty env values never break production.
+- Added an optional consent UI (`src/components/analytics-consent.tsx`) with allow/decline and a preference control to revoke the choice later. Consent is remembered locally; SDK event persistence is in memory, and the visitor has no direct identifier.
+- Disabled automatic capture, pageviews, page-leave events, recordings, surveys and feature flags. `before_send` drops unapproved SDK events and strips URL/query/referrer/device/context fields from allowed events, preserving only approved enum fields, the SDK's public ingest token and its transient distinct ID. No raw learner or clinical case content is sent.
+- Added an observed catalogue-impression integration (`src/components/catalog-telemetry.tsx`); it fires an approved event only if consented capture is active. **The other six approved events are contract-only, not falsely counted as implemented.** Future branches should attach them to verified business transitions.
+- Added nine privacy/consent/test cases to `scripts/check-observability-contract.mjs` and a permanent GitHub workflow running `npm ci`, `npm run test:telemetry`, `npm run typecheck` and `npm run build`. The temporary lockfile bootstrap workflow was removed.
+- A pre-final bootstrap action already passed full npm reproducibility, privacy tests, TypeScript and Next.js build. **Final branch CI must also pass before readiness.** No PostHog production environment variables, server-side tracking or deployment have been configured.
 
-## Proposed rollout (separate from backend work)
+## Staging and release checklist
 
-1. Confirm or provision **Almanac-specific** PostHog project, region, retention and account permissions. Do not combine with Unemployed Professor, Payment Recovery or other brands.
-2. Install `posthog-js@1` with `npm install --save posthog-js@1` from a checked-out repository and commit both `package.json` and `package-lock.json`. Never hand-edit the lockfile. Run `npm ci`, `npm run typecheck` and `npm run build`.
-3. Initialize via Next.js `src/instrumentation-client.ts` following the installed PostHog Next.js guidance, with `defaults: '2026-08-30'`. Read `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and `NEXT_PUBLIC_POSTHOG_HOST` optionally. An unset token must not break production; show a clear development error. Commit placeholder names only to `.env.example`, no real key.
-4. Do not auto-enable session recording, autocapture of forms, surveys, text capture or URL query capture. Almanac is a learning platform and may handle case documents, account tokens, invoices and uploaded material. Review privacy notice, consent requirements, retention, PII redaction and data processing region before optional replay.
-5. Introduce **manual allowlisted analytics events only**, with non-identifying enum metadata (no document titles, case IDs, user-entered text, invoice identifiers, student names, email addresses, access codes or private URLs).
-6. Identify signed-in users only with the application's stable internal account ID after authentication, not email, and reset on logout. Keep anonymous visitors anonymous. No identification change until existing auth implementation is reviewed.
-7. Stage the instrumentation in a preview branch. Verify the events appear in the approved PostHog project with controlled test traffic. Only then consider production promotion.
-8. Respect all existing checkout/merchant/manual-payment, access-control, contact-separation and release gates. Analytics must never block application functionality or bypass authorization.
+1. Confirm privacy notice, consent copy, handling of IP addresses (PostHog project currently `anonymize_ips=false`) and appropriateness of US region. Keep auto-replay and sensitive capture disabled.
+2. On a **preview deployment only**, set `NEXT_PUBLIC_ALMANAC_ANALYTICS_ENABLED=true`, `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` from the confirmed Almanac — Pilot project, and `NEXT_PUBLIC_POSTHOG_HOST` from its `api_host` setting. Never hardcode either value in the repo.
+3. Browser QA: decline and verify no events, allow and verify exactly one `almanac_catalog_viewed` event on entering the catalogue viewport, revoke and verify capturing stops. Inspect network requests and received event properties for any unexpected URLs or identifying content.
+4. Simulate network blocking and consent-storage failure. Course browsing, learning, invoices, access controls and payment operations must remain functional.
+5. Validate PostHog ingestion only with test traffic. Do not infer delivery from a successful `posthog.capture` call or from a passing build.
+6. Revisit user identification only when stable learner account ID and authentication lifecycle have been reviewed. Do not identify by email, name or case content.
+7. Keep payment settlement authoritative: proof-of-payment uploads and invoice events are not completed purchases.
+8. Continue backend restoration and live security QA through existing issue #11 and PR #12, independently of client telemetry. Do not merge/deploy until all relevant release gates pass.
+
+## Pilot configuration template
+
+```env
+NEXT_PUBLIC_ALMANAC_ANALYTICS_ENABLED=false
+NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=
+NEXT_PUBLIC_POSTHOG_HOST=
+```
+
+The default values are intentionally off. A repository build does **not** turn on live tracking.
 
 ## Event contract v1
 
@@ -45,7 +57,7 @@ Date: 2026-11-23
 
 **No purchase_completed event** until payment settlement is authoritative. Do not mark invoice submission, payment-proof uploads, or merchant-approval requests as completed purchases.
 
-## Privacy and reliability tests
+## Privacy and reliability acceptance criteria
 
 - No raw user data, medical case content or uploaded file names in events.
 - URL/query strings that carry tokens never transmitted.
@@ -54,7 +66,7 @@ Date: 2026-11-23
 - No unapproved tracking on consent-restricted surfaces.
 - No new public Supabase permissions or secrets in client bundle.
 - Build, static checks, and local event-shape tests pass.
-- Browser QA tests event emission with an approved mock; capture exactly once and verify consent handling.
+- Browser QA must test opt-in, opt-out, revocation, duplicate event suppression and safe network payloads; browser E2E still pending.
 - Real analytics arrival is checked separately in an approved PostHog project.
 - Backend security probes remain blocked until Supabase is restored and tested.
 
@@ -62,8 +74,8 @@ Date: 2026-11-23
 
 - **Telemetry lane:** scoped to analytics code, test fixtures, event schema and privacy controls. Separate branch from release QA, merchant/contact and learning-experience branches.
 - **Backend recovery:** tracked in issue #11; not prerequisite to writing client telemetry tests but prerequisite for end-to-end checkout evaluation.
-- **Human approval required:** PostHog project destination/region, privacy policy and consent, optional replay, and production activation.
-- **Release result:** `NOT DEPLOYED` until reviewed PR is merged and destination verified.
+- **Human approval required:** privacy notice/consent and US processing, project IP anonymization settings, and production activation. The user has already approved renaming the unused destination project. Session replay stays disabled.
+- **Release result:** `NOT DEPLOYED`. Installing a library in a draft PR is not deploying analytics.
 
 ## Measurement
 
@@ -72,5 +84,7 @@ Compare baseline vs subsequent weeks for: incident detection time, time to repro
 ## References
 
 - [PostHog Next.js integration](https://posthog.com/docs/libraries/next-js)
+- [PostHog privacy/data collection](https://posthog.com/docs/privacy/data-collection)
+- [PostHog before_send filtering](https://posthog.com/docs/libraries/js/usage#amending-or-sampling-events)
 - [Almanac backend blocker #11](https://github.com/StudyMate-N/almanac/issues/11)
 - [Almanac release QA PR #12](https://github.com/StudyMate-N/almanac/pull/12)
