@@ -86,6 +86,12 @@ try {
     });
   });
 
+  await context.addInitScript(() => {
+    window.__almanacQaStages = [];
+    window.addEventListener("almanac:qa-stage", (event) => {
+      window.__almanacQaStages.push(event.detail);
+    });
+  });
   const page = await context.newPage();
   const clientErrors = [];
   const thirdPartyHosts = new Set();
@@ -110,6 +116,10 @@ try {
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(250);
   await page.locator("#courses").scrollIntoViewIfNeeded();
+  await page.evaluate(() => {
+    document.getElementById("courses")?.scrollIntoView({ block: "center" });
+    window.dispatchEvent(new Event("almanac:analytics-consent-updated"));
+  });
 
   // At least one approved catalogue event must reach the intercepted host.
   const deadline = Date.now() + 12000;
@@ -121,6 +131,11 @@ try {
       thirdPartyHosts: [...thirdPartyHosts],
       clientErrors,
       courseVisible: await page.locator("#courses").isVisible(),
+      courseViewportFraction: await page.locator("#courses").evaluate((element) => {
+        const r = element.getBoundingClientRect();
+        return Math.max(0, Math.min(innerHeight, r.bottom) - Math.max(0, r.top)) / Math.max(1, r.height);
+      }),
+      qaStages: await page.evaluate(() => window.__almanacQaStages?.slice(-30) ?? []),
     }));
   }
   assert.ok(requests.length > 0, "opt-in and catalogue view must emit a test analytics request");
