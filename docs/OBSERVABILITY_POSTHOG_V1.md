@@ -10,7 +10,7 @@ Date: 2026-11-23
 - Netlify: `almanac-study` frontend deployed; frontend readiness must not imply backend readiness.
 - Supabase project `pebkqsyfliytbowxzyun` is `INACTIVE` as of this audit.
 - Existing blocker [#11](https://github.com/StudyMate-N/almanac/issues/11) and draft release-check PR [#12](https://github.com/StudyMate-N/almanac/pull/12) govern backend recovery. Do **not** redefine unreachable checks as passed.
-- PostHog organization is restricted to one project. The user explicitly approved renaming the unused project ID `760516` to **Almanac — Pilot**; the rename is verified. Region remains **US Cloud**. At the time of this work, no events were ingested. Project setting `anonymize_ips` is **false**; this is an open privacy-review item before public traffic.
+- PostHog organization is restricted to one project. The user explicitly approved renaming the unused project ID `760516` to **Almanac — Pilot**; the rename is verified. Region remains **US Cloud**. At the time of this work, no events were ingested. Project setting `anonymize_ips` was **enabled and verified** on 2026-11-23.
 
 ## Implemented on draft PR #15 (2026-11-23)
 
@@ -20,7 +20,7 @@ Date: 2026-11-23
 - Disabled automatic capture, pageviews, page-leave events, recordings, surveys and feature flags. `before_send` drops unapproved SDK events and strips URL/query/referrer/device/context fields from allowed events, preserving only approved enum fields, the SDK's public ingest token and its transient distinct ID. No raw learner or clinical case content is sent.
 - Added an observed catalogue-impression integration (`src/components/catalog-telemetry.tsx`); it fires an approved event only if consented capture is active. **The other six approved events are contract-only, not falsely counted as implemented.** Future branches should attach them to verified business transitions.
 - Added nine privacy/consent/test cases to `scripts/check-observability-contract.mjs` and a permanent GitHub workflow running `npm ci`, `npm run test:telemetry`, `npm run typecheck` and `npm run build`. The temporary lockfile bootstrap workflow was removed.
-- A pre-final bootstrap action already passed full npm reproducibility, privacy tests, TypeScript and Next.js build. **Final branch CI must also pass before readiness.** No PostHog production environment variables, server-side tracking or deployment have been configured.
+- Full npm reproducibility, privacy tests, TypeScript and Next.js build have passed (run 45103986986), and isolated Playwright E2E passed (run 45103987034). **Hosted preview and real synthetic PostHog ingestion must still pass before release readiness.** No PostHog production environment variables, server-side tracking or deployment have been configured.
 
 ## Staging and release checklist
 
@@ -43,15 +43,18 @@ NEXT_PUBLIC_POSTHOG_HOST=
 
 The default values are intentionally off. A repository build does **not** turn on live tracking.
 
-## Isolated browser QA — release blocker (2026-11-23)
+## Isolated browser QA — original blocker resolved (2026-11-23)
 
-- Added a GitHub Actions Chromium/Playwright QA job against a local Next.js **production build**, using a fake PostHog token and a browser firewall: all external browser requests are blocked or mocked; no real learner data and no live PostHog ingestion.
-- QA validates refusal, grant, intended catalogue event, redacted URL-token transport and revocation. The dependency and browser installation work on pinned Ubuntu 24.04. The independent privacy/TypeScript/Next.js build pipeline **passes** (GitHub run [45101981886](https://github.com/StudyMate-N/almanac/actions/runs/45101981886)).
-- The strict browser test **fails** (run [45101981881](https://github.com/StudyMate-N/almanac/actions/runs/45101981881)): the user opts in, the SDK reports enabled and loaded, the catalogue is visible and `capture()` is attempted, but no event reaches the `before_send` callback or mock ingestion endpoint. PostHog attempts to load a third-party asset script, blocked by the browser firewall. Changes to opt-in, initialization readiness, remote dependency loading and a bundled SDK import did not resolve it.
-- **No live browser preview deployment was verified**; the connected Vercel account does not expose Almanac's earlier Vercel status deployment, and current Netlify preview builds belong to different branches. Do not treat their READY statuses as PR #15 verification.
-- **Issue [#17](https://github.com/StudyMate-N/almanac/issues/17) is the explicit unresolved browser release blocker.** Do not disable the browser assertions or declare the PR ready based on passing static checks.
-- GitHub clean `npm ci` output independently reported **3 high and 1 critical dependency advisories**. Triage is tracked under [#16](https://github.com/StudyMate-N/almanac/issues/16); no dependency fix has been verified yet.
-- **PostHog project** `Almanac — Pilot` (ID 760516) has IP anonymization enabled. There is still no verified application event ingestion, and the production analytics switch remains off.
+- **Cause identified and verified:** PostHog's JavaScript SDK filters known automated/bot user agents, including Playwright's headless Chromium browser. Therefore `posthog.capture()` silently returned without invoking the outbound privacy filter or sending a request. This was an expected SDK safeguard, **not** an Almanac catalogue or consent bug.
+- **Minimal, test-only fix:** `opt_out_useragent_filter: process.env.NEXT_PUBLIC_ALMANAC_ANALYTICS_QA === "true"` in the SDK configuration. This opt-out of bot filtering is enabled **only** in the isolated GitHub test build; normal preview and production keep the SDK's default bot filter.
+- **Verified E2E:** [run 45103726896](https://github.com/StudyMate-N/almanac/actions/runs/45103726896) passed: declining analytics sent zero requests, consenting yielded one intercepted catalogue event, revoking consent prevented further requests across a reload.
+- **Strengthened E2E:** [run 45103987034](https://github.com/StudyMate-N/almanac/actions/runs/45103987034) passed additional strict assertions: exactly one catalogue event, `surface: public`, no private URL token and no SDK-enriched URL/referrer/path/user-agent fields.
+- **Full CI:** [run 45103986986](https://github.com/StudyMate-N/almanac/actions/runs/45103986986) passed privacy tests, `npm ci`, typechecking and the Next.js production build.
+- **Method:** E2E runs a real Next.js build in isolated Ubuntu 24.04/Playwright Chromium with a **fake** PostHog token; a browser egress firewall intercepts PostHog host requests and blocks all other external hosts. No real learner data, actual PostHog event delivery, Netlify deployment, or production analytics config was used.
+- [Issue #17](https://github.com/StudyMate-N/almanac/issues/17) is now **closed as resolved for the isolated browser QA**. This does not mean production rollout is approved.
+- **Unresolved release gates:** clean `npm ci` previously showed three high and one critical dependency advisories ([#16](https://github.com/StudyMate-N/almanac/issues/16)); backend inactive ([#11](https://github.com/StudyMate-N/almanac/issues/11)); hosted Almanac preview branch and genuine synthetic PostHog project ingestion still unverified. The analytics PR remains a draft.
+- PostHog project `Almanac — Pilot` (ID 760516) has IP anonymization enabled; no real application event ingestion has been verified.
+- Source: [PostHog bot/user-agent filtering and test override](https://posthog.com/docs/web-analytics/troubleshooting).
 
 ## Event contract v1
 
@@ -76,7 +79,7 @@ The default values are intentionally off. A repository build does **not** turn o
 - No unapproved tracking on consent-restricted surfaces.
 - No new public Supabase permissions or secrets in client bundle.
 - Build, static checks, and local event-shape tests pass.
-- Browser QA must test opt-in, opt-out, revocation, duplicate event suppression and safe network payloads; browser E2E still pending.
+- Browser QA must test opt-in, opt-out, revocation, duplicate event suppression and safe network payloads; browser E2E passed in isolated fake-host CI; hosted preview and live synthetic ingestion remain pending.
 - Real analytics arrival is checked separately in an approved PostHog project.
 - Backend security probes remain blocked until Supabase is restored and tested.
 
@@ -84,7 +87,7 @@ The default values are intentionally off. A repository build does **not** turn o
 
 - **Telemetry lane:** scoped to analytics code, test fixtures, event schema and privacy controls. Separate branch from release QA, merchant/contact and learning-experience branches.
 - **Backend recovery:** tracked in issue #11; not prerequisite to writing client telemetry tests but prerequisite for end-to-end checkout evaluation.
-- **Human approval required:** privacy notice/consent and US processing, project IP anonymization settings, and production activation. The user has already approved renaming the unused destination project. Session replay stays disabled.
+- **Human approval required:** privacy notice/consent and US processing, and production activation. IP anonymization was already enabled and verified. The user has already approved renaming the unused destination project. Session replay stays disabled.
 - **Release result:** `NOT DEPLOYED`. Installing a library in a draft PR is not deploying analytics.
 
 ## Measurement
