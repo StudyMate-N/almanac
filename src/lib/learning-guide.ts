@@ -65,9 +65,7 @@ export function suggestGuidedStep(input: GuideInput): GuidedStep {
   }
 
   function practiceStep(missedOnly: boolean, reasonCode: GuidedStep["reasonCode"], why: string): GuidedStep {
-    const n=Math.min(practiceSize(minutes), availableQuestions);
-    const requested=missedOnly?Math.min(n,missed):n;
-    const params=new URLSearchParams({course:courseId,n:String(requested),...(missedOnly?{pool:"missed"}:{})});
+    const params=new URLSearchParams({course:courseId,n:String(practiceSize(minutes)),...(missedOnly?{pool:"missed"}:{})});
     return {
       state: "ready",kind:"practice",href:`/app/practice?${params.toString()}`,
       action:missedOnly?"Review questions you missed":"Build a practice set",
@@ -92,6 +90,9 @@ export function suggestGuidedStep(input: GuideInput): GuidedStep {
 
   if (intent === "review" && missed > 0) {
     return practiceStep(true,"missed","You have unanswered learning needs from earlier practice. Start by reviewing missed questions and their explanations.");
+  }
+  if (intent === "review" && availableQuestions > 0) {
+    return practiceStep(false,"fallback","There are no previously missed questions in this course. A small reviewed practice set is another useful way to check your recall.");
   }
   if (intent === "prepare" && availableQuestions > 0) {
     return practiceStep(false,"prepare","A short practice set can show which reviewed topics need another explanation before your assessment.");
