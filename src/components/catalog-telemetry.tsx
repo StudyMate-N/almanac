@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import {
   ALMANAC_ANALYTICS_CONSENT_CHANGED,
+  almanacAnalyticsQaStage,
   captureAlmanacEvent,
 } from "@/lib/observability/posthog-client";
 
@@ -27,7 +28,11 @@ export function AlmanacCatalogTelemetry() {
           Math.max(0, rectangle.top),
       );
       const visibleFraction = visibleHeight / Math.max(1, rectangle.height);
-      if (visibleFraction < 0.25) return;
+      if (visibleFraction < 0.25) {
+        almanacAnalyticsQaStage("catalog:below-threshold");
+        return;
+      }
+      almanacAnalyticsQaStage("catalog:visible");
 
       if (
         captureAlmanacEvent("almanac_catalog_viewed", {
@@ -35,6 +40,7 @@ export function AlmanacCatalogTelemetry() {
         })
       ) {
         captured = true;
+        almanacAnalyticsQaStage("catalog:captured");
         observer.disconnect();
       }
     }
