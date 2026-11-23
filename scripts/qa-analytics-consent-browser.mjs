@@ -160,6 +160,12 @@ try {
     requests.every((r) => r.url.startsWith(fakeIngestion + "/")),
     "requests must be intercepted and must never reach real PostHog",
   );
+  assert.equal(requests.length, 1, "one catalogue viewport impression must produce exactly one ingestion request");
+  assert.match(sent, /almanac_catalog_viewed/, "captured payload must contain the expected catalogue event");
+  assert.match(sent, /"surface"\s*:\s*"public"/, "captured payload must contain only the approved surface value");
+  for (const unexpectedProperty of ["$current_url", "$referrer", "$pathname", "$raw_user_agent", "student@example.com"]) {
+    assert.equal(sent.includes(unexpectedProperty), false, "transport payload includes disallowed property");
+  }
   assert.ok(!sent.includes(prohibitedMarker), "private query token must not be sent");
   assert.ok(!sent.includes("private_token="), "URL query keys must not be sent");
   console.log(`PASS: decline emits zero requests; consented catalogue emits ${requests.length} intercepted request(s)`);
