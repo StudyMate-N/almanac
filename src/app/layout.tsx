@@ -4,6 +4,7 @@ import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 import "./almanac-public.css";
 import "./almanac-workspace.css";
+import { AlmanacAnalyticsConsent } from "@/components/analytics-consent";
 
 export const metadata: Metadata = {
   title: {
@@ -29,7 +30,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <AlmanacAnalyticsConsent />
+      </body>
     </html>
   );
 }
