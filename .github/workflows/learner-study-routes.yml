@@ -1,0 +1,47 @@
+name: Almanac learner-directed study route checks
+
+on:
+  pull_request:
+    paths:
+      - "src/lib/study-route.ts"
+      - "src/components/study-route-chooser.tsx"
+      - "src/app/app/**"
+      - "scripts/check-study-route.mjs"
+      - ".github/workflows/learner-study-routes.yml"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  learner-route-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install exact approved dependencies
+        run: npm ci
+      - name: Verify learner choice, access-scope and fallback behaviors
+        run: node --experimental-strip-types scripts/check-study-route.mjs
+      - name: Preserve cross-brand contact isolation
+        run: node scripts/check-almanac-contact-isolation.mjs
+      - name: Preserve learning package and server-quote contracts
+        run: |
+          node --experimental-strip-types scripts/check-learning-offers.mjs
+          node --experimental-strip-types scripts/check-request-origin.mjs
+          node --experimental-strip-types scripts/check-payment-confirmation.mjs
+      - name: Type-check and build refined Almanac
+        run: |
+          npm run typecheck
+          npm run build

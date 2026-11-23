@@ -9,6 +9,7 @@ import { EXAMS } from "@/lib/config";
 import { topicStats } from "@/lib/progress";
 import { useStudent } from "@/lib/store";
 import { useCourse } from "@/lib/use-course";
+import { safePracticeSetSize } from "@/lib/study-route";
 
 /* Practice (design 16a): quick sets first, then the set builder with a live count. */
 
@@ -48,8 +49,8 @@ function Practice() {
   const [mods, setMods] = useState<string[]>([]);
   const [type, setType] = useState<"all" | "single" | "multiple">("all");
   const [level, setLevel] = useState<"all" | "recall" | "application" | "analysis">("all");
-  const [pool, setPool] = useState<"all" | "new" | "missed" | "flagged">("all");
-  const [want, setWant] = useState<number>(10);
+  const [pool, setPool] = useState<"all" | "new" | "missed" | "flagged">(() => sp.get("pool") === "missed" ? "missed" : "all");
+  const [want, setWant] = useState<number>(() => safePracticeSetSize(sp.get("n")));
   const [mode, setMode] = useState<"tutor" | "exam">("tutor");
 
   const withQs = modules.filter((m) => questions.some((q) => q.moduleId === m.id));
