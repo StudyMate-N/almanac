@@ -93,7 +93,7 @@ try {
   await page.waitForTimeout(1200);
   assert.equal(requests.length, 0, "declined consent must never contact analytics");
 
-  await page.getByRole("button", { name: "Analytics settings" }).click();
+  await page.getByRole("button", { name: "Change optional analytics preferences" }).click();
   await page.getByRole("button", { name: "Allow analytics" }).click();
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(250);
@@ -113,7 +113,7 @@ try {
   assert.ok(!sent.includes("private_token="), "URL query keys must not be sent");
   console.log(`PASS: decline emits zero requests; consented catalogue emits ${requests.length} intercepted request(s)`);
 
-  await page.getByRole("button", { name: "Analytics settings" }).click();
+  await page.getByRole("button", { name: "Change optional analytics preferences" }).click();
   await page.getByRole("button", { name: "No thanks" }).click();
   const afterRevoke = requests.length;
   await page.reload();
