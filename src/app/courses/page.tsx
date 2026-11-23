@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader, SiteFooter } from "@/components/site/chrome";
 import { CourseCatalog } from "@/components/site/course-catalog";
+import { AlmanacCatalogTelemetry } from "@/components/catalog-telemetry";
 import { courses } from "@/content/course";
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default function CoursesPage() {
         <p className="mt-4 max-w-2xl text-[15px] text-ink-body">
           Find a course, prepare for an exam, or explore resources for something you're working on.
         </p>
+        <AlmanacCatalogTelemetry />
         <CourseCatalog courses={courses} />
       </main>
       <SiteFooter />
