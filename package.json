@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "pretypecheck": "node scripts/image-sizes.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:telemetry": "node --experimental-strip-types scripts/check-observability-contract.mjs"
   },
   "engines": {
     "node": ">=20.9"
