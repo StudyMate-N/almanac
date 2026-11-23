@@ -1,5 +1,6 @@
 import posthog from "posthog-js";
 import { allowlistedAlmanacEvent } from "./event-contract";
+import { sanitizeAlmanacTransportProperties } from "./transport-filter";
 import {
   mayInitializeAlmanacAnalytics,
   type AlmanacAnalyticsConsentChoice,
@@ -73,6 +74,17 @@ export function initializeAlmanacPosthog(): boolean {
       advanced_disable_flags: true,
       person_profiles: "identified_only",
       persistence: "memory",
+      // Prevent the browser SDK from adding URL, query, referrer, document
+      // and device properties to our already allowlisted event payloads.
+      before_send: (event) => {
+        if (!event) return null;
+        const properties = sanitizeAlmanacTransportProperties(
+          event.event,
+          event.properties,
+        );
+        if (!properties) return null; // Includes SDK's own automatic events.
+        return { ...event, properties, $set: undefined, $set_once: undefined };
+      },
     });
     sdkInitialized = true;
     return true;
