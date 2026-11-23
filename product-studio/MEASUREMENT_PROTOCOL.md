@@ -33,7 +33,7 @@ Collect these **only after** consent, versioned event review and a tested final 
 ## Evaluation protocol
 
 - **Baseline:** Have consented pilot participants try a specified task in the existing draft workspace; observe whether they can locate an authorized study action and explain the expected next step. Document the task, sample limits and errors, not invented conversion rates.
-- **Treatment:** Same task using `/app/guide`. Record task outcome, quality of understanding, accessibility failures and reason-for-failure.
+- **Treatment:** Same task using `/app/learning-compass`. Record task outcome, quality of understanding, accessibility failures and reason-for-failure.
 - **Primary outcome:** proportion who complete the instructed, approved first action and can describe its purpose.
 - **Secondary outcomes:** confusion/recovery, successful return to the activity, number of unnecessary navigation detours, time-to-start, and user control over recommendations.
 - **Learning evidence:** a separate reviewed retrieval/application check (do not treat time spent, videos played or quiz attempts as proof of mastery).
