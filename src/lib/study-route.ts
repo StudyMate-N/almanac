@@ -50,7 +50,7 @@ export function selectStudyRoute(
   }
   // A new user can simply continue. Fallbacks do not imply a measured
   // learning-style diagnosis or allow access to unavailable formats.
-  const ordinary = pick("reading") ?? pick();
+  const ordinary = mode === "balanced" ? pick() : pick("reading") ?? pick();
   if (ordinary) return asLesson(ordinary, mode === "balanced" ? "continue" : "safe_alternative");
   if (practiceReady) {
     return { kind: "practice", lessonId: null, reason: "safe_alternative" };
