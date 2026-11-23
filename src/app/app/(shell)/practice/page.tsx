@@ -48,7 +48,7 @@ function Practice() {
   const [mods, setMods] = useState<string[]>([]);
   const [type, setType] = useState<"all" | "single" | "multiple">("all");
   const [level, setLevel] = useState<"all" | "recall" | "application" | "analysis">("all");
-  const [pool, setPool] = useState<"all" | "new" | "missed" | "flagged">("all");
+  const [pool, setPool] = useState<"all" | "new" | "missed" | "flagged">(() => sp.get("pool") === "missed" ? "missed" : "all");
   const [want, setWant] = useState<number>(10);
   const [mode, setMode] = useState<"tutor" | "exam">("tutor");
 
