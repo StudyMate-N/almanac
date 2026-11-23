@@ -87,6 +87,13 @@ try {
   });
 
   const page = await context.newPage();
+  const clientErrors = [];
+  const thirdPartyHosts = new Set();
+  page.on("pageerror", (error) => clientErrors.push(error.message.slice(0, 300)));
+  page.on("request", (request) => {
+    const host = new URL(request.url()).hostname;
+    if (host !== "127.0.0.1") thirdPartyHosts.add(host);
+  });
   await page.goto(`${origin}/?private_token=${prohibitedMarker}`);
   await page.getByRole("button", { name: "No thanks" }).click();
   await page.locator("#courses").scrollIntoViewIfNeeded();
@@ -95,6 +102,11 @@ try {
 
   await page.getByRole("button", { name: "Change optional analytics preferences" }).click();
   await page.getByRole("button", { name: "Allow analytics" }).click();
+  assert.equal(
+    await page.evaluate(() => localStorage.getItem("almanac:product-analytics-consent:v1")),
+    "granted",
+    "opt-in must persist as granted",
+  );
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(250);
   await page.locator("#courses").scrollIntoViewIfNeeded();
@@ -102,6 +114,15 @@ try {
   // At least one approved catalogue event must reach the intercepted host.
   const deadline = Date.now() + 12000;
   while (Date.now() < deadline && requests.length === 0) await page.waitForTimeout(450);
+  if (!requests.length) {
+    console.error("QA diagnostics:", JSON.stringify({
+      consent: await page.evaluate(() => localStorage.getItem("almanac:product-analytics-consent:v1")),
+      visibleAnalyticsControl: await page.getByRole("button", { name: "Change optional analytics preferences" }).count(),
+      thirdPartyHosts: [...thirdPartyHosts],
+      clientErrors,
+      courseVisible: await page.locator("#courses").isVisible(),
+    }));
+  }
   assert.ok(requests.length > 0, "opt-in and catalogue view must emit a test analytics request");
 
   const sent = requests.map((r) => `${r.url}\n${r.body}`).join("\n");
