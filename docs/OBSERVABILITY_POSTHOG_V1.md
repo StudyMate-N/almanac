@@ -24,7 +24,7 @@ Date: 2026-11-23
 
 ## Staging and release checklist
 
-1. Confirm privacy notice, consent copy, handling of IP addresses (PostHog project currently `anonymize_ips=false`) and appropriateness of US region. Keep auto-replay and sensitive capture disabled.
+1. Confirm privacy notice, consent copy, handling of IP addresses (PostHog project `anonymize_ips=true` verified on 2026-11-23) and appropriateness of US region. Keep auto-replay and sensitive capture disabled.
 2. On a **preview deployment only**, set `NEXT_PUBLIC_ALMANAC_ANALYTICS_ENABLED=true`, `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` from the confirmed Almanac — Pilot project, and `NEXT_PUBLIC_POSTHOG_HOST` from its `api_host` setting. Never hardcode either value in the repo.
 3. Browser QA: decline and verify no events, allow and verify exactly one `almanac_catalog_viewed` event on entering the catalogue viewport, revoke and verify capturing stops. Inspect network requests and received event properties for any unexpected URLs or identifying content.
 4. Simulate network blocking and consent-storage failure. Course browsing, learning, invoices, access controls and payment operations must remain functional.
@@ -42,6 +42,16 @@ NEXT_PUBLIC_POSTHOG_HOST=
 ```
 
 The default values are intentionally off. A repository build does **not** turn on live tracking.
+
+## Isolated browser QA — release blocker (2026-11-23)
+
+- Added a GitHub Actions Chromium/Playwright QA job against a local Next.js **production build**, using a fake PostHog token and a browser firewall: all external browser requests are blocked or mocked; no real learner data and no live PostHog ingestion.
+- QA validates refusal, grant, intended catalogue event, redacted URL-token transport and revocation. The dependency and browser installation work on pinned Ubuntu 24.04. The independent privacy/TypeScript/Next.js build pipeline **passes** (GitHub run [45101981886](https://github.com/StudyMate-N/almanac/actions/runs/45101981886)).
+- The strict browser test **fails** (run [45101981881](https://github.com/StudyMate-N/almanac/actions/runs/45101981881)): the user opts in, the SDK reports enabled and loaded, the catalogue is visible and `capture()` is attempted, but no event reaches the `before_send` callback or mock ingestion endpoint. PostHog attempts to load a third-party asset script, blocked by the browser firewall. Changes to opt-in, initialization readiness, remote dependency loading and a bundled SDK import did not resolve it.
+- **No live browser preview deployment was verified**; the connected Vercel account does not expose Almanac's earlier Vercel status deployment, and current Netlify preview builds belong to different branches. Do not treat their READY statuses as PR #15 verification.
+- **Issue [#17](https://github.com/StudyMate-N/almanac/issues/17) is the explicit unresolved browser release blocker.** Do not disable the browser assertions or declare the PR ready based on passing static checks.
+- GitHub clean `npm ci` output independently reported **3 high and 1 critical dependency advisories**. Triage is tracked under [#16](https://github.com/StudyMate-N/almanac/issues/16); no dependency fix has been verified yet.
+- **PostHog project** `Almanac — Pilot` (ID 760516) has IP anonymization enabled. There is still no verified application event ingestion, and the production analytics switch remains off.
 
 ## Event contract v1
 
