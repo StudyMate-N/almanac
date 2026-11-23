@@ -84,6 +84,10 @@ export function initializeAlmanacPosthog(): boolean {
       api_host: host,
       defaults: "2026-08-30",
       autocapture: false,
+      // PostHog correctly filters Playwright/HeadlessChrome as bots.
+      // Exempt ONLY the isolated, mocked browser QA build. Never turn this
+      // on in staging/production; those must keep bot filtering enabled.
+      opt_out_useragent_filter: process.env.NEXT_PUBLIC_ALMANAC_ANALYTICS_QA === "true",
       capture_pageview: false,
       capture_pageleave: false,
       disable_session_recording: true,
