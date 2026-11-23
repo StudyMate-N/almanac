@@ -34,7 +34,7 @@ The content supply system needs source provenance, rights, reviewed objectives, 
 | `/invoice` and payment-report endpoints | **PRESERVE LEGACY OBLIGATIONS** | Existing users retain access and support; do not advertise new payments |
 | `/courses` + course pages | **REIMAGINE DISCOVERY** | Demonstrate real, reviewed outcomes; separate available, preview, and proposed |
 | `/app` Today dashboard | **FOUNDATION** | Eventually becomes one contextual "what matters now" learning entry, not a list of dashboard widgets |
-| `/app/guide` (Product Studio pilot) | **NEW TESTABLE KERNEL** | Goal → authorized recommendation → rationale → next step, with fallback |
+| `/app/learning-compass` (Product Studio pilot) | **NEW TESTABLE KERNEL** | Goal → authorized recommendation → rationale → next step, with fallback |
 | `/app/learn`, practice, flashcards | **REUSE + REWORK** | Authentic study actions, feedback, review and cross-session continuity |
 | `/app/orders` | **PRESERVE CUSTOMER ACCESS** | Existing paid orders and downloads; no new checkout links |
 | `/coach` | **CONTINUE INTERNAL REFACTOR** | Turn into versioned learning-content production, review, accuracy and release system |
@@ -58,7 +58,7 @@ Every meaningful user screen should expose:
 ## Replace the current navigation in controlled stages
 
 - **Slice 0 — Stop risky commerce:** Complete. Keep new checkout down, existing invoices supported.
-- **Slice 1 — Guided start:** Build and test `/app/guide` with user goal, time, bandwidth, authorized activity and reason.
+- **Slice 1 — Guided start:** Build and test `/app/learning-compass` with user goal, time, bandwidth, authorized activity and reason.
 - **Slice 2 — Real learning loop:** Connect guide to approved objective coverage, practice rationales, meaningful feedback, honest uncertainty and spaced-recall continuity. Require clinical and rights review for source content.
 - **Slice 3 — Production cockpit:** Make coach's content review and approvals explicit and testable, then power the guide with real reviewed media inventory.
 - **Slice 4 — Product measurement:** Small, privacy-vetted PostHog events, purposeful usability feedback, first-action and recovered-error evaluation; hold sensitive study evidence in protected database.
