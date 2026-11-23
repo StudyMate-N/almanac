@@ -7,7 +7,7 @@ const file = "product-studio/features/guided-learning-entry.v1.json";
 const feature = JSON.parse(readFileSync(file,"utf8"));
 assert.equal(feature.schemaVersion,1);
 assert.match(feature.featureId,/^[a-z][a-z0-9-]+$/);
-assert.equal(feature.surface,"/app/guide");
+assert.equal(feature.surface,"/app/learning-compass");
 assert.equal(feature.status,"pilot");
 assert.equal(feature.pricingImpact,"none");
 assert.equal(feature.requiredEntitlement,"existing-authorized-course");
@@ -29,7 +29,7 @@ for(const path of [
   feature.evaluation.testScript,
   "src/lib/learning-guide.ts",
   "src/components/guided-learning-entry.tsx",
-  "src/app/app/(shell)/guide/page.tsx",
+  "src/app/app/(shell)/learning-compass/page.tsx",
 ]){
   assert.ok(existsSync(path),"missing implementation/test file: "+path);
 }
