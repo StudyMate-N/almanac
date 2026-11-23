@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "featureId": "guided-learning-entry",
   "status": "pilot",
-  "surface": "/app/guide",
+  "surface": "/app/learning-compass",
   "job": "Help an authorized learner begin one meaningful, reviewed learning activity without navigating the entire workspace.",
   "learnerPromise": "Give me one understandable next step, explain why and what follows, and allow me to choose another route.",
   "evidenceStatus": "code-backed-pilot-not-user-validated",
