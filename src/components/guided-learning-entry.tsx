@@ -18,7 +18,7 @@ const sessionOptions: readonly SessionMinutes[] = [5, 15, 30];
 const isSessionMinutes = (v: unknown): v is SessionMinutes => v === 5 || v === 15 || v === 30;
 
 export function GuidedLearningEntry() {
-  const { authorizedCourses, status } = useStudent();
+  const { authorizedCourses, status, state } = useStudent();
   const availableCourses = useMemo(
     () => openCourses.filter((course) => authorizedCourses.includes(course.id)),
     [authorizedCourses],
@@ -41,9 +41,9 @@ export function GuidedLearningEntry() {
     () => lessons.map((lesson) => ({
       id: lesson.id,
       medium: lesson.blocks.some((block) => block.t === "video") ? "video" as const : "reading" as const,
-      completed: false,
+      completed: Boolean(state.lessons[lesson.id]),
     })),
-    [lessons],
+    [lessons, state.lessons],
   );
   const missedCount = questions.filter((question) => latest.get(question.id)?.correct === false).length;
   const guidance = suggestGuidedStep({
