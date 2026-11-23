@@ -10,6 +10,18 @@ const CONSENT_STORAGE_KEY = "almanac:product-analytics-consent:v1";
 export const ALMANAC_ANALYTICS_CONSENT_CHANGED = "almanac:analytics-consent-updated";
 let sdkInitialized = false;
 
+/** QA-only lifecycle markers, containing no user input or event properties. */
+export function almanacAnalyticsQaStage(stage: string): void {
+  if (
+    typeof window !== "undefined" &&
+    process.env.NEXT_PUBLIC_ALMANAC_ANALYTICS_QA === "true"
+  ) {
+    window.dispatchEvent(
+      new CustomEvent("almanac:qa-stage", { detail: stage }),
+    );
+  }
+}
+
 export function isAlmanacAnalyticsPilotEnabled(): boolean {
   return process.env.NEXT_PUBLIC_ALMANAC_ANALYTICS_ENABLED === "true";
 }
@@ -47,6 +59,7 @@ export function initializeAlmanacPosthog(): boolean {
   const host = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
   if (consent !== "granted") return false;
+  almanacAnalyticsQaStage("init:consented");
   if (!token?.trim() || !host?.trim()) {
     if (process.env.NODE_ENV !== "production") {
       throw missingConfigError(
@@ -64,6 +77,7 @@ export function initializeAlmanacPosthog(): boolean {
   }
 
   try {
+    almanacAnalyticsQaStage("init:starting");
     posthog.init(token, {
       api_host: host,
       defaults: "2026-08-30",
@@ -83,13 +97,19 @@ export function initializeAlmanacPosthog(): boolean {
           event.event,
           event.properties,
         );
-        if (!properties) return null; // Includes SDK's own automatic events.
+        if (!properties) {
+          almanacAnalyticsQaStage("send:rejected");
+          return null;
+        }
+        almanacAnalyticsQaStage("send:allowed");
         return { ...event, properties, $set: undefined, $set_once: undefined };
       },
     });
     sdkInitialized = true;
+    almanacAnalyticsQaStage("init:done");
     return true;
   } catch (error) {
+    almanacAnalyticsQaStage("init:failed");
     if (process.env.NODE_ENV !== "production") {
       console.error("Almanac analytics failed to initialize", error);
     }
@@ -135,15 +155,21 @@ export function captureAlmanacEvent(
     return false;
   }
   const safe = allowlistedAlmanacEvent(eventName, properties);
-  if (!safe) return false;
+  if (!safe) {
+    almanacAnalyticsQaStage("capture:invalid");
+    return false;
+  }
+  almanacAnalyticsQaStage("capture:attempt");
 
   try {
-    posthog.capture(safe.event, {
+    const result = posthog.capture(safe.event, {
       ...safe.properties,
       $process_person_profile: false,
     });
+    almanacAnalyticsQaStage(result ? "capture:returned-event" : "capture:returned-empty");
     return true;
   } catch {
+    almanacAnalyticsQaStage("capture:failed");
     // Analytics failure must never affect the learner-facing workflow.
     return false;
   }
