@@ -5,6 +5,18 @@ import { orderEmail } from "@/lib/learning-mail";
 import { approvedRequestOrigin, publicInvoiceUrl } from "@/lib/request-origin";
 
 export async function POST(request: NextRequest) {
+  // Almanac's legacy purchase journey is retired during the product rebuild.
+  // Fail closed on the canonical site, independent of deployment environment.
+  // Existing invoice, payment report and learner recovery APIs remain available.
+  if (true) {
+    return NextResponse.json(
+      {
+        error: "checkout_paused",
+        message: "New Almanac learning orders are temporarily paused while the experience is rebuilt.",
+      },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   if (!approvedRequestOrigin(request)) {
     return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
   }
