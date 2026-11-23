@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { mayInitializeAlmanacAnalytics } from '../src/lib/observability/consent-policy.ts';
+import { sanitizeAlmanacTransportProperties } from '../src/lib/observability/transport-filter.ts';
 
 import test from 'node:test';
 import {
@@ -92,4 +93,38 @@ test('analytics stays off when disabled or configuration is missing', () => {
   assert.equal(mayInitializeAlmanacAnalytics(true, 'granted', '', 'host'), false);
   assert.equal(mayInitializeAlmanacAnalytics(true, 'granted', 'token', ''), false);
   assert.equal(mayInitializeAlmanacAnalytics(true, 'granted', undefined, undefined), false);
+});
+
+test('outbound SDK-enriched URLs, referrers and sensitive context are dropped', () => {
+  const event = sanitizeAlmanacTransportProperties('almanac_catalog_viewed', {
+    surface: 'public',
+    token: 'phc_public_project_token',
+    distinct_id: 'anonymous-visit',
+    '$current_url': 'https://example.test/?token=PRIVATE',
+    '$pathname': '/invoice/PRIVATE',
+    '$referrer': 'https://example.test/?email=learner@example.com',
+    '$session_id': 'session-private',
+    '$browser': 'Some Browser',
+    phone: '+1 555 0101',
+    study_content: 'private clinical case',
+  });
+  assert.deepEqual(event, {
+    surface: 'public',
+    $process_person_profile: false,
+    token: 'phc_public_project_token',
+    distinct_id: 'anonymous-visit',
+  });
+  for (const forbidden of ['PRIVATE', 'learner@example.com', 'session-private', 'private clinical case']) {
+    assert.equal(JSON.stringify(event).includes(forbidden), false);
+  }
+});
+
+test('SDK automatic events and invalid custom events are blocked at transport boundary', () => {
+  for (const name of ['$pageview', '$autocapture', '$opt_in', '$exception', 'purchase_completed']) {
+    assert.equal(sanitizeAlmanacTransportProperties(name, { surface: 'public', token: 'phc_public' }), null);
+  }
+  assert.equal(
+    sanitizeAlmanacTransportProperties('almanac_request_started', { request_kind: 'EMAIL@example.com' }),
+    null,
+  );
 });
