@@ -1,0 +1,57 @@
+name: Almanac isolated consent browser QA
+
+on:
+  pull_request:
+    paths:
+      - "src/lib/observability/**"
+      - "src/components/analytics-consent.tsx"
+      - "src/components/catalog-telemetry.tsx"
+      - "src/instrumentation-client.ts"
+      - "src/app/layout.tsx"
+      - "src/app/courses/page.tsx"
+      - "scripts/qa-analytics-consent-browser.mjs"
+      - ".github/workflows/analytics-browser-qa.yml"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  browser-consent-qa:
+    runs-on: ubuntu-24.04
+    env:
+      # Deliberately fake and intercepted; the app cannot emit real PostHog traffic.
+      NEXT_PUBLIC_ALMANAC_ANALYTICS_ENABLED: "true"
+      NEXT_PUBLIC_ALMANAC_ANALYTICS_QA: "true"
+      NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: "phc_1234567890ABCDEFGHIJKLMNOPQRSTUVWXYabcdefghijklmnopqrstuvwxyz"
+      NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - name: Install the exact committed application dependencies
+        run: npm ci
+      - name: Install pinned, CI-only Playwright (not a shipped app dependency)
+        run: npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Cache pinned Chromium binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-1.56.1-ubuntu-24.04
+      - name: Install headless Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build a real Next.js preview with an intercepted fake telemetry host
+        run: npm run build
+      - name: Exercise browser consent, revocation, and URL-data protection
+        run: node scripts/qa-analytics-consent-browser.mjs
