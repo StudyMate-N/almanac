@@ -88,6 +88,9 @@ export function initializeAlmanacPosthog(): boolean {
       capture_pageleave: false,
       disable_session_recording: true,
       disable_surveys: true,
+      // Learner pages must not execute CDN-hosted extension scripts.
+      // Session replay and surveys are deliberately disabled above.
+      disable_external_dependency_loading: true,
       // Allow SDK readiness handshake but do not evaluate feature flags.
       advanced_disable_feature_flags: true,
       person_profiles: "identified_only",
