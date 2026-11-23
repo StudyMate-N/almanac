@@ -184,7 +184,7 @@ export default function Today() {
         </div>
       </div>
 
-      <Link href="/app/guide" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[19px] border border-[#D6CAF5] bg-[#F3EFFD] px-5 py-4 transition-colors hover:bg-[#ECE5FB]">
+      <Link href="/app/learning-compass" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[19px] border border-[#D6CAF5] bg-[#F3EFFD] px-5 py-4 transition-colors hover:bg-[#ECE5FB]">
         <span className="flex flex-col gap-1">
           <span className="text-[10px] font-extrabold uppercase tracking-[.14em] text-violet-700">New · Guided study pilot</span>
           <span className="font-display text-[19px] font-bold text-ink">Tell Almanac what you need to do today.</span>
