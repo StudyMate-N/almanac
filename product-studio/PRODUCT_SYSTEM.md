@@ -22,7 +22,7 @@ Almanac is not a generative-answer vending machine. It must support **genuine le
 | Keep continuity | Existing learner progress, answers and FSRS; later versioned preference sync | Never erase answer history or quietly change paid entitlement |
 | Learn from use | Minimal, consented product outcome counters plus purposeful feedback | No medical cases, source text, tokens, email, user identity or grades sent to PostHog |
 
-**V1 pilot:** `/app/guide` uses deterministic `src/lib/learning-guide.ts`; it is intentionally not a chatbot. It is a functioning guided interface against the existing reviewed, entitlement-filtered course lists. Future AI assistance must only operate on approved, versioned materials, with accuracy and citation checks and a way to say "I don't know." It may never change answer keys or access rights.
+**V1 pilot:** `/app/learning-compass` uses deterministic `src/lib/learning-guide.ts`; it is intentionally not a chatbot. It is a functioning guided interface against the existing reviewed, entitlement-filtered course lists. Future AI assistance must only operate on approved, versioned materials, with accuracy and citation checks and a way to say "I don't know." It may never change answer keys or access rights.
 
 ### 2. The Product Studio
 Every product change goes through the same short, versioned loop.
