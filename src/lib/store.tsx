@@ -103,6 +103,9 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const [offline, setOffline] = useState(false);
   const cache = useRef<Cache | null>(null);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  // Only one write per key at a time: a slow earlier response must not
+  // acknowledge (or overwrite after) a newer offline/local edit.
+  const writesInFlight = useRef<Set<keyof StudentState>>(new Set());
 
   const persist = useCallback(() => {
     if (cache.current) write(CACHE_KEY, cache.current);
@@ -137,15 +140,31 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   }, [persist]);
 
   const pushKey = useCallback(async (tok: string, key: keyof StudentState) => {
-    const c = cache.current;
-    if (!c) return;
+    if (writesInFlight.current.has(key)) return;
+    writesInFlight.current.add(key);
     try {
-      await rpc("state_put", { p_token: tok, p_key: key, p_value: c.state[key] ?? null });
-      c.dirty = c.dirty.filter((k) => k !== key);
-      persist();
-      setOffline(false);
-    } catch (e) {
-      if (e instanceof ApiError && e.message === "offline") setOffline(true);
+      // Serialize writes and re-send the latest value if an edit arrived
+      // while a previous request was pending.
+      while (true) {
+        const c = cache.current;
+        if (!c || !c.dirty.includes(key)) return;
+        const value = c.state[key] ?? null;
+        try {
+          await rpc("state_put", { p_token: tok, p_key: key, p_value: value });
+        } catch (e) {
+          if (e instanceof ApiError && e.message === "offline") setOffline(true);
+          return; // Leave the dirty key for the next reconnect/retry.
+        }
+        // A sign-out or account switch invalidates the pending response.
+        if (cache.current !== c) return;
+        if (c.state[key] !== value) continue;
+        c.dirty = c.dirty.filter((k) => k !== key);
+        persist();
+        setOffline(false);
+        return;
+      }
+    } finally {
+      writesInFlight.current.delete(key);
     }
   }, [persist]);
 
