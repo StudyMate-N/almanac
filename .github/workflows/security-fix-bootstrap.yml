@@ -1,0 +1,57 @@
+# Temporary one-time remediation job; remove after lockfile is validated.
+name: Almanac security patch lockfile bootstrap
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - ".github/workflows/security-fix-bootstrap.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: almanac-security-patch-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  update-and-verify-locked-dependencies:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.number == 18 &&
+      github.event.pull_request.head.ref == 'ops/almanac-dependency-security-v1' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ops/almanac-dependency-security-v1
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - name: Install narrowly scoped, fixed package versions with npm
+        run: npm install --save-exact next@16.4.6 @vercel/oidc@4.0.9
+      - name: Check for remaining production security advisories
+        run: npm audit --audit-level=high --omit=dev
+      - name: Check all locked dependencies including development
+        run: npm audit --audit-level=high
+      - name: Reinstall from npm-generated lockfile
+        run: npm ci
+      - name: Run analytics privacy contract
+        run: npm run test:telemetry
+      - name: Type-check application
+        run: npm run typecheck
+      - name: Build complete application
+        run: npm run build
+      - name: Commit tested and npm-generated dependency lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m "fix(security): patch Next.js and OIDC with npm-verified lockfile"
+            git push origin HEAD:refs/heads/ops/almanac-dependency-security-v1
+          fi
