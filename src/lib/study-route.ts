@@ -57,3 +57,9 @@ export function selectStudyRoute(
   }
   return null;
 }
+
+/** Only known practice-set sizes can be preselected from a route link. */
+export function safePracticeSetSize(raw: unknown): 5 | 10 | 20 | 40 {
+  const value = typeof raw === "string" ? Number(raw) : raw;
+  return value === 5 || value === 10 || value === 20 || value === 40 ? value : 10;
+}
