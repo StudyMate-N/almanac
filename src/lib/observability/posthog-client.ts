@@ -7,6 +7,7 @@ import {
 } from "./consent-policy";
 
 const CONSENT_STORAGE_KEY = "almanac:product-analytics-consent:v1";
+export const ALMANAC_ANALYTICS_CONSENT_CHANGED = "almanac:analytics-consent-updated";
 let sdkInitialized = false;
 
 export function isAlmanacAnalyticsPilotEnabled(): boolean {
@@ -112,10 +113,13 @@ export function saveAlmanacAnalyticsConsent(
       posthog.opt_out_capturing();
       posthog.reset();
     }
+    window.dispatchEvent(new Event(ALMANAC_ANALYTICS_CONSENT_CHANGED));
     return true;
   }
 
-  return initializeAlmanacPosthog();
+  const initialized = initializeAlmanacPosthog();
+  window.dispatchEvent(new Event(ALMANAC_ANALYTICS_CONSENT_CHANGED));
+  return initialized;
 }
 
 /** Only the approved name and enumerated properties can reach the SDK. */
