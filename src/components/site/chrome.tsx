@@ -3,14 +3,14 @@ import { Logo } from "@/components/brand";
 
 /** Public website shell only. Learner and coach environments retain their own chrome. */
 export function SiteHeader() {
- return <header className="alm-site-header border-b border-[#EEEBF7] bg-white">
+ return <><div role="status" className="border-b border-[#E4DFF5] bg-[#F4F1FE] px-4 py-2 text-center text-[12px] text-[#2A1B78]">New Almanac orders are paused while we rebuild the learning experience. <Link href="/request" className="font-bold underline underline-offset-2">What this means →</Link></div><header className="alm-site-header border-b border-[#EEEBF7] bg-white">
   <div className="mx-auto flex min-h-[61px] w-full max-w-[1100px] flex-wrap items-center justify-between gap-3 px-4 py-2">
    <div className="flex items-center gap-7">
     <Logo size={25} textClass="text-[22px]"/>
     <nav aria-label="Main navigation" className="hidden items-center gap-6 text-[13px] font-medium text-ink-body md:flex">
       <Link href="/courses" className="hover:text-violet-700">Courses</Link>
       <Link href="/how-it-works" className="hover:text-violet-700">How it works</Link>
-      <Link href="/request" className="hover:text-violet-700">Request a course</Link>
+      <Link href="/request" className="hover:text-violet-700">Product update</Link>
       <Link href="/help" className="hover:text-violet-700">Help</Link>
     </nav>
    </div>
@@ -20,10 +20,10 @@ export function SiteHeader() {
    </div>
    <nav aria-label="Mobile navigation" className="flex w-full flex-wrap gap-x-5 gap-y-2 border-t border-[#EEEBF7] py-2 text-[12px] font-semibold text-ink-body md:hidden">
      <Link href="/courses">Courses</Link><Link href="/how-it-works">How it works</Link>
-     <Link href="/request">Request</Link><Link href="/help">Help</Link>
+     <Link href="/request">Update</Link><Link href="/help">Help</Link>
    </nav>
   </div>
- </header>;
+ </header></>;
 }
 
 export function SiteFooter() {
