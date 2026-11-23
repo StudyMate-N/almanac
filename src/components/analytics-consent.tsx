@@ -14,6 +14,7 @@ import type { AlmanacAnalyticsConsentChoice } from "@/lib/observability/consent-
  */
 export function AlmanacAnalyticsConsent() {
   const [choice, setChoice] = useState<AlmanacAnalyticsConsentChoice | null>(null);
+  const [showPreferences, setShowPreferences] = useState(false);
 
   useEffect(() => {
     if (isAlmanacAnalyticsPilotEnabled()) {
@@ -21,16 +22,29 @@ export function AlmanacAnalyticsConsent() {
     }
   }, []);
 
-  if (!isAlmanacAnalyticsPilotEnabled() || choice !== "pending") return null;
+  if (!isAlmanacAnalyticsPilotEnabled() || choice === null) return null;
 
   function choose(next: "granted" | "denied") {
     // If localStorage is blocked, leave tracking disabled and keep the prompt.
     if (saveAlmanacAnalyticsConsent(next)) {
       setChoice(next);
+      setShowPreferences(false);
     }
   }
 
   return (
+    <>
+      {choice !== "pending" && !showPreferences && (
+        <button
+          type="button"
+          aria-label="Change optional analytics preferences"
+          className="fixed bottom-3 right-3 z-40 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-md hover:bg-slate-50"
+          onClick={() => setShowPreferences(true)}
+        >
+          Analytics settings
+        </button>
+      )}
+      {(choice === "pending" || showPreferences) && (
     <aside
       aria-label="Optional analytics preference"
       className="fixed bottom-3 left-3 right-3 z-50 mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 shadow-xl sm:p-5"
@@ -40,7 +54,8 @@ export function AlmanacAnalyticsConsent() {
         Help us improve Almanac by sharing limited usage events, such as opening
         the course catalogue. We do not send study answers, documents, invoice
         details or access codes. Analytics are processed by PostHog in the US.
-        Your choice does not affect your access.
+        Your choice does not affect your access, and you can change it later
+        using Analytics settings.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button
@@ -59,5 +74,7 @@ export function AlmanacAnalyticsConsent() {
         </button>
       </div>
     </aside>
+      )}
+    </>
   );
 }
