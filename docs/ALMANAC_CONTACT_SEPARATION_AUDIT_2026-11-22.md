@@ -41,3 +41,18 @@ Corrective operator actions on 22 Nov 2026:
 - [ ] Dedicated operational email sender/domain and credential verified and configured if transactional notifications are desired.
 - [ ] Owner verifies any beneficial ownership or financial relationship; compare actual bank beneficiary and payment terms to the commercial operator.
 - [ ] AgentaOS confirms product eligibility, reapplication date and required documentation in writing.
+
+## Follow-up verification — 23 Nov 2026 (contact-compliance lane)
+
+**Changed:** This follow-up records current evidence without changing production code or restoring payment/email services. PR #10 is already merged, so the former hotfix branch is retained as a historical audit branch; further runtime changes should be proposed in a new scoped review PR rather than force-pushing the merged branch.
+
+**Verified:**
+- GitHub PR #10 reports `closed / merged`. The production Netlify project `almanac-study` reports deploy `6b0259d8c528d3f775bc660f` as `ready`; the previously observed deployed commit is `15c2c1d45ce16dd3ce143cbcb0a2feb9d4f4e23f` (22 Nov 2026).
+- A fresh read of Netlify environment-variable **names and redacted context classifications**, without disclosing secret values, confirms `ALMANAC_OPERATIONS_EMAIL` resolves to the Almanac support inbox in **dev, branch-deploy, deploy-preview and production** contexts.
+- `ALMANAC_EMAIL_FROM`, `ALMANAC_RESEND_API_KEY`, and `ALMANAC_WHATSAPP_NUMBER` remain **absent**. This prevents assuming automated email or WhatsApp is configured; it is not evidence of an independently verified sender or monitored inbox.
+- A fresh connected Supabase project read still returns `INACTIVE` for Almanac project `pebkqsyfliytbowxzyun`. No remote private-resource authorization or checkout probe can be counted as passed.
+- Direct public-page verification was attempted for `/`, `/contact`, `/app/orders`, and `/coach/external-enrollment` via an HTTP client; all failed at DNS resolution in the execution environment. An independent web fetch of `/` and `/contact` also failed. These are **unverified**, not evidence of broken or clean rendered pages.
+
+**Blocked:** Live DOM/page contact scan; inbox monitoring and real sender-domain validation; external authorization/payment tests; AgentaOS product eligibility and reapplication-date confirmation; ownership/beneficiary and historical-notice review. No external messages were sent and no payment routing, invoices, refund records or credentials were changed.
+
+**Next:** Obtain a browser-capable authenticated smoke-test environment to inspect rendered public and staff-authorized pages (without exposing student data), restore Supabase through the QA lane with operator approval, then rerun remote privacy and checkout tests. Separately provision a verified Almanac-specific transactional sender and validate inbox deliverability. Keep Issue #8 open and merchant activation blocked until written eligibility and truthful ownership disclosures are confirmed.
