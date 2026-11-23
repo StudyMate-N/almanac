@@ -1,4 +1,4 @@
-import posthog from "posthog-js";
+import posthog from "posthog-js/dist/module.full.no-external";
 import { allowlistedAlmanacEvent } from "./event-contract";
 import { sanitizeAlmanacTransportProperties } from "./transport-filter";
 import {
