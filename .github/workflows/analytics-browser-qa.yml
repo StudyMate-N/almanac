@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   browser-consent-qa:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       # Deliberately fake and intercepted; the app cannot emit real PostHog traffic.
       NEXT_PUBLIC_ALMANAC_ANALYTICS_ENABLED: "true"
