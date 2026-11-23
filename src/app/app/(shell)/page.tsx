@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/page-header";
 import { NavCoach } from "@/components/nav-icons";
 import { TodaySession } from "@/components/today-session";
+import { StudyRouteChooser } from "@/components/study-route-chooser";
 import { lessons as allLessons, modulesInCourse, openCourses } from "@/content/course";
 import type { Course } from "@/content/types";
 import { minutesFor } from "@/lib/minutes";
@@ -199,6 +200,7 @@ export default function Today() {
               <div key={c.id} className="flex flex-col gap-4">
                 {courses.length > 1 && <h2 className="font-display text-[18px] font-bold">{c.title}</h2>}
                 <TodaySession course={c} />
+                <StudyRouteChooser course={c} />
                 <ContinueCard course={c} />
               </div>
             ))}
