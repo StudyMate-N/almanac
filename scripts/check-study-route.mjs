@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { selectStudyRoute } from "../src/lib/study-route.ts";
+import { selectStudyRoute, safePracticeSetSize } from "../src/lib/study-route.ts";
 
 const reading = (id, completed = false) => ({id, mode:"reading", completed});
 const video = (id, completed = false) => ({id, mode:"video", completed});
@@ -55,5 +55,14 @@ test("recommendation contains no grade, mastery or entitlement modification", ()
   assert.deepEqual(before,[reading("lesson-1")]);
   for (const blocked of ["grade","mastery","entitlement","invoice","payment"]) {
     assert.equal(Object.hasOwn(out ?? {},blocked),false);
+  }
+});
+
+test("practice-set deep links accept only existing supported sizes", () => {
+  for (const n of [5, 10, 20, 40]) {
+    assert.equal(safePracticeSetSize(String(n)), n);
+  }
+  for (const invalid of ["-1", "999", "1e3", "abc", "10;DROP TABLE", null, undefined, {}, []]) {
+    assert.equal(safePracticeSetSize(invalid), 10);
   }
 });
