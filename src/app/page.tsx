@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "@/components/icons";
+import { AlmanacCatalogTelemetry } from "@/components/catalog-telemetry";
 import { SiteFooter, SiteHeader, toneBg } from "@/components/site/chrome";
 import { courses } from "@/content/course";
 import { REVIEWER } from "@/lib/config";
@@ -43,6 +44,7 @@ export default function Home() {
           </div>
         </section>
 
+        <AlmanacCatalogTelemetry />
         <section id="courses" aria-labelledby="courses-h" className="mx-auto max-w-[1200px] px-4 pb-16 sm:px-6">
           <h2 id="courses-h" className="mb-5 font-display text-[30px] font-semibold">
             Courses

@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "pretypecheck": "node scripts/image-sizes.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:telemetry": "node --experimental-strip-types scripts/check-observability-contract.mjs"
   },
   "engines": {
     "node": ">=20.9"
@@ -19,6 +20,7 @@
     "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "@vercel/oidc": "^4.0.0",
     "next": "^16.4.0",
+    "posthog-js": "^1.453.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "ts-fsrs": "^5.4.2"
