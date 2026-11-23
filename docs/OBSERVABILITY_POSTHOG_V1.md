@@ -1,6 +1,6 @@
 # Almanac observability integration contract (draft)
 
-Status: **Design / review only. No SDK installed, no telemetry deployed, no production changes.**
+Status: **PR-level implementation started. Allowlisted event schema, tests, CI and empty configuration placeholders added; no SDK installed, no telemetry deployed, no production changes.**
 
 Date: 2026-11-23
 
@@ -11,6 +11,14 @@ Date: 2026-11-23
 - Supabase project `pebkqsyfliytbowxzyun` is `INACTIVE` as of this audit.
 - Existing blocker [#11](https://github.com/StudyMate-N/almanac/issues/11) and draft release-check PR [#12](https://github.com/StudyMate-N/almanac/pull/12) govern backend recovery. Do **not** redefine unreachable checks as passed.
 - PostHog connection is available, but its organization currently lists only `Default project` (ID 760516), with no ingested events. That destination is **not yet confirmed** as Almanac-owned. Do not copy the token or emit events until the destination is approved.
+
+## Implemented in draft PR #15 (2026-11-23)
+
+- Added `src/lib/observability/event-contract.ts` with seven strictly allowlisted events and safe enum-only property values. It has no network requests or third-party SDK dependency.
+- Added `scripts/check-observability-contract.mjs` with five Node tests for validity, unknown-event rejection, PII stripping, invalid enum rejection and no network calls. All five passed in the local isolated test, plus strict `tsc --noEmit` for the contract module.
+- Added `npm run test:telemetry`, `.env.example` with blank analytics placeholders, and a scoped GitHub Actions privacy-contract job. Hosted CI must pass separately; local tests are not a release approval.
+- The connected PostHog organization's `organizations_projects` limit is **1**, already used by the unused `Default project` (ID 760516, no ingested events). A separate project cannot be created under the current plan. Updating the default project's name/settings requires the user's explicit confirmation and is not authorized by this draft.
+- **No SDK is installed or capturing events.** An analytics destination and consent review are prerequisites for instrumentation.
 
 ## Proposed rollout (separate from backend work)
 
