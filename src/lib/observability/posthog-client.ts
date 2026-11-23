@@ -72,7 +72,8 @@ export function initializeAlmanacPosthog(): boolean {
 
   if (sdkInitialized) {
     // A user may opt back in after declining.
-    posthog.opt_in_capturing();
+    posthog.opt_in_capturing({ captureEventName: false });
+    almanacAnalyticsQaStage(posthog.is_capturing() ? "init:capture-enabled" : "init:capture-disabled");
     return true;
   }
 
@@ -106,6 +107,10 @@ export function initializeAlmanacPosthog(): boolean {
       },
     });
     sdkInitialized = true;
+    // Respect the explicit consent choice within the SDK as well; suppress
+    // automatic $opt_in events so only our allowlisted events can be sent.
+    posthog.opt_in_capturing({ captureEventName: false });
+    almanacAnalyticsQaStage(posthog.is_capturing() ? "init:capture-enabled" : "init:capture-disabled");
     almanacAnalyticsQaStage("init:done");
     return true;
   } catch (error) {
@@ -159,6 +164,7 @@ export function captureAlmanacEvent(
     almanacAnalyticsQaStage("capture:invalid");
     return false;
   }
+  almanacAnalyticsQaStage(posthog.is_capturing() ? "capture:enabled" : "capture:disabled");
   almanacAnalyticsQaStage("capture:attempt");
 
   try {
