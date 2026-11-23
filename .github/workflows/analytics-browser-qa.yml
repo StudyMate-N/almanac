@@ -24,6 +24,7 @@ jobs:
     env:
       # Deliberately fake and intercepted; the app cannot emit real PostHog traffic.
       NEXT_PUBLIC_ALMANAC_ANALYTICS_ENABLED: "true"
+      NEXT_PUBLIC_ALMANAC_ANALYTICS_QA: "true"
       NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: "phc_fake_browser_qa_only"
       NEXT_PUBLIC_POSTHOG_HOST: "https://telemetry.almanac.invalid"
       NEXT_TELEMETRY_DISABLED: "1"
