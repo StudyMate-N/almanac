@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "featureId": "guided-learning-entry",
+  "status": "pilot",
+  "surface": "/app/guide",
+  "job": "Help an authorized learner begin one meaningful, reviewed learning activity without navigating the entire workspace.",
+  "learnerPromise": "Give me one understandable next step, explain why and what follows, and allow me to choose another route.",
+  "evidenceStatus": "code-backed-pilot-not-user-validated",
+  "pricingImpact": "none",
+  "requiredEntitlement": "existing-authorized-course",
+  "allowedSource": "useCourse(courseId)",
+  "assumptions": [
+    "One suggested action and an explanation will reduce first-session choice overload.",
+    "Available reviewed reading and practice are sufficient for a useful pilot without generative tutoring."
+  ],
+  "pilotScenarios": [
+    {
+      "id": "first-eligible-learner",
+      "outcome": "authorized activity plus explanation"
+    },
+    {
+      "id": "exam-need",
+      "outcome": "reviewed practice within a small session target"
+    },
+    {
+      "id": "uncertainty",
+      "outcome": "safe next step with override"
+    },
+    {
+      "id": "missed-items",
+      "outcome": "real missed-question practice only"
+    },
+    {
+      "id": "no-asset",
+      "outcome": "honest not-ready state without fabricated links"
+    },
+    {
+      "id": "no-entitlement",
+      "outcome": "no protected material exposed"
+    },
+    {
+      "id": "low-bandwidth",
+      "outcome": "no video-first recommendation"
+    },
+    {
+      "id": "existing-purchaser",
+      "outcome": "learning access retained while checkout paused"
+    }
+  ],
+  "privacy": {
+    "posthogEnabled": false,
+    "sessionReplayEnabled": false,
+    "disallow": [
+      "email",
+      "name",
+      "access_token",
+      "invoice_token",
+      "bank_details",
+      "clinical_case",
+      "question_text",
+      "answers",
+      "raw_student_id",
+      "uploaded_files"
+    ],
+    "potentialConsentedAggregates": [
+      "guided_entry_viewed",
+      "guided_step_opened",
+      "guided_step_unavailable",
+      "guided_step_overridden"
+    ]
+  },
+  "evaluation": {
+    "primaryOutcome": "Authorized learner reaches one reviewed study activity and understands why it was selected.",
+    "qualitativeQuestion": "Did Almanac help you know what to do next?",
+    "accessibilityTarget": "WCAG 2.2 AA",
+    "testScript": "scripts/check-learning-guide.mjs",
+    "browserReviewRequired": true,
+    "contentReviewRequired": true,
+    "merchantRouteRequired": false,
+    "releaseAllowed": false
+  },
+  "releaseGates": [
+    "no-new-orders",
+    "entitlement-safe",
+    "reviewed-content-only",
+    "non-fabricated-fallbacks",
+    "keyboard-and-mobile",
+    "no-sensitive-analytics",
+    "rollback-ready"
+  ]
+}
