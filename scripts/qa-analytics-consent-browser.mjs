@@ -82,11 +82,14 @@ try {
       await route.abort();
       return;
     }
-    requests.push({
-      url: request.url(),
-      method: request.method(),
-      body: inspectBody(request),
-    });
+    const isEventEndpoint = /^\/(?:i\/v0\/e|e|batch|capture)(?:\/|$)/.test(url.pathname);
+    if (isEventEndpoint && request.method() === "POST") {
+      requests.push({
+        url: request.url(),
+        method: request.method(),
+        body: inspectBody(request),
+      });
+    }
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -94,7 +97,7 @@ try {
         "access-control-allow-origin": origin,
         "access-control-allow-credentials": "true",
       },
-      body: '{"status":"ok","flags":{}}',
+      body: '{"status":"ok","flags":{},"featureFlags":{},"errorsWhileComputingFlags":false}',
     });
   });
 
