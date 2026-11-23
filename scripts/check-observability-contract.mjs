@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { mayInitializeAlmanacAnalytics } from '../src/lib/observability/consent-policy.ts';
+
 import test from 'node:test';
 import {
   ALMANAC_EVENT_ALLOWLIST,
@@ -69,4 +71,25 @@ test('normalization never attempts a network request', () => {
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+
+test('analytics never initializes without explicit opt-in', () => {
+  for (const consent of ['pending', 'denied', null, undefined, true, 'yes']) {
+    assert.equal(
+      mayInitializeAlmanacAnalytics(true, consent, 'project-token', 'https://us.i.posthog.com'),
+      false,
+    );
+  }
+  assert.equal(
+    mayInitializeAlmanacAnalytics(true, 'granted', 'project-token', 'https://us.i.posthog.com'),
+    true,
+  );
+});
+
+test('analytics stays off when disabled or configuration is missing', () => {
+  assert.equal(mayInitializeAlmanacAnalytics(false, 'granted', 'token', 'host'), false);
+  assert.equal(mayInitializeAlmanacAnalytics(true, 'granted', '', 'host'), false);
+  assert.equal(mayInitializeAlmanacAnalytics(true, 'granted', 'token', ''), false);
+  assert.equal(mayInitializeAlmanacAnalytics(true, 'granted', undefined, undefined), false);
 });
