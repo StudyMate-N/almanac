@@ -14,7 +14,7 @@ import { chromium } from "playwright";
 
 const port = 3185;
 const origin = `http://127.0.0.1:${port}`;
-const fakeIngestion = "https://telemetry.almanac.invalid";
+const fakeIngestion = "https://us.i.posthog.com";
 const prohibitedMarker = "PRIVATE_LEARNER_TOKEN_SHOULD_NOT_LEAK";
 const requests = [];
 let appStdout = "";
@@ -68,8 +68,20 @@ try {
   await waitForServer();
   browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
   const context = await browser.newContext({ serviceWorkers: "block" });
-  await context.route(`${fakeIngestion}/**`, async (route) => {
+  // An outbound network firewall for this test: only our local Next.js
+  // server and intercepted PostHog ingestion requests are permitted.
+  // No external request can reach the internet, even if the SDK changes paths.
+  await context.route("**/*", async (route) => {
     const request = route.request();
+    const url = new URL(request.url());
+    if (url.origin === origin) {
+      await route.continue();
+      return;
+    }
+    if (url.origin !== fakeIngestion) {
+      await route.abort();
+      return;
+    }
     requests.push({
       url: request.url(),
       method: request.method(),
