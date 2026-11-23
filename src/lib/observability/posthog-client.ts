@@ -9,6 +9,7 @@ import {
 const CONSENT_STORAGE_KEY = "almanac:product-analytics-consent:v1";
 export const ALMANAC_ANALYTICS_CONSENT_CHANGED = "almanac:analytics-consent-updated";
 let sdkInitialized = false;
+let sdkLoaded = false;
 
 /** QA-only lifecycle markers, containing no user input or event properties. */
 export function almanacAnalyticsQaStage(stage: string): void {
@@ -87,9 +88,18 @@ export function initializeAlmanacPosthog(): boolean {
       capture_pageleave: false,
       disable_session_recording: true,
       disable_surveys: true,
-      advanced_disable_flags: true,
+      // Allow SDK readiness handshake but do not evaluate feature flags.
+      advanced_disable_feature_flags: true,
       person_profiles: "identified_only",
       persistence: "memory",
+      loaded: () => {
+        sdkLoaded = true;
+        almanacAnalyticsQaStage("init:loaded-callback");
+        if (readAlmanacAnalyticsConsent() === "granted") {
+          posthog.opt_in_capturing({ captureEventName: false });
+          window.dispatchEvent(new Event(ALMANAC_ANALYTICS_CONSENT_CHANGED));
+        }
+      },
       // Prevent the browser SDK from adding URL, query, referrer, document
       // and device properties to our already allowlisted event payloads.
       before_send: (event) => {
@@ -157,6 +167,10 @@ export function captureAlmanacEvent(
     !isAlmanacAnalyticsPilotEnabled() ||
     readAlmanacAnalyticsConsent() !== "granted"
   ) {
+    return false;
+  }
+  if (!sdkLoaded) {
+    almanacAnalyticsQaStage("capture:waiting-for-sdk");
     return false;
   }
   const safe = allowlistedAlmanacEvent(eventName, properties);
