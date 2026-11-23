@@ -32,6 +32,7 @@ const KEYS = Object.keys(EMPTY) as (keyof StudentState)[];
 
 const TOKEN_KEY = "almanac.token";
 const CACHE_KEY = "almanac.cache.v2";
+const APPROVALS_KEY = "almanac.approvals";
 export const COACH_KEY = "almanac.coach";
 
 type Cache = { profileId: string; state: StudentState; dirty: (keyof StudentState)[]; pending: Answer[]; answers: Answer[] };
@@ -44,6 +45,7 @@ type Ctx = {
   answers: Answer[];
   approvals: Record<string, string>;
   approvalsLoaded: boolean;
+  authorizedCourses: string[];
   /** A coach or reviewer is signed in on this device: show items awaiting review. */
   preview: boolean;
   offline: boolean;
@@ -96,6 +98,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [approvals, setApprovals] = useState<Record<string, string>>({});
   const [approvalsLoaded, setApprovalsLoaded] = useState(false);
+  const [authorizedCourses, setAuthorizedCourses] = useState<string[]>([]);
   const [preview, setPreview] = useState(false);
   const [offline, setOffline] = useState(false);
   const cache = useRef<Cache | null>(null);
@@ -148,10 +151,11 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
 
   const load = useCallback(async (tok: string) => {
     try {
-      const [me, remote, list] = await Promise.all([
+      const [me, remote, list, entitlements] = await Promise.all([
         rpc<Profile>("pilot_me", { p_token: tok }),
         rpc<Record<string, { value: unknown }>>("state_get", { p_token: tok }),
         rpc<Answer[]>("answers_list", { p_token: tok }),
+        rpc<string[]>("learning_authorized_courses", { p_token: tok }),
       ]);
       const local = read<Cache>(CACHE_KEY);
       const sameStudent = local?.profileId === me.id;
@@ -165,6 +169,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       cache.current = { profileId: me.id, state: merged, dirty: sameStudent ? local!.dirty : [], pending, answers: list };
       persist();
       setProfile(me);
+      setAuthorizedCourses(Array.isArray(entitlements) ? entitlements : []);
       setState(merged);
       setAnswers([...list, ...pending]);
       setStatus("ready");
@@ -175,6 +180,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       if (e instanceof ApiError && e.unauthorized) {
         write(TOKEN_KEY, null);
         setToken(null);
+        setAuthorizedCourses([]);
         setStatus("signed-out");
         return;
       }
@@ -197,12 +203,32 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const tok = read<string>(TOKEN_KEY);
     setPreview(Boolean(read(COACH_KEY)));
+    // Seamless return visits: show what this device already knows at once, then sync quietly.
+    const cachedApprovals = read<Record<string, string>>(APPROVALS_KEY);
+    if (cachedApprovals) {
+      setApprovals(cachedApprovals);
+      setApprovalsLoaded(true);
+    }
     rpc<Record<string, string>>("approved_items")
-      .then((a) => setApprovals(a ?? {}))
-      .catch(() => setApprovals({}))
+      .then((a) => {
+        setApprovals(a ?? {});
+        write(APPROVALS_KEY, a ?? {});
+      })
+      .catch(() => {
+        if (!cachedApprovals) setApprovals({});
+      })
       .finally(() => setApprovalsLoaded(true));
     if (tok) {
       setToken(tok);
+      const local = read<Cache>(CACHE_KEY);
+      const prof = read<Profile>("almanac.profile");
+      if (local && prof && local.profileId === prof.id) {
+        cache.current = local;
+        setProfile(prof);
+        setState(local.state);
+        setAnswers([...local.answers, ...local.pending]);
+        setStatus("ready");
+      }
       void load(tok);
     } else {
       setStatus("signed-out");
@@ -237,9 +263,11 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     write(TOKEN_KEY, null);
     write(CACHE_KEY, null);
     write("almanac.profile", null);
+    write(APPROVALS_KEY, null);
     cache.current = null;
     setToken(null);
     setProfile(null);
+    setAuthorizedCourses([]);
     setState(EMPTY);
     setAnswers([]);
     setStatus("signed-out");
@@ -277,8 +305,8 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const isVisible = useCallback((id: string, item: unknown) => preview || approvals[id] === hashOf(item), [approvals, preview]);
 
   const value = useMemo<Ctx>(
-    () => ({ status, token, profile, state, answers, approvals, approvalsLoaded, preview, offline, isVisible, isApproved, signIn, signOut, update, addAnswers, saveProfile }),
-    [status, token, profile, state, answers, approvals, approvalsLoaded, preview, offline, isVisible, isApproved, signIn, signOut, update, addAnswers, saveProfile],
+    () => ({ status, token, profile, state, answers, approvals, approvalsLoaded, authorizedCourses, preview, offline, isVisible, isApproved, signIn, signOut, update, addAnswers, saveProfile }),
+    [status, token, profile, state, answers, approvals, approvalsLoaded, authorizedCourses, preview, offline, isVisible, isApproved, signIn, signOut, update, addAnswers, saveProfile],
   );
 
   return <StudentContext.Provider value={value}>{children}</StudentContext.Provider>;

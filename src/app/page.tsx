@@ -1,118 +1,144 @@
 import Link from "next/link";
-import { ArrowRightIcon } from "@/components/icons";
-import { SiteFooter, SiteHeader, toneBg } from "@/components/site/chrome";
-import { courses } from "@/content/course";
-import { REVIEWER } from "@/lib/config";
+import { SiteHeader,SiteFooter } from "@/components/site/chrome";
+import { LogoMark } from "@/components/brand";
 
-const steps = [
-  ["Pick your course", "Choose the course you're taking now. Almanac follows the competencies it assesses."],
-  ["Add your dates", "Enter your exam dates. Almanac lays out every week between now and the final."],
-  ["Learn, then practice", "A short lesson per topic, questions that explain every option, and flashcards that come back before you forget."],
-  ["Rehearse the exam", "Timed practice exams at the real length, then a list of your weak spots."],
-];
+const action="alm-action";
+const secondary="alm-action alm-action-secondary";
+const resources=[
+ ["Structured lessons","Clear explanations, in a useful order.","01"],
+ ["Video overviews","See the big ideas before you go deeper.","02"],
+ ["Practice questions","Check understanding with worked explanations.","03"],
+ ["Flashcards","Return to essential concepts as you learn.","04"],
+ ["Exam simulations","Practise applying what you have learned.","05"],
+ ["Study plans","Know what to cover and what comes next.","06"]
+] as const;
+const steps=[
+ ["01","Explore","Discover current learning subjects and what Almanac is developing.","/almanac-art/step-1-choose.png"],
+ ["02","Clarify your goal","Begin from what you want to understand or practise. The new guided journey is in development.","/almanac-art/step-2-plan.png"],
+ ["03","Learn actively","Study using approved explanations, authentic practice and useful feedback.","/almanac-art/step-3-workspace.png"],
+ ["04","Continue and review","Existing learners can return to their course materials and saved progress.","/almanac-art/step-3-workspace.png"]
+] as const;
 
-const included = [
-  ["A real course player", "Short lesson pages with cases, video clips and checks, in the same pattern every time."],
-  ["Questions that teach", "Every option has a rationale, so a wrong answer still teaches you something."],
-  ["Flashcards that schedule themselves", "Five minutes a day keeps earlier sections fresh."],
-  ["Practice exams", "Timed, mixed-topic, at the length of the real thing, with answers at the end."],
-  ["Study guides", "One printable page per section: the core ideas and what students mix up."],
-  ["Tutor and coach", "Ask the tutor any time. If it can't help, a person replies within 3 hours."],
-];
+function DeskArt(){
+ return <div className="relative mx-auto aspect-[5/4] w-full max-w-[600px]">
+   <div className="alm-hero-glow pointer-events-none absolute inset-[4%] rounded-full bg-[radial-gradient(circle,#ECE7FF_0%,transparent_72%)]"/>
+   <img src="/almanac-art/hero-still-life.png" alt="A carefully arranged stack of study books, notes and learning objects" className="alm-hero-art relative h-full w-full object-contain" width="600" height="480"/>
+ </div>;
+}
 
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-ground text-ink">
-      <SiteHeader />
-      <main>
-        <section aria-labelledby="hero-h" className="mx-auto max-w-[1200px] px-4 pt-8 pb-14 sm:px-6">
-          <p className="text-sm font-bold text-violet-700">Almanac · course companions</p>
-          <h1 id="hero-h" className="mt-3 max-w-4xl font-display text-[40px] leading-[1.05] font-semibold sm:text-[60px]">
-            Hard courses, broken into weekly steps.
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-ink-body">
-            Almanac runs alongside the course you&apos;re already taking: short lessons, questions that explain every answer, flashcards that return before you forget, and practice exams built around your dates.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center gap-4">
-            <a href="#courses" className="inline-flex min-h-[52px] items-center gap-2 rounded-full bg-violet px-6 font-bold text-white hover:bg-violet-600">
-              Browse courses <ArrowRightIcon size={16} />
-            </a>
-            <a href="#how" className="font-bold text-violet-700">
-              See how it works
-            </a>
-          </div>
-        </section>
+function CourseVisual({variant}:{variant:"patho"|"request"}){
+ return <div className="alm-course-media relative grid h-[165px] place-items-center">
+   {variant==="patho"?<svg viewBox="0 0 350 160" className="h-full w-full" aria-hidden="true"><ellipse cx="170" cy="145" rx="115" ry="10" fill="#CEC5EB"/><g fill="none" stroke="#5B3DF5" strokeWidth="4"><circle cx="145" cy="80" r="41"/><path d="M122 40L188 110M117 106l77-56"/><circle cx="210" cy="80" r="29"/></g><g fill="#F2711C"><circle cx="121" cy="43" r="10"/><circle cx="184" cy="117" r="9"/><circle cx="205" cy="65" r="8"/></g><g fill="#ECE7FF"><circle cx="142" cy="84" r="20"/><circle cx="209" cy="97" r="11"/></g></svg>:
+   <div className="grid grid-cols-3 gap-3"><span className="grid h-16 w-16 place-items-center rounded-xl bg-white text-violet">▤</span><span className="grid h-16 w-16 place-items-center rounded-xl bg-white text-violet">✧</span><span className="grid h-16 w-16 place-items-center rounded-xl bg-white text-violet">▦</span></div>}
+   <div className={`pointer-events-none absolute inset-0 bg-cover bg-center ${variant==="patho"?"bg-[url('/almanac-art/cover-pathophysiology.png')]":"bg-[url('/almanac-art/cover-on-request.png')]"}`}/>
+ </div>;
+}
 
-        <section id="courses" aria-labelledby="courses-h" className="mx-auto max-w-[1200px] px-4 pb-16 sm:px-6">
-          <h2 id="courses-h" className="mb-5 font-display text-[30px] font-semibold">
-            Courses
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {courses.map((c) => (
-              <Link key={c.id} href={`/courses/${c.id}`} className={`flex flex-col gap-2 rounded-tile p-6 hover:brightness-[0.97] ${c.status === "open" ? toneBg[c.tone] : "bg-white"}`}>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-bold text-ink-muted">{c.category}</p>
-                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${c.status === "open" ? "bg-violet text-white" : "bg-mist text-ink-muted"}`}>{c.status === "open" ? "Pilot open" : "Coming soon"}</span>
-                </div>
-                <h3 className="font-display text-[24px] leading-tight font-semibold">{c.title}</h3>
-                <p className="text-ink-body">{c.blurb}</p>
-                <span className="mt-auto inline-flex items-center gap-2 pt-2 font-bold text-violet-700">
-                  {c.status === "open" ? "See the course" : "Get told when it opens"} <ArrowRightIcon size={16} />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section id="how" aria-labelledby="how-h" className="mx-auto max-w-[1200px] px-4 pb-16 sm:px-6">
-          <h2 id="how-h" className="mb-6 font-display text-[30px] font-semibold">
-            The same plan, whatever you&apos;re studying.
-          </h2>
-          <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map(([t, d], i) => (
-              <li key={t} className="rounded-tile bg-white p-6">
-                <p className="font-display text-[32px] font-semibold text-violet">{i + 1}</p>
-                <p className="font-display text-lg font-semibold">{t}</p>
-                <p className="mt-1 text-sm text-ink-body">{d}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section aria-labelledby="inc-h" className="mx-auto max-w-[1200px] px-4 pb-16 sm:px-6">
-          <h2 id="inc-h" className="mb-6 font-display text-[30px] font-semibold">
-            In every course
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {included.map(([t, d], i) => (
-              <article key={t} className={`rounded-tile p-6 ${["bg-lilac", "bg-peach", "bg-sky", "bg-mint"][i % 4]}`}>
-                <h3 className="font-display text-lg font-semibold">{t}</h3>
-                <p className="mt-1 text-sm text-ink-body">{d}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section aria-labelledby="std-h" className="mx-auto max-w-[1200px] px-4 pb-16 sm:px-6">
-          <div className="rounded-tile bg-white p-6 sm:p-10">
-            <h2 id="std-h" className="font-display text-[30px] font-semibold">
-              Checked before you see it.
-            </h2>
-            <p className="mt-2 max-w-3xl text-ink-body">
-              Every lesson, question and card is reviewed for accuracy and fairness, then signed off by a subject expert before it goes live. Nursing courses are signed off by {REVIEWER.name}, {REVIEWER.credentials}. If anything changes, it goes back for sign-off.
-            </p>
-            <p className="mt-4 text-sm text-ink-muted">Almanac is independent and is not affiliated with any school or publisher. Its questions are original practice, not real exam items.</p>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-[1200px] px-4 pb-20 text-center sm:px-6">
-          <h2 className="font-display text-[30px] font-semibold">Start your next course with a plan.</h2>
-          <a href="#courses" className="mt-4 inline-flex min-h-[52px] items-center gap-2 rounded-full bg-violet px-6 font-bold text-white hover:bg-violet-600">
-            Browse courses <ArrowRightIcon size={16} />
-          </a>
-        </section>
-      </main>
-      <SiteFooter />
+export default function Home(){
+ return <div className="alm-public min-h-screen">
+  <SiteHeader/>
+  <main>
+   <section className="alm-gradient-hero">
+    <div className="alm-wrap grid items-center gap-9 pb-9 pt-12 lg:grid-cols-[1fr_.96fr] lg:gap-14 lg:pt-16">
+     <div>
+      <p className="alm-eyebrow">Learning, organized around you</p>
+      <h1 className="mt-4 max-w-[590px] text-[35px] leading-[1.05] sm:text-[45px] lg:text-[52px]">Everything you need to make sense of your course &amp; exams.</h1>
+      <p className="mt-4 max-w-[490px] text-[15.5px] leading-[1.65] text-ink-body">Almanac brings your study materials, learning plan, and progress together in one organized experience. Start with a ready-made course or resource, shape it around your goals, while the new learning and request experience is being rebuilt.</p>
+      <div className="mt-6 flex flex-wrap gap-2">
+       <Link href="/courses" className={action}>Browse courses &amp; resources <span aria-hidden="true">→</span></Link>
+       <Link href="/request" className={secondary}>Read product update</Link>
+      </div>
+      <p className="mt-4 text-[12.5px] text-ink-muted">For coursework, exam preparation, independent study, and more.</p>
+     </div>
+     <DeskArt/>
     </div>
-  );
+    <div className="alm-wrap grid grid-cols-2 gap-2 border-t border-[#E9E5F5] py-4 sm:grid-cols-3 lg:grid-cols-6">
+     {resources.map(([heading,body,num])=><div key={num} className="rounded-xl border border-[#E4DFF5] bg-white/85 px-3 py-3">
+      <p className="text-[11px] font-extrabold text-violet-700">{num}</p>
+      <p className="mt-1 text-[12px] font-bold">{heading}</p>
+      <p className="mt-1 text-[11px] leading-[1.4] text-ink-muted">{body}</p>
+     </div>)}
+    </div>
+   </section>
+   <section className="alm-section">
+    <div className="alm-wrap">
+      <p className="alm-eyebrow">Courses &amp; resources</p>
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+       <div><h2 className="alm-section-title">Start with what you&apos;re learning.</h2>
+        <p className="mt-3 max-w-[640px] text-[15px] text-ink-body">Explore what&apos;s available, or tell us what you&apos;d like to learn. Whether it&apos;s a complete course, exam preparation, or a particular study resource, there&apos;s a place to start.</p></div>
+       <Link href="/courses" className={secondary}>Browse the catalog →</Link>
+      </div>
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+       <article className="alm-card alm-card-hover overflow-hidden">
+        <div className="relative bg-[#E6E0F8] p-4"><CourseVisual variant="patho"/>
+         <span className="alm-pill alm-pill-mint absolute right-6 top-6">● Pilot open</span></div>
+        <div className="p-5"><p className="alm-eyebrow">Graduate nursing</p><h3 className="mt-2 text-[23px] font-bold">Advanced Pathophysiology</h3>
+         <p className="mt-2 text-[14px] text-ink-body">Understand disease mechanisms through structured lessons, practice questions, flashcards, and exam preparation.</p>
+         <Link href="/courses/advanced-pathophysiology" className="mt-4 inline-flex text-[13px] font-bold text-violet-700">Explore the course →</Link></div>
+       </article>
+       <article className="alm-card alm-card-hover overflow-hidden">
+        <div className="bg-[#F6F4FB] p-4"><CourseVisual variant="request"/></div>
+        <div className="p-5"><p className="alm-eyebrow">Custom learning</p><h3 className="mt-2 text-[23px] font-bold">Don&apos;t see what you need?</h3>
+         <p className="mt-2 text-[14px] text-ink-body">Tell us what you&apos;re studying and what you&apos;d like us to create. Choose your materials and timeline to get started.</p>
+         <Link href="/request" className="mt-4 inline-flex text-[13px] font-bold text-violet-700">Read product update →</Link></div>
+       </article>
+      </div>
+      <p className="mt-4 text-[12px] text-ink-muted">Other topics being developed: Advanced Pharmacology · Practical AI Skills · Editing &amp; Proofreading</p>
+    </div>
+   </section>
+   <section className="alm-section border-y border-[#EEEBF7] bg-[#FBFAFE]">
+    <div className="alm-wrap">
+     <p className="alm-eyebrow">How Almanac works</p><h2 className="alm-section-title mt-2">Start where you are. Know where to go next.</h2>
+     <p className="mt-3 max-w-[680px] text-[15px] text-ink-body">Whether you&apos;re following a course or preparing for something specific, Almanac helps turn your materials and goals into a learning experience you can follow.</p>
+     <div className="mt-6 grid gap-3 md:grid-cols-4">
+      {steps.map(([n,title,body,img])=><div key={n} className="alm-card overflow-hidden">
+       <div className="grid h-[125px] place-items-center bg-[#F4F1FE] bg-center bg-contain bg-no-repeat" style={{backgroundImage:`url("${img}")`}}>
+        <span className="grid h-10 w-10 place-items-center rounded-full bg-white font-display text-lg font-bold text-violet-700 shadow-sm">{n}</span>
+       </div>
+       <div className="p-4"><h3 className="text-[18px] font-bold">{title}</h3><p className="mt-2 text-[12.5px] text-ink-body">{body}</p></div>
+      </div>)}
+     </div>
+     <Link href="/how-it-works" className={`${secondary} mt-6`}>Understand each step →</Link>
+    </div>
+   </section>
+   <section className="alm-section">
+    <div className="alm-wrap grid items-center gap-9 md:grid-cols-2">
+     <div><p className="alm-eyebrow">Your learning space</p><h2 className="alm-section-title mt-2">Pick up where you left off.</h2>
+      <p className="mt-3 text-[15px] text-ink-body">Your lessons, practice, flashcards, and study plan stay together. Find what you need, revisit what you&apos;ve learned, and see what&apos;s next without starting over each time.</p>
+      <Link href="/app" className={`${secondary} mt-5`}>Open your workspace →</Link>
+     </div>
+     <div className="alm-card overflow-hidden bg-[#F4F1FE] p-5">
+      <div className="alm-frame rounded-xl bg-white p-5">
+       <div className="flex items-center justify-between border-b border-hairline pb-3"><strong className="text-[14px]">Your learning space</strong><span className="alm-pill">Module progress</span></div>
+       <p className="mt-4 text-[12px] text-ink-muted">Advanced Pathophysiology · Module 02</p>
+       <h3 className="mt-1 text-[19px] font-bold">Understand the mechanisms</h3>
+       <div className="mt-4 h-2 rounded-full bg-[#EEEBF7]"><div className="h-full w-[42%] rounded-full bg-violet"/></div>
+       <div className="mt-4 grid grid-cols-2 gap-2">{["Lessons","Practice","Flashcards","Study plan"].map(x=><div key={x} className="rounded-lg border border-hairline p-3 text-[12px] font-semibold">{x} <span className="float-right text-violet-700">↗</span></div>)}</div>
+      </div><p className="mt-3 text-center text-[11px] text-ink-muted">Illustrative workspace layout</p>
+     </div>
+    </div>
+   </section>
+   <section className="alm-section border-y border-[#EEEBF7] bg-[#FBFAFE]">
+    <div className="alm-wrap grid items-center gap-8 md:grid-cols-[1fr_.9fr]">
+     <div><p className="alm-eyebrow">Custom learning requests</p><h2 className="alm-section-title mt-2">Your needs don&apos;t have to fit our catalog.</h2>
+      <p className="mt-4 text-[15px] text-ink-body">A course we haven&apos;t covered. An exam you&apos;re preparing for. A complete study module for a particular part of your course. Tell us what you&apos;re working toward, and we&apos;ll see what we can create for you.</p>
+      <Link href="/request" className={`${action} mt-5`}>Read product update →</Link>
+      <p className="mt-3 text-[12px] text-ink-muted">New custom-learning orders are paused while we redesign the experience.</p>
+     </div>
+     <div className="alm-plum-panel p-6">
+      <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#CFC7FF]">Your request, your goals</p><h3 className="mt-3 text-[23px] font-bold">A few details help us get started.</h3>
+      <div className="mt-5 space-y-4">{[["01","What are you learning?","A subject, course, exam, or module"],["02","What would help?","A full course, study guide, practice, or something else"],["03","When do you need it?","Select a delivery timeline and see your price"]].map(([n,h,d])=><div key={n} className="flex gap-3 border-t border-white/20 pt-4"><span className="text-[13px] font-extrabold text-[#CEBBFF]">{n}</span><div><p className="text-[13px] font-bold">{h}</p><p className="mt-1 text-[12px] text-white/75">{d}</p></div></div>)}</div>
+     </div>
+    </div>
+   </section>
+   <section className="alm-section">
+    <div className="alm-wrap rounded-[20px] bg-[#ECE7FF] px-6 py-10 text-center sm:px-10">
+     <p className="alm-eyebrow">Your next step</p><h2 className="alm-section-title mt-3">There&apos;s more than one way to begin.</h2>
+     <p className="mx-auto mt-3 max-w-[570px] text-[15px] text-ink-body">Find something ready to use, or tell us what you&apos;d like to learn. We&apos;ll help you take it from there.</p>
+     <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/courses" className={action}>Browse courses &amp; resources →</Link><Link href="/request" className={secondary}>Read product update</Link></div>
+    </div>
+   </section>
+  </main>
+  <SiteFooter/>
+ </div>;
 }

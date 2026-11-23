@@ -1,0 +1,9 @@
+# Temporary Netlify deployment of the existing Almanac Next.js app.
+# Netlify's OpenNext adapter handles App Router, API routes and dynamic pages.
+# This file does not contain credentials, account numbers, or production domains.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"

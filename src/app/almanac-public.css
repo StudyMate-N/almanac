@@ -1,0 +1,83 @@
+/* Almanac final public-site design — 2026-10-15.
+   Scoped to public-facing pages; does not restyle authenticated study/staff tools. */
+.alm-public {
+  --alm-plum:#2A1B78;--alm-violet:#5B3DF5;--alm-purple:#3E25C9;
+  --alm-ink:#1B1530;--alm-body:#3D3654;--alm-muted:#5E5775;
+  --alm-border:#E4DFF5;--alm-rule:#EEEBF7;--alm-lilac:#ECE7FF;
+  --alm-mint:#DFF5EA;--alm-green:#1E7A4F;--alm-peach:#FFE9DC;
+  --alm-orange:#F2711C;--alm-orange-ink:#A8430A;--alm-rose:#FDEBEF;--alm-red:#8A1C37;
+  background:#fff;color:var(--alm-ink);font-family:var(--font-sans);
+  font-size:15px;line-height:1.62;
+}
+.alm-public h1,.alm-public h2,.alm-public h3,.alm-public h4 {
+  font-family:var(--font-display);letter-spacing:-.03em;line-height:1.08;
+}
+.alm-public h1 {font-weight:750;letter-spacing:-.045em;}
+.alm-public h2 {font-weight:740;}
+.alm-public p {text-wrap:pretty;}
+.alm-public .alm-wrap {width:min(1080px,calc(100% - 32px));margin-inline:auto;}
+.alm-public .alm-eyebrow {color:var(--alm-purple);font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;}
+.alm-public .alm-action {
+ display:inline-flex;min-height:44px;align-items:center;justify-content:center;gap:9px;
+ background:var(--alm-violet);border:1px solid var(--alm-violet);border-radius:999px;padding:9px 19px;
+ color:#fff;font-size:13.5px;font-weight:750;line-height:1.35;
+ transition:background .15s,transform .15s,box-shadow .15s;
+}
+.alm-public .alm-action:hover {background:#4A2DE6;box-shadow:0 8px 18px rgba(42,27,120,.13);}
+.alm-public .alm-action:active {transform:scale(.98);}
+.alm-public .alm-action-secondary {background:#fff;color:var(--alm-plum);border-color:#D9D2F3;}
+.alm-public .alm-action-secondary:hover {background:#F6F4FB;}
+.alm-public .alm-card {background:#fff;border:1px solid var(--alm-border);border-radius:17px;}
+.alm-public .alm-card-hover {transition:transform .2s,box-shadow .2s,border-color .2s;}
+.alm-public .alm-card-hover:hover {transform:translateY(-3px);box-shadow:0 14px 30px rgba(42,27,120,.1);}
+.alm-public .alm-gradient-hero {background:radial-gradient(55% 90% at 8% 0%,#DFF5EA 0%,transparent 70%),radial-gradient(45% 80% at 95% 30%,#ECE7FF 0%,transparent 72%),#fff;}
+.alm-public .alm-gradient-lilac {background:radial-gradient(90% 100% at 100% 5%,#ECE7FF,transparent 75%),#fff;}
+.alm-public .alm-plum-panel {background:var(--alm-plum);color:white;border-radius:20px;}
+.alm-public .alm-pill {display:inline-flex;align-items:center;border-radius:999px;padding:5px 11px;background:var(--alm-lilac);color:var(--alm-plum);font-size:11px;font-weight:750;}
+.alm-public .alm-pill-mint {background:var(--alm-mint);color:#14532D;}
+.alm-public .alm-pill-orange {background:var(--alm-peach);color:#6B2A06;}
+.alm-public .alm-rule {height:1px;background:var(--alm-rule);border:0;}
+.alm-public .alm-section {padding-block:64px;}
+.alm-public .alm-section-title {font-size:clamp(27px,3vw,34px);line-height:1.09;}
+.alm-public .alm-caption {color:var(--alm-muted);font-size:12px;}
+.alm-public .alm-state-ready {background:var(--alm-mint);color:#14532D;border:1px solid #A4DEC0;}
+.alm-public .alm-state-waiting {background:#FFF6F0;color:#6B2A06;border:1px solid #FFCCB0;}
+.alm-public .alm-state-expired {background:var(--alm-rose);color:var(--alm-red);border:1px solid #F4B5C6;}
+.alm-public input:not([type=checkbox]):not([type=radio]),.alm-public select,.alm-public textarea {
+  border-radius:11px;
+}
+.alm-public .alm-course-media {position:relative;overflow:hidden;isolation:isolate;background:#E6E0F8;border-radius:14px;}
+.alm-public .alm-course-media::before {content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 50% 25%,#fff 0,rgba(255,255,255,0) 65%);}
+.alm-public .alm-frame {box-shadow:0 1px 2px rgba(27,21,48,.06),0 24px 48px rgba(27,21,48,.10);}
+.alm-play {width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;flex:none;
+ border-radius:50%;background:#EA6512;color:#fff;box-shadow:0 0 0 5px #FFE9DC;animation:almPulse 2.4s ease-out infinite;}
+.alm-play::before {content:"";width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:12px solid #fff;margin-left:3px;}
+.alm-public .alm-hero-art {animation:almFloat 7s ease-in-out infinite;filter:drop-shadow(0 22px 20px rgba(42,27,120,.12));}
+@keyframes almPulse {0% {box-shadow:0 0 0 4px #FFE9DC,0 0 0 4px rgba(242,113,28,.45)}
+ 70% {box-shadow:0 0 0 4px #FFE9DC,0 0 0 18px rgba(242,113,28,0)}
+ 100% {box-shadow:0 0 0 4px #FFE9DC,0 0 0 18px rgba(242,113,28,0)}}
+@keyframes almFloat {0%,100% {transform:translateY(0)}50% {transform:translateY(-8px)}}
+@media (max-width:640px) {
+ .alm-public .alm-section {padding-block:40px;}
+ .alm-public .alm-wrap {width:calc(100% - 32px);}
+ .alm-public h1 {letter-spacing:-.035em;}
+ .alm-public .alm-action {min-height:44px;}
+}
+@media (prefers-reduced-motion: reduce) {
+ .alm-public *, .alm-public *::before,.alm-public *::after,
+ .alm-play {animation:none!important;transition:none!important;}
+}
+
+/* Final design handoff: clear focus, responsive artwork and semantic video controls. */
+.alm-public .alm-hero-glow{animation:almGlow 7s ease-in-out infinite;}
+@keyframes almGlow{0%,100%{opacity:.85;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+.alm-public .alm-course-media img{object-position:80% 55%;}
+.alm-public .alm-play{border:0;cursor:pointer;}
+@media (prefers-reduced-motion:reduce){.alm-public .alm-hero-glow{animation:none}}
+
+/* Mobile bank instructions and date fields use readable, no-zoom sizing. */
+@media(max-width:640px){
+ .alm-public input:not([type=checkbox]):not([type=radio]),.alm-public select,.alm-public textarea{font-size:16px;min-height:44px}
+ .alm-public button[aria-label^="Copy "]{min-height:44px;font-size:13px}
+ .alm-public dl dd{overflow-wrap:anywhere}
+}

@@ -1,0 +1,63 @@
+name: Install Almanac final design assets
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/custom-learning-orders-v1]
+    paths:
+      - ".github/workflows/install-almanac-art.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  install-approved-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download verified user-approved visual pack
+        run: |
+          curl --fail --location --retry 3 --silent --show-error \
+            'https://d2ol7oe51mr4n9.cloudfront.net/user_3IqSDF7QAeQq8R42mhfJLoxPt93/9c70decc-c63c-4141-b993-f52ee6250cb0.zip' -o /tmp/almanac-art.zip
+          echo 'a3ea8e61df2580d2435baa5738f393a3c772a22e48e7f467dfdfbd49bb3d391c  /tmp/almanac-art.zip' | sha256sum -c -
+      - name: Extract approved assets only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile,shutil
+          zip_path=Path('/tmp/almanac-art.zip')
+          root='design_handoff_almanac_public/'
+          base=root+'art_full_pack/'
+          higher_res=root+'designs/art/'
+          target=Path('public/almanac-art')
+          target.mkdir(parents=True,exist_ok=True)
+          written=0
+          with zipfile.ZipFile(zip_path) as z:
+              names=set(z.namelist())
+              for name in sorted(names):
+                  if not name.startswith(base) or '/test/' in name or name.endswith('/'):
+                      continue
+                  filename=name.removeprefix(base)
+                  if '/' in filename or not filename.endswith(('.png','.svg')):
+                      continue
+                  if filename.startswith('cover-') and higher_res+filename in names:
+                      name=higher_res+filename
+                  data=z.read(name)
+                  if len(data)>9*1024*1024: raise SystemExit('Asset too large')
+                  (target/filename).write_bytes(data)
+                  written+=1
+          if written<50:raise SystemExit('Incomplete design pack: '+str(written))
+          print('Copied',written,'approved assets into',target)
+          PY
+      - name: Commit final art to development branch
+        run: |
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git add public/almanac-art
+          if ! git diff --cached --quiet; then
+            git commit -m "Install final Almanac hero, covers, illustrations and status artwork"
+            git push origin HEAD:feat/custom-learning-orders-v1
+          else
+            echo "Final art pack already installed"
+          fi

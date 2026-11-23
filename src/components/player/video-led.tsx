@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { questionById } from "@/content/course";
 import { type Clip, clipById } from "@/content/patho";
 import type { Block, Card, Lesson, Question } from "@/content/types";
-import { MEDIA_BASE, REVIEWER } from "@/lib/config";
+import { MEDIA_BASE } from "@/lib/config";
 import { readingWords } from "@/lib/minutes";
 import { useStudent } from "@/lib/store";
-import { BlockView, Corrections, OpenPrompt, Predict, TopicHead, toSec } from "./blocks";
+import { BlockView, OpenPrompt, Predict, TopicHead, toSec } from "./blocks";
 import { CheckCard } from "./topic-check";
 
 type VideoBlock = Extract<Block, { t: "video" }>;
@@ -38,9 +39,10 @@ const NOTE_KINDS = new Set<Block["t"]>(["h2", "p", "ul", "ol", "table", "img", "
  * visible, and the full notes open on request. The page completes through the
  * learn page's checksLeft rule once every stop is answered.
  */
-export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete }: { page: Lesson; videos: VideoBlock[]; visibleQ: (q: Question) => boolean; visibleCards: (c: Card) => boolean; onComplete: () => void }) {
+export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete, focusMode = false }: { page: Lesson; videos: VideoBlock[]; visibleQ: (q: Question) => boolean; visibleCards: (c: Card) => boolean; onComplete: () => void; focusMode?: boolean }) {
   const { state, answers } = useStudent();
   const video = useRef<HTMLVideoElement>(null);
+  const notesRef = useRef<HTMLElement>(null);
   const pending = useRef<{ local: number; play: boolean } | null>(null);
   const [seg, setSeg] = useState(0);
   const [t, setT] = useState(0);
@@ -164,6 +166,8 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
     if (p.play) void el.play();
   };
 
+  const [railEl, setRailEl] = useState<HTMLElement | null>(null);
+  useEffect(() => setRailEl(document.getElementById("player-chapters")), [focusMode]);
   const keypoints = page.blocks.find((b) => b.t === "keypoints");
   const open = page.blocks.find((b) => b.t === "open");
   const notes = page.blocks.filter((b) => NOTE_KINDS.has(b.t));
@@ -173,11 +177,31 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
   const chapterNow = [...chapters].reverse().find((c) => c.pos <= t + 0.05) ?? chapters[0];
   const cur = segs[seg];
   const base = `${MEDIA_BASE.replace(/\/$/, "")}/${cur.clip.id}`;
-  const message = !predictDone ? "Answer the question below, then press play" : active ? "Paused for a question below" : ended ? "Finished. Every stop answered?" : "Press play";
+  const message = !predictDone ? "Choose an answer above to unlock play" : active ? "Paused for a learning check below" : ended ? "Video complete · review your checks" : "Your prediction is saved · ready to watch";
+  const revealNotes = () => {
+    setNotesOpen(true);
+    requestAnimationFrame(() => {
+      notesRef.current?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        block: "start",
+      });
+    });
+  };
 
   return (
     <div className="flex flex-col gap-6">
-      <section aria-label="Course video" className="flex flex-col gap-2.5">
+      {predict && (
+        <div>
+          <Predict id={predict.id} stem={predict.stem} options={predict.options} correct={predict.correct} reveal={predict.reveal} eyebrow="Before you press play · not scored">
+            {!playing && !active && t === 0 && (
+              <button onClick={play} className="min-h-12 self-start rounded-full bg-violet px-6 font-bold text-white">
+                Play the video ▶
+              </button>
+            )}
+          </Predict>
+        </div>
+      )}
+      <section data-patho-video-anchor aria-label="Course video" className="flex scroll-mt-20 flex-col gap-2.5 sm:scroll-mt-24">
         <div className="relative aspect-video w-full overflow-hidden rounded-3xl bg-violet-deep text-white">
           <video
             key={cur.clip.id}
@@ -211,11 +235,11 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
                   onClick={toggle}
                   disabled={!predictDone || Boolean(active)}
                   aria-label={ended ? "Play again" : "Play"}
-                  className="pointer-events-auto grid h-[76px] w-[76px] place-items-center rounded-full bg-tangerine text-[26px] text-ink disabled:opacity-60"
+                  className="pointer-events-auto grid h-[76px] w-[76px] place-items-center rounded-full bg-[#EA6512] text-[26px] text-white shadow-[0_0_0_6px_#FFE9DC] disabled:cursor-not-allowed max-sm:h-16 max-sm:w-16"
                 >
                   {ended ? "↺" : "▶"}
                 </button>
-                <p className="text-center text-sm font-semibold text-violet-on">{message}</p>
+                <p className="rounded-full bg-white px-3 py-1.5 text-center text-[13px] font-bold text-violet-deep max-sm:hidden">{message}</p>
               </div>
             )}
             <div className="flex flex-col gap-2">
@@ -248,22 +272,63 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className={`-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 ${focusMode ? "" : "xl:hidden"}`}>
           {chapters.map((c) => {
             const here = c === chapterNow;
             return (
-              <button key={`${c.pos}-${c.label}`} onClick={() => goTo(c.pos, playing)} className={`min-h-10 rounded-full px-3.5 text-[13px] font-bold ${here ? "bg-lilac text-violet-700" : "bg-white text-ink-muted"}`}>
+              <button key={`${c.pos}-${c.label}`} onClick={() => goTo(c.pos, playing)} aria-current={here ? "true" : undefined} className={`min-h-10 flex-none rounded-full border-[1.5px] px-3.5 text-[13px] font-bold whitespace-nowrap ${here ? "border-[#F2711C] bg-[#FFF4EC] text-ink" : "border-hairline bg-white text-ink-muted"}`}>
                 {fmt(c.pos)} {c.label}
               </button>
             );
           })}
         </div>
+        {!focusMode && railEl &&
+          createPortal(
+            <section className="rounded-[16px] border border-hairline bg-white p-2">
+              <p className="px-2 pt-2 pb-1.5 text-[11px] font-extrabold tracking-[.12em] text-ink-muted">CHAPTERS</p>
+              {chapters.map((c) => {
+                const here = c === chapterNow;
+                return (
+                  <button key={`${c.pos}-${c.label}`} onClick={() => goTo(c.pos, playing)} aria-current={here ? "true" : undefined} className={`relative flex min-h-11 w-full items-center gap-2 rounded-[10px] px-3.5 text-left text-[13.5px] ${here ? "bg-[#FFF4EC] font-bold text-ink" : "font-medium text-ink-body hover:bg-mist"}`}>
+                    {here && <span aria-hidden="true" className="absolute top-2.5 bottom-2.5 left-1 w-1 rounded-full bg-[#F2711C]" />}
+                    <span className="min-w-0 flex-1">{c.label}</span>
+                    <span className="font-mono text-[11.5px] text-ink-muted">{fmt(c.pos)}</span>
+                  </button>
+                );
+              })}
+            </section>,
+            railEl,
+          )}
         <p className="text-[13px] text-ink-muted">
-          Course video · {fmt(total)} · {stops.length} stop{stops.length === 1 ? "" : "s"} for questions · Script approved by {REVIEWER.name}, {REVIEWER.credentials}
+          Course video · {fmt(total)} · {stops.length} stop{stops.length === 1 ? "" : "s"} for questions · English captions and correction notes available
         </p>
-        {segs.map((s) => (
-          <Corrections key={s.clip.id} clip={s.clip} seek={(at) => goTo(s.offset + toSec(at), true)} />
-        ))}
+        {segs.some((s) => s.clip.corrections.length > 0) && (
+          <details className="rounded-[16px] border border-hairline bg-white px-4 py-3.5">
+            <summary className="cursor-pointer text-[14px] font-bold text-violet-700">
+              Video review notes · {segs.reduce((n, s) => n + s.clip.corrections.length, 0)} timestamped corrections
+            </summary>
+            <p className="mt-3 text-[13px] leading-6 text-ink-muted">Some statements in the original narration need clarification. Review these notes while watching.</p>
+            <div className="mt-4 flex flex-col gap-5">
+              {segs.filter((s) => s.clip.corrections.length > 0).map((s) => (
+                <section key={s.clip.id} className="border-t border-hairline pt-3">
+                  <h3 className="text-[14px] font-bold text-ink">{s.clip.shortTitle ?? s.clip.title}</h3>
+                  <ul className="mt-2 space-y-3">
+                    {s.clip.corrections.map((c) => (
+                      <li key={c.at} className="rounded-xl bg-mist p-3.5 text-[13px] leading-6">
+                        <button type="button" onClick={() => goTo(s.offset + toSec(c.at), true)}
+                          className="mb-2 min-h-10 rounded-full bg-white px-3 text-xs font-bold text-violet-700">
+                          Jump to {c.at} ↗
+                        </button>
+                        <p className="text-ink-muted line-through">{c.said}</p>
+                        <p className="mt-1 text-ink">{c.correct}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          </details>
+        )}
       </section>
 
       {active && (
@@ -275,23 +340,22 @@ export function VideoLedTopic({ page, videos, visibleQ, visibleCards, onComplete
         </section>
       )}
 
-      {predict && (
-        <div className="rounded-tile ring-2 ring-violet-300">
-          <Predict id={predict.id} stem={predict.stem} options={predict.options} correct={predict.correct} reveal={predict.reveal} eyebrow="Before you press play · not scored">
-            {!playing && !active && t === 0 && (
-              <button onClick={play} className="min-h-12 self-start rounded-full bg-violet px-6 font-bold text-white">
-                Play the video ▶
-              </button>
-            )}
-          </Predict>
-        </div>
+      {(keypoints?.t === "keypoints" || notes.length > 0) && (
+        <section className="rounded-[16px] border border-[#D9D2F3] bg-white p-4 sm:p-5" aria-label="Readable video revision aids">
+          <p className="text-[11px] font-extrabold uppercase tracking-[.12em] text-violet-700">Video clarity aid</p>
+          <h3 className="mt-1 font-display text-[19px] font-bold">What to remember</h3>
+          <p className="mt-2 text-[13px] leading-6 text-ink-body">The original video is 360p. Use captions while watching, then read these key ideas and the full notes for clearer diagrams and explanations.</p>
+          {keypoints?.t === "keypoints" && <div className="mt-4"><TopicHead items={keypoints.items} /></div>}
+          {notes.length > 0 && <button type="button" onClick={revealNotes}
+            className="mt-4 min-h-11 rounded-full bg-violet px-5 text-[13px] font-bold text-white">
+            Open readable notes & diagrams →
+          </button>}
+        </section>
       )}
-
-      {keypoints?.t === "keypoints" && <TopicHead items={keypoints.items} />}
       {open?.t === "open" && <OpenPrompt id={open.id} stem={open.stem} expert={open.expert} />}
 
       {notes.length > 0 && (
-        <section className="flex flex-col gap-6">
+        <section ref={notesRef} className="flex scroll-mt-24 flex-col gap-6">
           <button onClick={() => setNotesOpen(!notesOpen)} aria-expanded={notesOpen} className="flex w-full items-center gap-3 rounded-card bg-white p-[16px_18px] text-left">
             <span className="min-w-0 flex-1">
               <span className="block font-display text-[18px] font-semibold">Full notes</span>

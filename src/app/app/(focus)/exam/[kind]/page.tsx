@@ -3,8 +3,8 @@
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { courseById, openCourses } from "@/content/course";
-import { Runner } from "@/components/runner";
-import { EXAMS } from "@/lib/config";
+import { Runner, type ExamIntro } from "@/components/runner";
+import { EXAMS, PASS_MARK } from "@/lib/config";
 import { shuffled } from "@/lib/hash";
 import { modulesBefore, planFor } from "@/lib/plan";
 import { useStudent } from "@/lib/store";
@@ -22,7 +22,7 @@ export default function ExamPage() {
 function Exam() {
   const { kind } = useParams<{ kind: "midterm" | "final" | "check" }>();
   const courseId = courseById(useSearchParams().get("course") ?? "")?.id ?? openCourses[0].id;
-  const { state } = useStudent();
+  const { state, authorizedCourses } = useStudent();
   const { questions, course, latest } = useCourse(courseId);
   const [seed] = useState(() => String(Date.now()));
   const spec = EXAMS[kind] ?? EXAMS.check;
@@ -53,9 +53,25 @@ function Exam() {
 
   // Scale the time if the bank cannot fill the full length yet.
   const minutes = Math.max(5, Math.round((spec.minutes * qs.length) / spec.questions));
-  const base = `${course?.title ?? ""} · ${spec.label}`;
   const repeats = qs.filter((q) => latest.has(q.id)).length;
-  const sized = qs.length < spec.questions ? `${base} · ${qs.length} of ${spec.questions} questions available` : base;
-  const title = kind !== "check" && repeats > 0 ? `${sized} · ${repeats} you have seen before` : sized;
-  return <Runner title={title} questions={qs} mode="exam" kind={kind} minutes={minutes} backHref={kind === "check" ? "/app" : "/app/practice"} />;
+  const sections = [...new Set(qs.map((q) => Number(q.moduleId.match(/-s(\d+)$/)?.[1] ?? 0)).filter(Boolean))].sort((a, b) => a - b);
+  const scope =
+    kind === "final" ? "All sections" : sections.length > 1 ? `Sections ${sections[0]}–${sections[sections.length - 1]}` : sections.length === 1 ? `Section ${sections[0]}` : "Across the course";
+  const intro: ExamIntro = { scope, total: spec.questions, repeats, showRepeats: kind !== "check" };
+  if (!authorizedCourses.includes(courseId)) return <section className="alm-desk-card mx-auto mt-8 max-w-xl p-6"><h1 className="text-[24px] font-bold">Exam practice requires course access.</h1><p className="mt-3 text-sm text-ink-body">Choose a course included in your approved enrollment.</p></section>;
+  return (
+    <Runner
+      eyebrow={course?.title}
+      title={spec.label}
+      questions={qs}
+      mode="exam"
+      kind={kind}
+      minutes={minutes}
+      intro={intro}
+      passMark={kind === "check" ? undefined : PASS_MARK}
+      persistKey={`${courseId}.${kind}`}
+      backHref={kind === "check" ? "/app" : "/app/practice"}
+      backLabel={kind === "check" ? "Back to Today" : "Back to Practice"}
+    />
+  );
 }

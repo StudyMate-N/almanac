@@ -20,12 +20,12 @@ export default function Progress() {
     return { id: a.sessionId, mode: a.mode, at: a.at, n: rows.length, right: rows.filter((r) => r.correct).length };
   });
   const reviewed = Object.values(state.deck?.log ?? {}).reduce((a, b) => a + b, 0);
-  const stat = "rounded-tile bg-white p-5";
+  const stat = "alm-desk-card p-5";
 
   return (
     <>
       <PageHeader eyebrow="Your progress" title="Where you stand" />
-      <div className="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           ["Questions answered", seen.length],
           ["Correct last time", seen.length ? `${Math.round((right / seen.length) * 100)}%` : "–"],
@@ -81,7 +81,7 @@ export default function Progress() {
             </ul>
           )}
           {missed > 0 && (
-            <Link href="/app/practice/missed" className="mt-4 inline-block rounded-full bg-peach px-4 py-2 text-sm font-bold text-peach-ink">
+            <Link href="/app/practice/missed" className="mt-4 inline-flex h-11 items-center rounded-[12px] border-[1.5px] border-[#D9D2F3] px-4 text-sm font-bold text-violet-deep hover:bg-mist">
               Redo the {missed} I missed
             </Link>
           )}

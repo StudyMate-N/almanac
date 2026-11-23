@@ -1,0 +1,21 @@
+import type {Metadata} from "next";
+import {SiteHeader,SiteFooter} from "@/components/site/chrome";
+export const metadata:Metadata={title:"Privacy | Almanac",description:"How Almanac handles learning requests, payment information, course materials and student workspaces."};
+export default function PrivacyPage(){
+ return <div className="alm-public min-h-screen"><SiteHeader/>
+ <main className="mx-auto max-w-[850px] px-5 pb-20 pt-8">
+  <p className="text-xs font-bold uppercase tracking-widest text-violet-700">PRIVACY</p>
+  <h1 className="mt-3 font-display text-4xl font-semibold">Privacy and your learning materials</h1>
+  <p className="mt-4 text-ink-body">We use information you share to prepare and deliver your selected Almanac learning services, communicate about your order, and maintain the learning workspace. We do not need your school login credentials.</p>
+  <section className="mt-8 space-y-5 text-sm leading-relaxed text-ink-body">
+   <div><h2 className="text-lg font-semibold text-ink">Information collected</h2><p className="mt-2">We collect your name, email address, course details, learning preferences, goals, uploaded syllabus or study documents, and progress within Almanac. If you report a bank transfer, we record the date, transaction reference and any receipt you elect to upload. We do not request banking passwords or store your card credentials.</p></div>
+   <div><h2 className="text-lg font-semibold text-ink">How we use it</h2><p className="mt-2">Your submitted information helps staff define learning modules, build and quality-review course materials, confirm manual payments and provide customer support. Learning progress is associated with your authenticated workspace. Personalized materials are not made available in the public catalog without separate permission.</p></div>
+   <div><h2 className="text-lg font-semibold text-ink">Access and protection</h2><p className="mt-2">Course source documents, payment screenshots and delivered learning files are stored in private storage. Authorized staff access files for the relevant order. Learners can access released learning materials attached to their own account. We apply technical controls and practical review, although no internet service can guarantee absolute security.</p></div>
+   <div><h2 className="text-lg font-semibold text-ink">Providers and communication channels</h2><p className="mt-2">We use service providers for hosting, file storage, deployment and, when enabled, transactional email. WhatsApp is an optional external messaging channel; its own privacy practices apply. Please use the private Almanac upload form rather than sending sensitive receipts or class documents over chat.</p></div>
+   <div><h2 className="text-lg font-semibold text-ink">Your choices</h2><p className="mt-2">Sharing course files is optional. You can ask about access to your data, corrections, or deletion by writing to almanacstudy.support@gmail.com with your invoice reference. Some records may need to be retained for payment reconciliation, legal or security purposes. Deletion of records from archived backups may take additional time.</p></div>
+   <div><h2 className="text-lg font-semibold text-ink">Children and academic materials</h2><p className="mt-2">Do not upload identification documents, patient records, classroom rosters, school passwords, or other people's confidential information. Share only class materials you have permission to use. If you are a minor, a parent or guardian should review payment and service terms where required.</p></div>
+   <div><h2 className="text-lg font-semibold text-ink">Contact</h2><p className="mt-2">Privacy questions: <a href="mailto:almanacstudy.support@gmail.com" className="font-semibold underline">almanacstudy.support@gmail.com</a>.</p></div>
+  </section>
+  <p className="mt-8 border-t border-hairline pt-4 text-xs text-ink-muted">This policy is subject to operational and legal approval before public launch. Specific retention periods and governing-law details will be confirmed in the final published version.</p>
+ </main><SiteFooter/></div>;
+}

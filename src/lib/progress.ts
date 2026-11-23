@@ -80,10 +80,10 @@ export const readinessLabel: Record<Readiness["level"], string> = {
 };
 
 export const readinessTone: Record<Readiness["level"], { bar: string; chip: string }> = {
-  "not-started": { bar: "bg-[#D9D4EA]", chip: "bg-mist text-ink-muted" },
-  building: { bar: "bg-tangerine", chip: "bg-peach text-peach-ink" },
-  nearly: { bar: "bg-sky-strong", chip: "bg-sky text-sky-ink" },
-  ready: { bar: "bg-correct", chip: "bg-mint text-mint-ink" },
+  "not-started": { bar: "bg-[#D9D2F3]", chip: "bg-mist text-ink-muted" },
+  building: { bar: "bg-[#F2711C]", chip: "bg-[#FFE9DC] text-[#A8430A]" },
+  nearly: { bar: "bg-violet", chip: "bg-lilac text-violet-deep" },
+  ready: { bar: "bg-correct", chip: "bg-mint text-correct" },
 };
 
 export function topicStats(questions: Question[], latest: Map<string, Answer>) {

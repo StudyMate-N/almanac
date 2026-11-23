@@ -13,10 +13,10 @@ const lessonOfQuestion = new Map(questions.map((q) => [q.id, q.lessonId]));
  * `latest` is every last answer; `scored` is what readiness counts.
  */
 export function useCourse(courseId?: string) {
-  const { isVisible, isApproved, answers, preview, state } = useStudent();
+  const { isVisible, isApproved, answers, preview, state, authorizedCourses } = useStudent();
   return useMemo(() => {
-    const mods = courseId ? modules.filter((m) => m.courseId === courseId) : modules;
-    const inScope = (moduleId: string) => !courseId || mods.some((m) => m.id === moduleId);
+    const mods = modules.filter((m) => authorizedCourses.includes(m.courseId) && (!courseId || m.courseId === courseId));
+    const inScope = (moduleId: string) => mods.some((m) => m.id === moduleId);
     const vLessons = lessons.filter((l) => inScope(l.moduleId) && isVisible(l.id, l));
     const vQuestions = questions.filter((q) => inScope(q.moduleId) && isVisible(q.id, q));
     const vCards = cards.filter((c) => inScope(c.moduleId) && isVisible(c.id, c));
@@ -26,8 +26,8 @@ export function useCourse(courseId?: string) {
     const scored = latestByQuestion(scoredAnswers(answers, state.lessons, (id) => lessonOfQuestion.get(id)));
     const lessonOpen = (id: string) => {
       const l = lessons.find((x) => x.id === id);
-      return Boolean(l && isVisible(l.id, l));
+      return Boolean(l && inScope(l.moduleId) && isVisible(l.id, l));
     };
     return { course: courseId ? courseById(courseId) : undefined, modules: mods, lessons: vLessons, questions: vQuestions, cards: vCards, cases: vCases, latest, scored, lessonOpen, isApproved, preview };
-  }, [courseId, isVisible, isApproved, answers, preview, state.lessons]);
+  }, [courseId, authorizedCourses, isVisible, isApproved, answers, preview, state.lessons]);
 }

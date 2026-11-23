@@ -1,0 +1,36 @@
+name: Public learning order checks
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "supabase/migrations/**"
+      - "scripts/check-learning-offers.mjs"
+      - "scripts/check-checkout-health.mjs"
+      - "scripts/check-private-endpoints.mjs"
+      - "scripts/check-request-origin.mjs"
+      - "scripts/check-payment-confirmation.mjs"
+      - "scripts/check-almanac-contact-isolation.mjs"
+      - "package*.json"
+      - ".github/workflows/learning-orders.yml"
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: node --experimental-strip-types scripts/check-learning-offers.mjs
+      - run: node --experimental-strip-types scripts/check-request-origin.mjs
+      - run: node --experimental-strip-types scripts/check-payment-confirmation.mjs
+      # Validate all local integrity and build gates before network-dependent
+      # checkout health checks, so unrelated remote outages cannot mask failures.
+      - run: node scripts/check-almanac-contact-isolation.mjs
+      - run: npm run typecheck
+      - run: npm run build
+      - run: node scripts/check-private-endpoints.mjs
+      - run: node scripts/check-checkout-health.mjs
