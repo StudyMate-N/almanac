@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Course } from "@/content/types";
-import { selectStudyRoute, type StudyStartMode } from "@/lib/study-route";
+import { safePracticeSetSize, selectStudyRoute, type StudyStartMode } from "@/lib/study-route";
 import { useStudent } from "@/lib/store";
 import { useCourse } from "@/lib/use-course";
 
@@ -17,7 +17,7 @@ const CHOICES: readonly { value: StudyStartMode; title: string }[] = [
 const isMode = (v: unknown): v is StudyStartMode =>
   v === "balanced" || v === "reading" || v === "video" || v === "practice";
 
-type DeviceChoice = { mode: StudyStartMode; lowBandwidth: boolean };
+type DeviceChoice = { mode: StudyStartMode; lowBandwidth: boolean; practiceCount: 5 | 10 | 20 };
 
 /**
  * An optional, reversible, device-scoped study preference. It never changes
@@ -28,6 +28,7 @@ export function StudyRouteChooser({ course }: { course: Course }) {
   const { lessons, questions, latest } = useCourse(course.id);
   const [mode, setMode] = useState<StudyStartMode>("balanced");
   const [lowBandwidth, setLowBandwidth] = useState(false);
+  const [practiceCount, setPracticeCount] = useState<5 | 10 | 20>(10);
 
   const key = profile?.id ? `almanac:route:v1:${profile.id}:${course.id}` : null;
 
@@ -39,11 +40,13 @@ export function StudyRouteChooser({ course }: { course: Course }) {
     }
     setMode(isMode(saved?.mode) ? saved.mode : "balanced");
     setLowBandwidth(saved?.lowBandwidth === true);
+    setPracticeCount(saved?.practiceCount === 5 || saved?.practiceCount === 20 ? saved.practiceCount : 10);
   }, [key]);
 
   function choose(next: DeviceChoice) {
     setMode(next.mode);
     setLowBandwidth(next.lowBandwidth);
+    setPracticeCount(next.practiceCount);
     if (key) {
       try { window.localStorage.setItem(key, JSON.stringify(next)); }
       catch { /* Preference works in memory if local storage is restricted. */ }
@@ -65,7 +68,7 @@ export function StudyRouteChooser({ course }: { course: Course }) {
   const route = selectStudyRoute(options, mode, questions.length, lowBandwidth);
   const href = route?.kind === "lesson"
     ? `/app/learn/${route.lessonId}`
-    : `/app/practice?course=${encodeURIComponent(course.id)}`;
+    : `/app/practice?course=${encodeURIComponent(course.id)}&n=${safePracticeSetSize(practiceCount)}`;
 
   const label = route?.kind === "practice"
     ? "Open reviewed practice"
@@ -93,7 +96,7 @@ export function StudyRouteChooser({ course }: { course: Course }) {
               type="button"
               disabled={unavailable}
               aria-pressed={mode === choice.value}
-              onClick={() => choose({ mode: choice.value, lowBandwidth })}
+              onClick={() => choose({ mode: choice.value, lowBandwidth, practiceCount })}
               className={`min-h-10 rounded-full border px-3 py-2 text-[12px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                 mode === choice.value ? "border-violet bg-lilac text-violet-deep" : "border-hairline text-ink-body hover:border-violet"
               }`}
@@ -108,10 +111,30 @@ export function StudyRouteChooser({ course }: { course: Course }) {
           type="checkbox"
           className="h-4 w-4 accent-violet"
           checked={lowBandwidth}
-          onChange={(e) => choose({ mode, lowBandwidth: e.target.checked })}
+          onChange={(e) => choose({ mode, lowBandwidth: e.target.checked, practiceCount })}
         />
         Prefer lower-data lessons (avoid starting with video)
       </label>
+      {practiceReady && (
+        <fieldset className="mt-3">
+          <legend className="text-[12px] font-semibold text-ink">Practice set size</legend>
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {([5, 10, 20] as const).map((count) => (
+              <button
+                key={count}
+                type="button"
+                aria-pressed={practiceCount === count}
+                className={`min-h-9 rounded-full border px-3 py-1.5 text-[11px] font-semibold ${
+                  practiceCount === count ? "border-violet bg-lilac text-violet-deep" : "border-hairline text-ink-body"
+                }`}
+                onClick={() => choose({ mode, lowBandwidth, practiceCount: count })}
+              >
+                {count === 5 ? "Quick" : count === 10 ? "Standard" : "Deep"} · {count} questions
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[13px] bg-[#F6F4FB] p-3">
         <p className="max-w-lg text-[12px] leading-relaxed text-ink-body" aria-live="polite">
           {route
@@ -129,7 +152,7 @@ export function StudyRouteChooser({ course }: { course: Course }) {
       </div>
       {missed > 0 && (
         <Link
-          href={`/app/practice?course=${encodeURIComponent(course.id)}&pool=missed`}
+          href={`/app/practice?course=${encodeURIComponent(course.id)}&pool=missed&n=${safePracticeSetSize(practiceCount)}`}
           className="mt-3 inline-flex min-h-9 items-center text-[12px] font-bold text-violet-700 hover:underline"
         >
           Review missed questions ({missed}) →
