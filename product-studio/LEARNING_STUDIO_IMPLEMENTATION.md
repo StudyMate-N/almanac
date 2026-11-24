@@ -122,8 +122,8 @@ Checks run on this branch, all passing:
 
 - **Palette:** "Soft Paper" and "Almanac Kit" exist only in Figma until the palette is reviewed.
 - **Progress page:** the "Questions answered / Correct last time / Pages done / Cards reviewed" tiles were removed as decorative numbers. The figures behind them are still in the data and can come back as plain text if the review asks for them.
-- **Lesson quiz:** while a quiz is in progress, the page-end "Next topic" button sits below the in-panel "Next question" button. It could be demoted to secondary until the quiz is finished.
+- **Lesson quiz:** resolved — the page-end link stays quiet (secondary) until the page's quiz or test is done, then becomes the primary action.
 - **Practice end screen:** the score tile (`ScoreTile` in `quiz.tsx`) and the runner results screen keep their current styling; they are next to restyle.
 - **Copy:** the custom-request panel still says "see your price". That copy predates this work; it sits next to the paused-orders note and should be reworded with the commercial decision (04 — Commercial Model), not in a visual pass.
 - **"This week" readiness** can name a different section from the Next step panel. The plan's week mapping looks ahead one week, and the logic is unchanged here.
-- **Readiness bar colours** (`readinessTone`) still use literal values; they should move to the semantic tokens once the palette is chosen.
+- **Readiness colours:** now on semantic tokens (`bg-primary`, `bg-success`, `bg-tangerine`, `-tint`/`text-` pairs) with identical values; the "Not started" bar keeps its literal `#D9D2F3`, which has no token.
