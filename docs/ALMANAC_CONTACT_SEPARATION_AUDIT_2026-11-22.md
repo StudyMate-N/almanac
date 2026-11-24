@@ -56,3 +56,13 @@ Corrective operator actions on 22 Nov 2026:
 **Blocked:** Live DOM/page contact scan; inbox monitoring and real sender-domain validation; external authorization/payment tests; AgentaOS product eligibility and reapplication-date confirmation; ownership/beneficiary and historical-notice review. No external messages were sent and no payment routing, invoices, refund records or credentials were changed.
 
 **Next:** Obtain a browser-capable authenticated smoke-test environment to inspect rendered public and staff-authorized pages (without exposing student data), restore Supabase through the QA lane with operator approval, then rerun remote privacy and checkout tests. Separately provision a verified Almanac-specific transactional sender and validate inbox deliverability. Keep Issue #8 open and merchant activation blocked until written eligibility and truthful ownership disclosures are confirmed.
+
+## Follow-up verification — 24 Nov 2026
+
+**Changed:** Evidence-only update on historical audit branch; no runtime change or merge. Backend restoration was performed by the QA lane with owner authorization, not this lane.
+
+**Verified:** Supabase project API now reports `ACTIVE_HEALTHY`. Netlify production deploy `6b04b2a5555f3d183d90f22d` is ready, published 23 Nov at 21:40:22 UTC, commit `1f4db5d8f955e959d3df3d4d8dd935c234024a60`. Exact commit CI [45271965649](https://github.com/StudyMate-N/almanac/actions/runs/45271965649) succeeded: contact scan 120 source files, typecheck/build, seven unauthorized file probes denied HTTP 403, checkout health step successful. No orders/files created by privacy probes. Netlify operations address matches Almanac support in four contexts; sender/key and WhatsApp configuration absent. An email diagnostic recipient variable exists; its value is not disclosed or independently approved here. No diagnostic email was sent. Current deployed mail source requires a sender and key before transport.
+
+**Blocked:** Rendered page/invoice inspection, actual monitored inbox and dedicated verified sender, diagnostic recipient authorization, controlled entitlement and payment settlement, privileged RPC review (Issue #11), merchant written approval and ownership/beneficiary disclosure. Backend health and CI do not authorize collections.
+
+**Next:** QA lane to complete controlled end-to-end and RPC authorization checks; contact lane to verify rendered pages and dedicated sender/diagnostic recipient before any email activation. No external correspondence or customer/payment data changes.
