@@ -5,6 +5,8 @@ import { FORMAT_TINT, FormatIcon } from "@/components/study-formats-view";
 import type { TopicFormat } from "@/lib/study-formats";
 
 const SHORT: Record<string, string> = { read: "Read", watch: "Watch", practise: "Questions", remember: "Cards" };
+/** Labels that fit four equal columns at 390px; the full name stays in aria-label. */
+const NARROW: Record<string, string> = { read: "Read", watch: "Watch", practise: "Quiz", remember: "Cards" };
 
 /**
  * "Study this topic as" (Learning Studio iteration 3; Figma: Studio · Iteration 2/3, Topic v2/v3).
@@ -16,11 +18,11 @@ const SHORT: Record<string, string> = { read: "Read", watch: "Watch", practise: 
 export function StudyAsTabs({ formats, onWatch }: { formats: readonly TopicFormat[]; onWatch: () => void }) {
   const items = formats.filter((f) => f.status === "available" && f.format.id in SHORT && (f.format.id === "read" || f.format.id === "watch" || f.href));
   if (items.length < 2) return null;
-  const pill = "inline-flex min-h-[44px] flex-none items-center gap-2 rounded-full px-3.5 text-[13.5px] font-bold whitespace-nowrap transition-colors duration-150";
+  const pill = "inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-full px-2 text-[13.5px] font-bold whitespace-nowrap transition-colors duration-150 sm:w-auto sm:flex-none sm:justify-start sm:gap-2 sm:px-3.5";
   return (
     <nav aria-label="Study this topic as" className="mb-6">
       <p className="mb-2 text-[12px] font-semibold text-text-muted">Study this topic as</p>
-      <ul className="-mx-1 flex gap-1 overflow-x-auto rounded-full bg-mist p-1 [scrollbar-width:none] sm:inline-flex sm:max-w-full">
+      <ul className="grid gap-1 rounded-full bg-mist p-1 sm:inline-flex sm:max-w-full" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
         {items.map((f) => {
           const id = f.format.id;
           const label = SHORT[id];
@@ -31,7 +33,8 @@ export function StudyAsTabs({ formats, onWatch }: { formats: readonly TopicForma
               <span aria-hidden="true" className={`grid h-6 w-6 place-items-center rounded-full text-primary-deep ${FORMAT_TINT[id]}`}>
                 <FormatIcon icon={f.format.icon} size={14} />
               </span>
-              {label}
+              <span className="sm:hidden">{NARROW[id]}</span>
+              <span className="hidden sm:inline">{label}</span>
               {meta && <span className="hidden font-semibold text-text-muted sm:inline">{meta}</span>}
             </>
           );
