@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/site/chrome";
-import { FormatGrid, FormatIcon } from "@/components/study-formats-view";
+import { FORMAT_TINT, FormatGrid, FormatIcon } from "@/components/study-formats-view";
+import { TestimonialsSlot } from "@/components/site/testimonials-slot";
 import { cards, lessonById, lessons, modules, questions } from "@/content/course";
 import { ALMANAC_SUPPORT_EMAIL } from "@/lib/almanac-contact";
 import { formatOptions, publicCourseFormats } from "@/lib/format-data";
@@ -27,12 +28,41 @@ const audiences = [
   ["Learners who need another way in", "The same reviewed topic as reading, video or questions, so you can switch format without losing your place."],
 ] as const;
 
+/* How lessons are made, as pinned step cards. Tint per card from the format palette; pin colour marks the stage. */
 const made = [
-  ["Sources", "Your course's outline and an authoritative textbook, with page references."],
-  ["Draft", "A first version drafted with AI tools from those sources only."],
-  ["Check", "Every clinical fact is checked against the textbook by a reviewer."],
-  ["Publish", "Only the exact version the reviewer approved reaches learners."],
+  ["Sources", "Your course's outline and an authoritative textbook, with page references.", "bg-format-read", "bg-primary"],
+  ["Draft", "A first version drafted with AI tools from those sources only.", "bg-format-listen", "bg-tangerine"],
+  ["Check", "Every clinical fact is checked against the textbook by a reviewer.", "bg-format-practise", "bg-success"],
+  ["Publish", "Only the exact version the reviewer approved reaches learners.", "bg-format-see", "bg-primary-deep"],
 ] as const;
+
+/* Three true facts under the hero, as outlined icon chips (not links). */
+const facts = [
+  ["Reviewed against the textbook", "check"],
+  ["One next step at a time", "step"],
+  ["Read, watch or practise", "formats"],
+] as const;
+
+function FactIcon({ kind }: { kind: (typeof facts)[number][1] }) {
+  const p = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+  if (kind === "check") return <svg {...p}><path d="M5 4.5h10l4 4V19.5H5z" /><path d="m8.5 13 2.3 2.3 4.7-4.8" /></svg>;
+  if (kind === "step") return <svg {...p}><circle cx="12" cy="12" r="8.5" /><path d="M10 8.5 13.5 12 10 15.5" /></svg>;
+  return <svg {...p}><rect x="3.5" y="3.5" width="7" height="7" rx="2" /><rect x="13.5" y="3.5" width="7" height="7" rx="2" /><rect x="3.5" y="13.5" width="7" height="7" rx="2" /><rect x="13.5" y="13.5" width="7" height="7" rx="2" /></svg>;
+}
+
+/*
+  Why you can trust what you study: real items only (ITERATION_3_FINETUNE.md, "Trust section").
+  No testimonials, badges, stats or logos. Learner quotes appear only through <TestimonialsSlot>,
+  which stays empty until a learner gives written consent.
+*/
+type TrustLink = { href: string; label: string };
+const trust = (mail: string): { title: string; body: string; links: TrustLink[] }[] => [
+  { title: "Checked against the textbook", body: "Every lesson is reviewed against McCance & Huether, Pathophysiology, 10th ed., before it is published. Edits go back for review.", links: [{ href: "#how-made", label: "How lessons are made" }] },
+  { title: "Independent", body: "Almanac is independent study support. It is not affiliated with any school or publisher, and it never promises a grade.", links: [] },
+  { title: "A person answers", body: "Questions about access, studying or your workspace reach a person, not a bot.", links: [{ href: mail, label: "Email a person" }, { href: "/help", label: "Help centre" }] },
+  { title: "See it before you start", body: "The course outline, its sections and the ways to study it are public.", links: [{ href: `/courses/${COURSE}`, label: "See what's in the course" }] },
+  { title: "Clear terms before any payment", body: "Refund and cancellation conditions are confirmed with you before any payment is taken.", links: [{ href: "/terms", label: "Read the terms" }] },
+];
 
 function NextStepShot() {
   const topic = lessonById(EXAMPLE_TOPIC);
@@ -42,8 +72,15 @@ function NextStepShot() {
   const others = alternativeFormats(formats, { href: `/app/learn/${topic.id}`, format: "read" });
   const minutes = minutesFor(topic);
   return (
-    <figure className="w-full">
-      <div className="rounded-section border border-border bg-canvas p-5 shadow-[0_24px_48px_rgba(27,21,48,.10)] sm:p-6" aria-label="Illustrative example of the learner home">
+    <figure className="w-full px-1 sm:px-0">
+      {/* Paper stack (iteration 3): two offset sheets and a clip behind the answer. Decorative, static, public site only. */}
+      <div className="relative">
+        <div aria-hidden="true" className="absolute inset-x-2 top-3 -bottom-2 -rotate-2 rounded-section border border-border bg-format-read sm:inset-x-3 sm:-bottom-3" />
+        <div aria-hidden="true" className="absolute inset-x-1 top-1.5 -bottom-1 rotate-[1.5deg] rounded-section border border-border bg-canvas shadow-[0_10px_24px_rgba(27,21,48,.06)] sm:-bottom-1.5" />
+        <svg aria-hidden="true" width="22" height="46" viewBox="0 0 22 46" className="absolute -top-4 left-8 z-20 text-primary sm:left-10" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+          <path d="M15 14v20a5 5 0 0 1-10 0V9a3.5 3.5 0 0 1 7 0v23a1.5 1.5 0 0 1-3 0V13" />
+        </svg>
+      <div className="relative z-10 rounded-section border border-border bg-canvas p-5 shadow-[0_24px_48px_rgba(27,21,48,.10)] sm:p-6" aria-label="Illustrative example of the learner home">
         <p className="text-[12px] font-semibold text-text-muted">Advanced Pathophysiology · Section {mod?.number} · Week 3 of 11</p>
         <p className="mt-3 text-[11px] font-extrabold tracking-[.12em] text-primary-hover uppercase">Your next step</p>
         <p className="mt-1 font-display text-[23px] leading-[1.15] font-bold tracking-[-.025em] text-text sm:text-[26px]">{topic.title}</p>
@@ -56,14 +93,18 @@ function NextStepShot() {
             <span className="text-[12px] text-text-muted">Or study it another way:</span>
             {others.map((f) => (
               <span key={f.format.id} className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full border border-border bg-studio px-3 text-[12px] font-semibold text-text-body">
-                <FormatIcon icon={f.format.icon} size={14} /> {f.chip}
+                <span aria-hidden="true" className={`grid h-5 w-5 place-items-center rounded-full text-primary-deep ${FORMAT_TINT[f.format.id]}`}>
+                  <FormatIcon icon={f.format.icon} size={12} />
+                </span>{" "}
+                {f.chip}
               </span>
             ))}
           </div>
         )}
         <p className="mt-4 border-t border-border pt-3 text-[12.5px] text-text-muted">0 of 3 done today · Midterm in 12 days</p>
       </div>
-      <figcaption className="mt-3 text-center text-[11.5px] text-text-muted">Illustrative: the learner home answering that question. Example learner; real course topic.</figcaption>
+      </div>
+      <figcaption className="mt-5 text-center text-[11.5px] text-text-muted">Illustrative: the learner home answering that question. Example learner; real course topic.</figcaption>
     </figure>
   );
 }
@@ -84,7 +125,7 @@ export default function Home() {
       <SiteHeader />
       <main>
         {/* Hero: plain headline, a learner's own question, and the product answering it. */}
-        <section className="alm-gradient-hero">
+        <section className="alm-gradient-hero overflow-x-clip">
           <div className="alm-wrap grid items-center gap-10 pt-12 pb-12 lg:grid-cols-[1fr_1fr] lg:gap-14 lg:pt-16 lg:pb-16">
             <div>
               <p className="alm-eyebrow">Study support for health-science courses</p>
@@ -92,7 +133,9 @@ export default function Home() {
               <blockquote className="mt-5 max-w-[500px] border-l-[3px] border-primary pl-4">
                 <p className="font-display text-[19px] leading-[1.35] font-semibold tracking-[-.01em] text-text sm:text-[21px]">&ldquo;My midterm is in 12 days. What should I study tonight?&rdquo;</p>
               </blockquote>
-              <p className="mt-4 max-w-[500px] text-[15.5px] leading-[1.65] text-text-body">Almanac answers with one reviewed next step, and a reason. Then a few questions, then the cards that are due.</p>
+              <p className="mt-4 max-w-[500px] text-[15.5px] leading-[1.65] text-text-body">
+                Almanac answers with <strong className="alm-em">one reviewed next step</strong>, and <strong className="alm-em">a reason</strong>. Then a few questions, then the cards that are due.
+              </p>
               <div className="mt-6 flex flex-wrap gap-2">
                 <Link href="/courses" className={action}>
                   Browse courses <span aria-hidden="true">→</span>
@@ -101,7 +144,15 @@ export default function Home() {
                   See what&apos;s in a course
                 </Link>
               </div>
-              <nav aria-label="More about Almanac" className="mt-3 flex flex-wrap items-center gap-x-5 text-[13px] text-text-muted">
+              <ul aria-label="What you can count on" className="mt-5 flex flex-wrap gap-2">
+                {facts.map(([label, kind]) => (
+                  <li key={label} className="inline-flex min-h-[36px] items-center gap-2 rounded-full border border-border-strong bg-canvas/80 px-3.5 text-[12.5px] font-semibold text-text-body">
+                    <span className="text-primary-deep"><FactIcon kind={kind} /></span>
+                    {label}
+                  </li>
+                ))}
+              </ul>
+              <nav aria-label="More about Almanac" className="mt-2 flex flex-wrap items-center gap-x-5 text-[13px] text-text-muted">
                 <a href="#how-made" className="inline-flex min-h-[44px] items-center font-semibold text-text-body underline decoration-border-strong underline-offset-4 hover:decoration-primary">How lessons are made</a>
                 <Link href="/request" className="inline-flex min-h-[44px] items-center font-semibold text-text-body underline decoration-border-strong underline-offset-4 hover:decoration-primary">Product update</Link>
                 <a href={mail} className="inline-flex min-h-[44px] items-center font-semibold text-text-body underline decoration-border-strong underline-offset-4 hover:decoration-primary">Email a person</a>
@@ -174,21 +225,58 @@ export default function Home() {
           <div className="alm-wrap">
             <p className="alm-eyebrow">How lessons are made</p>
             <h2 id="how-made-title" className="alm-section-title mt-2">Nothing reaches you before a reviewer approves it.</h2>
-            <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {made.map(([title, body], i) => (
-                <li key={title} className="flex flex-col gap-2 rounded-section border border-border bg-canvas p-5">
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-tint text-[13px] font-extrabold text-primary-deep" aria-hidden="true">{i + 1}</span>
-                  <h3 className="text-[17px] font-bold text-text">{title}</h3>
-                  <p className="text-[14px] text-text-body">{body}</p>
-                </li>
-              ))}
-            </ol>
+            <div className="relative mt-8">
+              {/* Dashed path between the pinned cards (desktop only; decorative). */}
+              <div aria-hidden="true" className="absolute top-1/2 right-[10%] left-[10%] hidden border-t-2 border-dashed border-border-strong lg:block" />
+              <ol className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+                {made.map(([title, body, tint, pin], i) => (
+                  <li key={title} className={`relative rounded-section border border-border bg-canvas p-2 shadow-[0_10px_24px_rgba(27,21,48,.06)] ${i % 2 ? "lg:mt-8 lg:rotate-[.6deg]" : "lg:-rotate-[.6deg]"}`}>
+                    <span aria-hidden="true" className={`absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rounded-full ring-4 ring-canvas ${pin}`} />
+                    <div className={`flex h-full flex-col gap-2 rounded-panel p-4 ${tint}`}>
+                      <span className="font-display text-[22px] leading-none font-semibold text-primary-deep">0{i + 1}</span>
+                      <h3 className="text-[17px] font-bold text-text">{title}</h3>
+                      <p className="text-[14px] text-text-body">{body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
             <p className="mt-5 max-w-[700px] text-[13px] text-text-muted">If a reviewer edits a lesson, it goes back for approval before anyone sees the change. Almanac is independent study support, not affiliated with any school or publisher.</p>
           </div>
         </section>
 
+        {/* Why you can trust what you study: real items only. */}
+        <section id="trust" className="alm-section scroll-mt-6 border-y border-[#EEEBF7] bg-studio" aria-labelledby="trust-title">
+          <div className="alm-wrap">
+            <p className="alm-eyebrow">Trust</p>
+            <h2 id="trust-title" className="alm-section-title mt-2">Why you can trust what you study.</h2>
+            <p className="mt-3 max-w-[640px] text-[15px] text-text-body">Five things you can check for yourself. No ratings, badges or borrowed logos.</p>
+            <ol className="mt-7 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {trust(mail).map(({ title, body, links }, i) => (
+                <li key={title} className="flex flex-col gap-2 rounded-section border border-border bg-canvas p-5">
+                  <span className="font-display text-[22px] leading-none font-semibold text-primary-deep" aria-hidden="true">0{i + 1}</span>
+                  <h3 className="text-[17px] font-bold text-text">{title}</h3>
+                  <p className="text-[14px] text-text-body">{body}</p>
+                  {links.length > 0 && (
+                    <div className="mt-auto flex flex-wrap gap-x-4">
+                      {links.map((l) =>
+                        l.href.startsWith("/") ? (
+                          <Link key={l.href} href={l.href} className="inline-flex min-h-[44px] items-center text-[13.5px] font-bold text-violet-700 hover:underline">{l.label} →</Link>
+                        ) : (
+                          <a key={l.href} href={l.href} className="inline-flex min-h-[44px] items-center text-[13.5px] font-bold text-violet-700 hover:underline">{l.label} →</a>
+                        ),
+                      )}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ol>
+            <TestimonialsSlot />
+          </div>
+        </section>
+
         {/* Course discovery. */}
-        <section id="courses" className="alm-section border-y border-[#EEEBF7] bg-studio" aria-labelledby="courses-title">
+        <section id="courses" className="alm-section" aria-labelledby="courses-title">
           <div className="alm-wrap">
             <p className="alm-eyebrow">Courses &amp; resources</p>
             <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
@@ -230,32 +318,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Questions? From self-serve to a person. */}
-        <section className="alm-section" aria-labelledby="questions">
-          <div className="alm-wrap">
-            <p className="alm-eyebrow">Questions?</p>
-            <h2 id="questions" className="alm-section-title mt-2">Three ways to get an answer.</h2>
-            <ol className="mt-7 grid gap-3 md:grid-cols-3">
-              {[
-                ["Help centre", "Answers about access, studying and your workspace.", "/help", "Open the help centre"],
-                ["Product update", "What is changing while Almanac is rebuilt, and what stays the same.", "/request", "Read the update"],
-                ["Email a person", `Write to ${ALMANAC_SUPPORT_EMAIL}. A person replies.`, mail, "Email support"],
-              ].map(([title, body, href, cta], i) => (
-                <li key={title} className="flex flex-col gap-2 rounded-section border border-border bg-canvas p-5">
-                  <span className="font-display text-[14px] font-bold text-violet-700" aria-hidden="true">{i + 1}</span>
-                  <h3 className="text-[17px] font-bold text-text">{title}</h3>
-                  <p className="text-[14px] break-words text-text-body">{body}</p>
-                  {href.startsWith("mailto:") ? (
-                    <a href={href} className="mt-auto inline-flex min-h-[44px] items-center text-[13.5px] font-bold text-violet-700 hover:underline">{cta} →</a>
-                  ) : (
-                    <Link href={href} className="mt-auto inline-flex min-h-[44px] items-center text-[13.5px] font-bold text-violet-700 hover:underline">{cta} →</Link>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
         {/* Closing next step. */}
         <section className="alm-section pt-0">
           <div className="alm-wrap rounded-section bg-primary-tint px-6 py-10 text-center sm:px-10">
@@ -266,6 +328,15 @@ export default function Home() {
               </Link>
             </div>
             <p className="mx-auto mt-4 max-w-[520px] text-[13px] text-text-body">New orders are paused while we rebuild. Existing learners keep full access.</p>
+            <nav aria-label="Contact and policies" className="mx-auto mt-6 flex max-w-[640px] flex-wrap items-center justify-center gap-x-1 rounded-full border border-border-strong bg-canvas px-3 py-1 text-[13px] font-semibold text-text-body">
+              <a href={mail} className="inline-flex min-h-[44px] items-center px-2 break-all hover:text-primary-deep hover:underline">{ALMANAC_SUPPORT_EMAIL}</a>
+              <span aria-hidden="true" className="text-border-strong">·</span>
+              <Link href="/help" className="inline-flex min-h-[44px] items-center px-2 hover:text-primary-deep hover:underline">Help</Link>
+              <span aria-hidden="true" className="text-border-strong">·</span>
+              <Link href="/terms" className="inline-flex min-h-[44px] items-center px-2 hover:text-primary-deep hover:underline">Terms</Link>
+              <span aria-hidden="true" className="text-border-strong">·</span>
+              <Link href="/privacy" className="inline-flex min-h-[44px] items-center px-2 hover:text-primary-deep hover:underline">Privacy</Link>
+            </nav>
           </div>
         </section>
       </main>
