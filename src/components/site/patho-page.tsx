@@ -1,9 +1,13 @@
 import Link from "next/link";
 import {SiteHeader,SiteFooter} from "@/components/site/chrome";
-import {modulesInCourse} from "@/content/course";
 import {ALMANAC_SUPPORT_EMAIL} from "@/lib/almanac-contact";
-import {FormatGrid} from "@/components/study-formats-view";
-import {publicCourseFormats} from "@/lib/format-data";
+import {FORMAT_TINT,FormatGrid} from "@/components/study-formats-view";
+import {publicCourseFormats,publicSectionsInside} from "@/lib/format-data";
+import type {FormatId} from "@/lib/study-formats";
+
+const TILE_CYCLE:FormatId[]=["read","watch","practise","remember","see","listen","rehearse"];
+const plural=(n:number,one:string,many=`${one}s`)=>`${n} ${n===1?one:many}`;
+const hours=(min:number)=>min<60?`about ${min} min`:`about ${Math.round(min/30)/2} h`;
 const ID="advanced-pathophysiology";
 
 const included=[
@@ -16,7 +20,7 @@ const included=[
 ] as const;
 
 export function PathoPage() {
- const modules=modulesInCourse(ID).filter(m=>m.kind==="section");
+ const sections=publicSectionsInside(ID);
  const formats=publicCourseFormats(ID);
  return <div className="alm-public min-h-screen">
   <SiteHeader/>
@@ -29,7 +33,7 @@ export function PathoPage() {
        <div className="flex flex-wrap items-center gap-2"><span className="alm-pill alm-pill-mint">Prepared course · existing access</span><span className="alm-eyebrow">Nursing · Graduate</span></div>
        <h1 className="mt-4 max-w-[610px] text-[37px] font-bold leading-[1.05] sm:text-[49px]">Advanced Pathophysiology</h1>
        <p className="mt-4 max-w-[530px] text-[15.5px] text-ink-body">Seven competencies, from homeostasis to every body system: how disease develops, shows up, complicates and varies.</p>
-       <div className="mt-6 flex flex-wrap gap-2"><Link href="/request?course=advanced-pathophysiology" className="alm-action">Read product update →</Link><a href="#inside" className="alm-action alm-action-secondary">See an example lesson</a></div>
+       <div className="mt-6 flex flex-wrap gap-2"><Link href="/request?course=advanced-pathophysiology" className="alm-action">Read product update →</Link><a href="#inside" className="alm-action alm-action-secondary">See what&apos;s inside</a></div>
        <p className="mt-4 max-w-[510px] text-[12px] text-ink-muted">Existing approved learners retain course access. New learning orders are paused while the product is redesigned; materials remain subject to review.</p>
       </div>
       <div className="alm-course-media relative aspect-[16/10] overflow-hidden border border-hairline bg-[#E6E0F8] shadow-[0_12px_30px_rgba(42,27,120,.1)]">
@@ -47,26 +51,30 @@ export function PathoPage() {
      <div className="mt-6"><FormatGrid states={formats} compact/></div>
     </div>
    </section>
-   <section className="alm-section">
+   <section id="inside" className="alm-section scroll-mt-6" aria-labelledby="inside-title">
     <div className="alm-wrap">
-      <p className="alm-eyebrow">Your course at a glance</p><h2 className="alm-section-title mt-2">Seven competencies. One clear path.</h2>
-      <p className="mt-3 max-w-[700px] text-[14px] text-ink-body">Work through one section at a time. Every module brings its own explanations, practice, cards and review.</p>
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-       {modules.map((m,i)=><article key={m.id} className="alm-card alm-card-hover p-5">
-         <span className="text-[11px] font-extrabold text-violet-700">MODULE {String(i+1).padStart(2,"0")}</span>
-         <h3 className="mt-2 text-[18px] font-bold">{m.title}</h3>
-         <p className="mt-2 text-[12px] text-ink-muted">Lesson · Practice · Flashcards · Review</p>
-       </article>)}
-      </div>
+      <p className="alm-eyebrow">What&apos;s inside</p><h2 id="inside-title" className="alm-section-title mt-2">Seven competencies. One clear path.</h2>
+      <p className="mt-3 max-w-[700px] text-[14px] text-ink-body">Work through one section at a time. Counts describe the prepared course; learners see each item once a reviewer approves it.</p>
+      <ol className="mt-6 flex flex-col gap-2">
+       {sections.map((m,i)=><li key={m.id} className={`flex items-center gap-4 rounded-section border p-3.5 sm:p-4 ${i===0?"border-border-strong bg-primary-tint/40":"border-border bg-canvas"}`}>
+         <span aria-hidden="true" className={`grid h-11 w-11 flex-none place-items-center rounded-control font-display text-[16px] font-bold text-primary-deep ${FORMAT_TINT[TILE_CYCLE[i%TILE_CYCLE.length]]}`}>{m.number}</span>
+         <div className="min-w-0 flex-1">
+          <h3 className="text-[16px] font-bold leading-snug text-text sm:text-[17px]"><span className="sr-only">Section {m.number}: </span>{m.title}</h3>
+          <p className="mt-0.5 text-[12.5px] text-text-muted">{[plural(m.pages,"page"),m.videos?plural(m.videos,"video"):"",plural(m.questions,"question"),plural(m.cards,"card")].filter(Boolean).join(" · ")}</p>
+         </div>
+         <span className="hidden flex-none rounded-full bg-mist px-3 py-1 text-[12px] font-semibold text-text-body sm:inline">{hours(m.minutes)}</span>
+       </li>)}
+      </ol>
+      <p className="mt-3 text-[12px] text-text-muted">Times are estimates from each page&apos;s word count (200 words a minute), plus clip lengths and checks.</p>
       <div className="alm-card mt-4 flex flex-wrap items-center gap-4 bg-[#F6F4FB] p-5">
        <div className="flex-1"><p className="alm-eyebrow">Final review</p><h3 className="mt-1 text-[19px] font-bold">Check your readiness.</h3><p className="mt-2 text-[13px] text-ink-body">Revisit the full course, see where more practice would help, then rehearse with a timed practice exam.</p></div>
        <span className="alm-pill alm-pill-orange">Exam preparation</span>
       </div>
     </div>
    </section>
-   <section id="inside" className="alm-section border-y border-[#EEEBF7] bg-[#FBFAFE]">
+   <section id="includes" className="alm-section border-y border-[#EEEBF7] bg-[#FBFAFE]">
     <div className="alm-wrap">
-     <p className="alm-eyebrow">What is inside</p><h2 className="alm-section-title mt-2">Each module gives you more than notes.</h2>
+     <p className="alm-eyebrow">In every module</p><h2 className="alm-section-title mt-2">Each module gives you more than notes.</h2>
      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {included.map(([t,d],i)=><article key={t} className="alm-card p-5">
        <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#ECE7FF] font-bold text-violet-700">{String(i+1).padStart(2,"0")}</span>
