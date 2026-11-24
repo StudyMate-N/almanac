@@ -3,7 +3,7 @@
 **Direction:** `PRODUCT_VISION_AND_EXPERIENCE.md` (approved 24 Nov 2026, issue #33). **Baseline:** `PRODUCT_SYSTEM.md`, `RECONSTRUCTION_MAP.md`, `docs/experience-standard.md`.
 **Branch:** `design/almanac-learning-studio-v1`, stacked on PR #27 (`product/almanac-experience-engine-v1`) with the trunk hotfix merged in.
 
-Figma file: <added by owner>
+Figma file: https://www.figma.com/design/UN9TIpyezhf4paSLFglqLX — pages **Studio · Read me**, **Studio · Foundations**, **Studio · Components**, **Studio · Screens** (prototype flows "Desktop · Learner journey" and "Mobile · Learner journey"). The existing "Video frames" page is unrelated video work.
 
 ## Tokens: code ↔ Figma
 
