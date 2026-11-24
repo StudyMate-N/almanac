@@ -1,5 +1,29 @@
 import Link from "next/link";
-import { type FormatIcon as Icon, type FormatState, type FormatStatus, STATUS_LABEL } from "@/lib/study-formats";
+import { type FormatIcon as Icon, type FormatId, type FormatState, type FormatStatus, STATUS_LABEL } from "@/lib/study-formats";
+
+/**
+ * One pastel tile per format (iteration 3). Literal class names so Tailwind can see them.
+ * Tints sit behind the icon only; the icon stays primary-deep (>= 11:1 on every tint).
+ */
+export const FORMAT_TINT: Record<FormatId, string> = {
+  read: "bg-format-read",
+  watch: "bg-format-watch",
+  listen: "bg-format-listen",
+  see: "bg-format-see",
+  practise: "bg-format-practise",
+  remember: "bg-format-remember",
+  rehearse: "bg-format-rehearse",
+};
+
+/** The format glyph on its tinted tile. */
+export function FormatTile({ id, icon, size = 40, iconSize = 20 }: { id: FormatId; icon: Icon; size?: 32 | 40 | 44; iconSize?: number }) {
+  const box = size === 32 ? "h-8 w-8 rounded-[9px]" : size === 44 ? "h-11 w-11 rounded-control" : "h-10 w-10 rounded-control";
+  return (
+    <span aria-hidden="true" className={`grid flex-none place-items-center text-primary-deep ${box} ${FORMAT_TINT[id]}`}>
+      <FormatIcon icon={icon} size={iconSize} />
+    </span>
+  );
+}
 
 /** One glyph per format, drawn with currentColor so it follows the surrounding text colour. */
 export function FormatIcon({ icon, size = 20 }: { icon: Icon; size?: number }) {
@@ -48,9 +72,7 @@ export function FormatGrid({ states, link, compact = false }: { states: FormatSt
       {states.map(({ format: f, status }) => (
         <li key={f.id} className="flex gap-3.5 rounded-section border border-border bg-canvas p-4 sm:flex-col sm:gap-2 sm:p-5">
           <div className="flex flex-none items-start justify-between gap-3">
-            <span className={`grid h-10 w-10 flex-none place-items-center rounded-control ${status === "available" ? "bg-primary-tint text-primary-deep" : "bg-mist text-text-muted"}`}>
-              <FormatIcon icon={f.icon} />
-            </span>
+            <FormatTile id={f.id} icon={f.icon} />
             <span className="hidden sm:inline-flex">
               <FormatStatusChip status={status} />
             </span>

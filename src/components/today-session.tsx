@@ -13,7 +13,7 @@ import { topicStats } from "@/lib/progress";
 import { useStudent } from "@/lib/store";
 import { alternativeFormats, type FormatId, topicFormats } from "@/lib/study-formats";
 import { useCourse } from "@/lib/use-course";
-import { FormatIcon } from "@/components/study-formats-view";
+import { FORMAT_TINT, FormatIcon } from "@/components/study-formats-view";
 
 type Row = { key: string; verb: string; text: string; minutes: number; href?: string; done: boolean };
 
@@ -162,7 +162,9 @@ export function TodaySession({ course }: { course: Course }) {
             {alternatives.map((f) => (
               <li key={f.format.id}>
                 <Link href={f.href!} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-border bg-canvas px-3.5 text-[13px] font-semibold text-text-body transition-colors duration-150 hover:border-border-strong hover:bg-studio">
-                  <FormatIcon icon={f.format.icon} size={16} />
+                  <span aria-hidden="true" className={`grid h-6 w-6 place-items-center rounded-full text-primary-deep ${FORMAT_TINT[f.format.id]}`}>
+                    <FormatIcon icon={f.format.icon} size={14} />
+                  </span>
                   <span>
                     <span className="sr-only">{f.format.verb}: </span>
                     {f.chip}
