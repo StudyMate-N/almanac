@@ -68,8 +68,8 @@ The template illustrates shape, not final volume. The publisher enforces the con
 
 ## Customer support and recovery
 
-- Temporary support address: **support@unemployedproff.com**.
-- WhatsApp: **+1 (205) 727-9363**, using prefilled order references but never private invoice tokens.
+- Support address: **almanacstudy.support@gmail.com**.
+- WhatsApp: none. Shown only after a dedicated, Almanac-only number is configured and explicitly approved (`ALMANAC_WHATSAPP_NUMBER` + `ALMANAC_WHATSAPP_APPROVED=true`); never include private invoice tokens.
 - If the customer loses a private link: confirm their email and invoice reference, then an authorized owner reissues the invoice link. The earlier link stops working.
 - If the customer loses the access code: authorized owner resets the code and sessions; send new code to the verified email. Old code and sessions are invalidated.
 - If a customer already has a paid workspace: use the link-order feature after payment verification. It requires a current authenticated student session and an unexpired private invoice token; both account emails must match.
@@ -83,13 +83,13 @@ The development Vercel project stores bank details and WhatsApp number as sensit
 
 - `ALMANAC_RESEND_API_KEY`: a real transactional-email API key.
 - `ALMANAC_EMAIL_FROM`: a sender at a domain verified with the provider.
-- `ALMANAC_OPERATIONS_EMAIL`: staff mailbox for new order and reported-payment alerts (default support@unemployedproff.com).
+- `ALMANAC_OPERATIONS_EMAIL`: staff mailbox for new order and reported-payment alerts (defaults to almanacstudy.support@gmail.com; legacy cross-brand addresses are rejected in code).
 
-### October 15 Netlify / Resend integration status
+### Transactional email status (updated 24 Nov 2026)
 
-- Domain `unemployedproff.com` is VERIFIED in Resend (DKIM, SPF TXT/MX, return-path CNAME).
-- Transactional sender: `Almanac <support@unemployedproff.com>`; operations email: `support@unemployedproff.com`.
-- A sending-only API key restricted to this domain has been generated and submitted to Netlify as the secret `ALMANAC_RESEND_API_KEY`. Never store the key or its plaintext in this repository.
+- No Almanac-owned sending domain is verified yet. The earlier sender, which used another business's domain, was removed from Netlify on 22 Nov 2026, together with `ALMANAC_EMAIL_FROM` and `ALMANAC_RESEND_API_KEY`.
+- `ALMANAC_OPERATIONS_EMAIL` is set to almanacstudy.support@gmail.com.
+- Automated transactional email stays off until a domain Almanac controls is verified and a new key is issued for it. Never store the key or its plaintext in this repository.
 - Netlify environment variables require a fresh deployment and then a real delivery test to establish runtime readiness.
 - Real bank details must be supplied from the confirmed protected configuration separately. Do not mark a payment verified or email access until bank settlement has been independently confirmed.
 - Preview currently has team-login protection; keep it until the final acceptance tests are approved.
@@ -112,7 +112,7 @@ No real bank transfer, customer money, live email delivery or externally uploade
 ## Explicit launch gates
 
 1. **Real bank-routing verification:** confirm beneficiary, account type, international routing requirements, expected CAD settlement amount and fee treatment with the receiving bank. Process a supervised low-risk real transaction only when the operator approves.
-2. **Verified transactional sending:** provision provider credentials and verify `support@unemployedproff.com` can send and receive (or confirm a manual communications roster and response SLA).
+2. **Verified transactional sending:** provision provider credentials and verify a sender on an Almanac-owned domain can send, and that almanacstudy.support@gmail.com receives and is monitored (or confirm a manual communications roster and response SLA).
 3. **Real upload/download checks:** test PDF/PPTX/video upload, correct learner authorization, staff download, private object accessibility, browser file size and network interruption handling. Add malware-scanning and a concrete retention/deletion policy.
 4. **Content readiness and capacity:** prepare a real complete test module, validate lesson and video quality, exact question counts and QA; confirm whether seven-day and three-day course timelines can actually be fulfilled at expected demand.
 5. **Financial exception policy:** choose treatment of bank shortfalls, refunds, cancellation after work starts, bank fees, and unsuccessful international transfers.

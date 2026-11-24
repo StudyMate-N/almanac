@@ -3,7 +3,9 @@ on:
   pull_request:
     paths:
       - "src/**"
-      - "supabase/migrations/**"
+      - "supabase/**"
+      - "docs/**"
+      - "product-studio/**"
       - "scripts/check-learning-offers.mjs"
       - "scripts/check-checkout-health.mjs"
       - "scripts/check-private-endpoints.mjs"
