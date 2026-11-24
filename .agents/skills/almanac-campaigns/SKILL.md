@@ -1,11 +1,11 @@
 ---
 name: almanac-campaigns
 description: Operate Almanac Study content campaigns from the actual product and evidence: plan, draft, review, publish only with authorization, measure and iterate.
-version: 1.2.0
+version: 1.2.1
 owner: Almanac Study
 ---
 
-# Almanac Campaign Mode — Project skill v1.2.0
+# Almanac Campaign Mode — Project skill v1.2.1
 **Activation:** "Almanac campaign mode", "run Almanac campaign", "review Almanac posts", or "iterate Campaign NR601-001". This is a repository-resident project skill, not a claim that a ChatGPT runtime skill is installed.
 
 ## Always load in this order
@@ -33,6 +33,9 @@ Review `campaigns/ALMANAC_LEARNING_PHILOSOPHY_PROPOSAL.md` as a **working propos
 - Distinguish the authenticity/accuracy of each source from the right to reuse it. Studocu/Course Hero hosting does not itself grant commercial reuse rights.
 - Do not cross-contaminate NR601 materials with NUR-635 or other Almanac courses.
 - Clinical qualification: a potentially overbroad clip hook is a check-for-context, not proof of error; evaluate the actual script and cited source before issuing a correction or public claim.
+
+## Mandatory communication-family source gate (1.2.1)
+Before creating any post, reel, visual, caption or prospect-facing campaign message, read `campaigns/COMMUNICATION_FAMILY_SOURCE_GATE_V1.md` and the latest project philosophy, six-family editorial series, relevant product-origin record and verified assets. The required provenance card must identify the **primary communication family, real learner need, exact source path/review state, self-contained learner benefit, single primary CTA, approval gate and metric**. Do not generate generic motivation, lifestyle, food, image prompts or attractive but unsupported mock products. If authentic course content or licensed samples are unavailable, label topic-specific posts BLOCKED; source-independent learning-method content may only proceed when it is an intentional, family-mapped campaign piece. Brand doctrine remains a proposal until the owner approves it.
 
 ## Each run
 1. **Reconcile:** inspect current repo, approved product claims, campaign registry, actual social-post screenshot/link and metric freshness. Never assume social account analytics access or current checkout status. Classify facts as VERIFIED / USER_REPORTED / PROPOSED / UNVERIFIED.
