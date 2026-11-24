@@ -10,6 +10,7 @@ on:
       - "scripts/check-request-origin.mjs"
       - "scripts/check-payment-confirmation.mjs"
       - "scripts/check-almanac-contact-isolation.mjs"
+      - "scripts/check-study-formats.mjs"
       - "package*.json"
       - ".github/workflows/learning-orders.yml"
   workflow_dispatch:
@@ -30,6 +31,7 @@ jobs:
       # Validate all local integrity and build gates before network-dependent
       # checkout health checks, so unrelated remote outages cannot mask failures.
       - run: node scripts/check-almanac-contact-isolation.mjs
+      - run: node --experimental-strip-types scripts/check-study-formats.mjs
       - run: npm run typecheck
       - run: npm run build
       - run: node scripts/check-private-endpoints.mjs

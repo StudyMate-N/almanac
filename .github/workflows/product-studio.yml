@@ -5,11 +5,15 @@ on:
     paths:
       - "product-studio/**"
       - "src/lib/learning-guide.ts"
+      - "src/lib/study-formats.ts"
+      - "src/app/page.tsx"
+      - "src/components/site/**"
       - "src/components/guided-learning-entry.tsx"
       - "src/app/app/**"
       - "src/app/api/learning-requests/route.ts"
       - "src/app/request/page.tsx"
       - "scripts/check-learning-guide.mjs"
+      - "scripts/check-study-formats.mjs"
       - "scripts/check-product-system.mjs"
       - ".github/workflows/product-studio.yml"
   workflow_dispatch:
@@ -36,6 +40,8 @@ jobs:
         run: npm ci
       - name: Evaluate learner guidance with failure and recovery scenarios
         run: node --experimental-strip-types scripts/check-learning-guide.mjs
+      - name: Study formats never claim more than exists
+        run: node --experimental-strip-types scripts/check-study-formats.mjs
       - name: Ensure measurable product contract and inactive legacy checkout
         run: node scripts/check-product-system.mjs
       - name: Preserve brand and current commercial rules
