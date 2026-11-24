@@ -124,6 +124,53 @@ Checks run on this branch, all passing:
 - **Progress page:** the "Questions answered / Correct last time / Pages done / Cards reviewed" tiles were removed as decorative numbers. The figures behind them are still in the data and can come back as plain text if the review asks for them.
 - **Lesson quiz:** resolved — the page-end link stays quiet (secondary) until the page's quiz or test is done, then becomes the primary action.
 - **Practice end screen:** the score tile (`ScoreTile` in `quiz.tsx`) and the runner results screen keep their current styling; they are next to restyle.
-- **Copy:** the custom-request panel still says "see your price". That copy predates this work; it sits next to the paused-orders note and should be reworded with the commercial decision (04 — Commercial Model), not in a visual pass.
+- **Copy:** resolved on the homepage — iteration 2 removed the custom-request panel that said "see your price". Any pricing copy elsewhere waits for the commercial decision (04 — Commercial Model).
 - **"This week" readiness** can name a different section from the Next step panel. The plan's week mapping looks ahead one week, and the logic is unchanged here.
 - **Readiness colours:** now on semantic tokens (`bg-primary`, `bg-success`, `bg-tangerine`, `-tint`/`text-` pairs) with identical values; the "Not started" bar keeps its literal `#D9D2F3`, which has no token.
+
+## Iteration 2 — study formats and homepage v2 (24 Nov 2026)
+
+Spec: `product-studio/ITERATION_2_FINDINGS.md`. Figma page: **Studio · Iteration 2**.
+
+### What changed
+
+| Area | Change | Files |
+|---|---|---|
+| Format model | Seven study formats (Read, Watch, Listen, See, Practise, Remember, Rehearse). Status (`available`, `in_production`, `planned`) comes only from real content: Watch needs a playable clip **and** a media store (`NEXT_PUBLIC_MEDIA_BASE`). Listen needs published audio (none yet, so *In production*). See stays *Planned*. Nothing counts across courses. | `src/lib/study-formats.ts`, `src/lib/format-data.ts` |
+| Guardrail | Node test, run in both CI workflows: Listen is never available without audio, Watch is never available without a media store or an existing clip, empty or other-course content gives nothing available, and alternatives never repeat the primary. | `scripts/check-study-formats.mjs`, `.github/workflows/product-studio.yml`, `.github/workflows/learning-orders.yml` |
+| Homepage v2 | The page runs in this order. Nothing on it states prices, stats, testimonials or an affiliation. | `src/app/page.tsx` |
+| | Product-first hero: plain h1, a learner's own question in quotes, and the real Next step panel answering it. The panel uses a real topic, 1.1 Fluids and electrolytes, with real counts, and is labelled *Illustrative*. | |
+| | CTAs: Browse courses / See what's in a course. Quiet links: How lessons are made · Product update · Email a person. | |
+| | "What does it do?" | |
+| | "One topic, every way to study", using the format grid with honest status. | |
+| | "Who is it for?" | |
+| | A compact study-session sequence. | |
+| | "How lessons are made": Sources → Draft with AI tools → Check against the textbook → Publish. | |
+| | Courses, then "Questions?" (3 paths), then the closing next step. | |
+| Course page | A "Ways to study this course" format strip directly under the hero (`#formats`). | `src/components/site/patho-page.tsx` |
+| Learner home | Under the single primary button: "Or study it another way:" chips for the same next topic's other available formats, e.g. "5 questions · Section 1" or "34 cards · Section 1". Chips come from entitlement- and approval-filtered content and never repeat the primary's format or link. The row is hidden when there are none. | `src/components/today-session.tsx` |
+| Shared UI | `FormatIcon` (one glyph per format), `FormatStatusChip` (always a word, never colour alone), `FormatGrid`. Mobile cards put the icon on the left, so seven formats stay scannable. | `src/components/study-formats-view.tsx` |
+
+### Figma ↔ code (Studio · Iteration 2)
+
+| Figma | Code |
+|---|---|
+| Study format card (Format × Status) | `FormatGrid` item + `FormatStatusChip` |
+| Format switcher / "Or study it another way" chips | `alternativeFormats()` + chips in `TodaySession` |
+| Homepage v2, desktop 1440 / mobile 390 | `/`, `src/app/page.tsx` |
+| Course page with formats | `/courses/advanced-pathophysiology#formats` |
+| Learner home v2 | `/app`, `src/components/today-session.tsx` |
+
+### Evidence
+
+Screenshots are in `/home/claude/qa/iter2/*.jpg`: landing, course, home and the rest of the existing set, at 1440 and 390, with a fictional learner and mocked RPCs.
+
+Checks: `typecheck`, `build`, `check-study-formats` (7 tests), `check-almanac-contact-isolation`, `check-learning-guide`, `check-product-system`, `check-learning-offers`, `check-request-origin`, `check-payment-confirmation`.
+
+### Known gaps (iteration 2)
+
+- **Sample lesson:** there is no public sample lesson yet. Showing unreviewed lesson text publicly would bypass the reviewer gate, so the hero's secondary CTA is "See what's in a course" (course page), not "See a sample lesson".
+- **Watch:** shows *In production* wherever `NEXT_PUBLIC_MEDIA_BASE` is empty, including local builds. Previews and production show *Available* only if that variable is set and the clip exists.
+- **Listen / See:** stay *In production* / *Planned* until reviewed Gemini Notebook audio and concept maps are published. The counts arrive via `formatOptions.audioAssets` / `conceptMaps`, which are 0 today.
+- **Topic-level cards and questions** are section-scoped, because the content keeps cards on section summary pages. The chips say so ("· Section 1").
+- **Owner decision:** keep or reword the public line "drafted with AI tools from those sources only" (recommended in the findings), and confirm Google's terms for commercial use of Gemini Notebook outputs.
