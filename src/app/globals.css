@@ -86,6 +86,19 @@
   --color-border-strong: #c9bef7;
   --color-focus: #5b3df5;
   --color-highlight: #ece7ff;
+
+  /* Iteration 3 (product-studio/ITERATION_3_FINETUNE.md): one pastel tile per study format.
+     Tints sit behind the format icon only (cards stay white); icons stay --color-primary-deep,
+     which is >= 7:1 on every tint. Figma: color/format/<id> in every Studio Color mode. */
+  --color-format-read: #ece7ff;
+  --color-format-watch: #e3e8fd;
+  --color-format-listen: #ffe9dc;
+  --color-format-see: #dff5ea;
+  --color-format-practise: #f1f7d6;
+  --color-format-remember: #fce7f3;
+  --color-format-rehearse: #fff3d1;
+  /* Fresh accent (lime): marks today / now only, always behind dark text (--color-text). Figma: color/accent/fresh. */
+  --color-fresh: #d9f26a;
   /* Figma also maps color/bg/surface, color/bg/subtle, color/text/link and color/accent
      onto the existing --color-surface, --color-mist, --color-violet-700 and --color-tangerine. */
 
@@ -223,3 +236,14 @@
 ::view-transition-new(player-header) {
   animation: none;
 }
+
+/* ── Emphasis (iteration 3) ───────────────────────────────────────────
+   The one or two phrases that carry a sentence: bold, in the deep primary.
+   At most 1–2 per sentence; never the only cue (the words themselves carry the meaning). */
+@layer components {
+  .alm-em {
+    font-weight: 700;
+    color: var(--color-primary-deep);
+  }
+}
+
