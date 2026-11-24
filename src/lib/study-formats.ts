@@ -150,10 +150,10 @@ export function topicFormats(topic: Lesson, content: FormatContent, opts: Format
     listen: { format: fmt("listen"), status: (opts.audioAssets ?? 0) > 0 ? "available" : "in_production", count: Math.max(0, opts.audioAssets ?? 0), scope: "topic" },
     see: { format: fmt("see"), status: (opts.conceptMaps ?? 0) > 0 ? "available" : "planned", count: Math.max(0, opts.conceptMaps ?? 0), scope: "section" },
     practise: practiseN
-      ? { format: fmt("practise"), status: "available", count: practiseN, scope: "section", href: `/app/practice/custom?m=${encodeURIComponent(topic.moduleId)}&t=all&l=all&p=new&n=${practiseN}&mode=tutor&timer=0`, chip: `${practiseN} ${sectionName} question${practiseN === 1 ? "" : "s"}` }
+      ? { format: fmt("practise"), status: "available", count: practiseN, scope: "section", href: `/app/practice/custom?m=${encodeURIComponent(topic.moduleId)}&t=all&l=all&p=new&n=${practiseN}&mode=tutor&timer=0`, chip: `${practiseN} question${practiseN === 1 ? "" : "s"} · ${sectionName}` }
       : { format: fmt("practise"), status: "in_production", count: 0, scope: "section" },
     remember: sectionCards && cardsPage
-      ? { format: fmt("remember"), status: "available", count: sectionCards, scope: "section", href: `/app/learn/${encodeURIComponent(cardsPage.id)}`, chip: `${sectionName} cards · ${sectionCards}` }
+      ? { format: fmt("remember"), status: "available", count: sectionCards, scope: "section", href: `/app/learn/${encodeURIComponent(cardsPage.id)}`, chip: `${sectionCards} card${sectionCards === 1 ? "" : "s"} · ${sectionName}` }
       : { format: fmt("remember"), status: sectionCards ? "in_production" : "planned", count: 0, scope: "section" },
     // A simulation covers the course, not a topic; it is offered from home and progress instead.
     rehearse: { format: fmt("rehearse"), status: "planned", count: 0, scope: "section" },

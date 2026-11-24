@@ -60,4 +60,5 @@ test("alternatives exclude the primary link, unavailable formats and duplicates"
   assert.deepEqual(alts.map((f) => f.format.id), ["practise", "remember"]);
   assert.ok(alts.every((f) => f.href && !f.href.includes("..")));
   assert.equal(alts.find((f) => f.format.id === "practise").count, 2);
+  assert.match(alts.find((f) => f.format.id === "remember").chip, /^1 card · Section 1$/);
 });
