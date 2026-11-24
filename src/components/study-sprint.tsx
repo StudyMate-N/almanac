@@ -560,7 +560,7 @@ function VideoTab({ topic, token, onLesson }: { topic: number; token: string | n
           aria-label="Play the video"
           className="relative grid aspect-video w-full place-items-center overflow-hidden rounded-[18px] bg-lilac bg-[url('/almanac-art/video-poster-generic.png')] bg-cover bg-center"
         >
-          <span className="grid h-[76px] w-[76px] place-items-center rounded-full bg-[#EA6512] pl-1.5 text-[26px] text-white motion-safe:animate-[almPulse_2.4s_ease-out_infinite]">{state === "loading" ? "…" : "▶"}</span>
+          <span className="grid h-[76px] w-[76px] place-items-center rounded-full bg-[#EA6512] pl-1.5 text-[26px] text-white">{state === "loading" ? "…" : "▶"}</span>
           <span className="absolute inset-x-0 bottom-0 h-[5px] bg-[rgba(27,21,48,.12)]" />
         </button>
       )}
