@@ -174,3 +174,57 @@ Checks: `typecheck`, `build`, `check-study-formats` (7 tests), `check-almanac-co
 - **Listen / See:** stay *In production* / *Planned* until reviewed Gemini Notebook audio and concept maps are published. The counts arrive via `formatOptions.audioAssets` / `conceptMaps`, which are 0 today.
 - **Topic-level cards and questions** are section-scoped, because the content keeps cards on section summary pages. The chips say so ("· Section 1").
 - **Owner decision:** keep or reword the public line "drafted with AI tools from those sources only" (recommended in the findings), and confirm Google's terms for commercial use of Gemini Notebook outputs.
+
+## Iteration 3: fine-tune (24 Nov 2026)
+
+Spec: `product-studio/ITERATION_3_FINETUNE.md`. Figma page: **Studio · Iteration 3**.
+
+### What changed
+
+| Area | Change | Files |
+|---|---|---|
+| Tokens | One pastel tile per study format (`--color-format-read`, `-watch`, `-listen`, `-see`, `-practise`, `-remember`, `-rehearse`). A lime `--color-fresh` that only marks *now*, always behind dark text. An `.alm-em` emphasis utility (bold, primary-deep, at most 1–2 phrases a sentence). Contrast on every tint: primary-deep ≥ 11:1, text-muted ≥ 5.4:1. | `src/app/globals.css` |
+| Format tiles | `FormatTile` and `FORMAT_TINT`: the format icon sits on its own tint, in primary-deep; cards stay white. Used in the format grid, the home chips and the homepage illustration. | `src/components/study-formats-view.tsx`, `src/components/today-session.tsx`, `src/app/page.tsx` |
+| Homepage v3 | Hero lead emphasises "one reviewed next step" and "a reason". | `src/app/page.tsx` |
+| | The illustrative Next step sits on a static paper stack (two offset sheets and a clip; decorative and `aria-hidden`). | |
+| | Three outlined fact chips. | |
+| | "How lessons are made" as pinned step cards: format tints, a coloured pin and a dashed path on desktop. | |
+| | New **"Why you can trust what you study"** (`#trust`) with five real items: textbook review (`BOOK` constant), independence, a person answers, public outline, terms before payment. | |
+| | Closing contact bar: email · Help · Terms · Privacy. | |
+| | "Questions?" is folded into trust item 3, the hero link row and the contact bar, so the same three paths don't repeat. | |
+| Testimonials gate | `TestimonialsSlot` renders nothing unless it gets quotes with a recorded consent date. None are passed. | `src/components/site/testimonials-slot.tsx` |
+| Topic page | **"Study this topic as"** under the title. Read (this page, `aria-current`) plus Watch, Questions and Cards only when this learner can open them: `topicFormats` over `useCourse`'s entitled, approved content. | `src/components/player/study-as-tabs.tsx`, `src/app/app/(focus)/learn/[lessonId]/page.tsx` |
+| | Watch scrolls to the topic's video. Questions and Cards open the section's existing practice and cards pages. | |
+| | Hidden when Read would be alone. Counts are hidden below `sm`. | |
+| Course page | "What's inside" (`#inside`) is now a section list in lesson-list style: tinted number tile, title, pages · videos · questions · cards and an estimated time. | `src/lib/format-data.ts` (`publicSectionsInside`), `src/components/site/patho-page.tsx` |
+| | Videos are counted only with a media store, matching Watch. Time is the app's own per-page estimate, explained under the list. | |
+| | The hero's secondary button now reads "See what's inside", because there is no example lesson. | |
+| Learner home | Plan checklist: done rows keep the filled check, strikethrough and muted text. The current row gets a lime **Now** pill with a screen-reader label. | `src/components/today-session.tsx` |
+
+### Figma ↔ code (Studio · Iteration 3)
+
+| Figma | Code |
+|---|---|
+| Format tints `color/format/*`, `color/accent/fresh` | `--color-format-*`, `--color-fresh` |
+| Emphasis | `.alm-em` |
+| Paper stack | `NextStepShot` wrapper in `src/app/page.tsx` |
+| Icon chip | `facts` chips in the homepage hero |
+| Pinned step card | "How lessons are made" cards |
+| Trust item / Trust section | `#trust` section and `TestimonialsSlot` |
+| Lesson row (course list) | `#inside` section list |
+| "Study this topic as" | `StudyAsTabs` |
+| Plan row, Now marker | `TodaySession` checklist |
+
+### Evidence
+
+Screenshots are in `/home/claude/qa/iter3/*.jpg`, at 1440 and 390, with a fictional learner and mocked RPCs. They include a new `topic` shot (`/app/learn/s1-tp1`).
+
+Checks: `typecheck`, `build`, `check-study-formats` (7 tests), `check-almanac-contact-isolation`, `check-learning-guide`, `check-product-system`, `check-learning-offers`, `check-request-origin`, `check-payment-confirmation`.
+
+### Known gaps (iteration 3)
+
+- **Week strip** (Day/Week toggle, TimeFrame pattern): designed in Figma, not coded. The plan engine has weeks, not day schedules.
+- **Media player block** (EduSphere pattern: player, chapters, lesson list with durations) for Watch and Listen: not coded. It waits for published audio and the media store.
+- **Cards results screen** ("review the ones you missed"): designed, not coded.
+- **Testimonials:** gated on written consent. The slot exists and stays empty.
+- **Watch locally:** still shows *In production* where `NEXT_PUBLIC_MEDIA_BASE` is empty, so the topic tabs show no Watch there.
