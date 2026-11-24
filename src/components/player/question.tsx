@@ -27,6 +27,7 @@ export function QuestionCard({
   onPick,
   revealed,
   locked,
+  next,
 }: {
   q: Question;
   number?: string;
@@ -34,6 +35,8 @@ export function QuestionCard({
   onPick: (ids: string[]) => void;
   revealed: boolean;
   locked: boolean;
+  /** The single forward action shown inside the feedback panel (Learning Studio: exactly one next step). */
+  next?: React.ReactNode;
 }) {
   const options = useOptions(q);
   const multi = q.type === "multiple";
@@ -53,8 +56,10 @@ export function QuestionCard({
         {options.map((o, i) => {
           const picked = picks.includes(o.id);
           const right = q.correct.includes(o.id);
-          let tone = picked ? "border-violet bg-lilac" : "border-hairline bg-white hover:border-violet-300";
-          if (revealed) tone = right ? "border-correct bg-mint" : picked ? "border-incorrect bg-rose" : "border-hairline bg-white";
+          // Answer option states (Figma "Answer option"): 14px radius, 2px state border.
+          let tone = picked ? "border-primary bg-primary-tint" : "border-border bg-canvas hover:border-border-strong";
+          if (revealed) tone = right ? "border-success bg-success-tint" : picked ? "border-danger bg-danger-tint" : "border-border bg-canvas";
+          const tag = revealed && right ? (picked ? "Correct · your answer" : "Correct") : revealed && picked ? "Your answer" : null;
           return (
             <li key={o.id}>
               <button
@@ -63,35 +68,42 @@ export function QuestionCard({
                 aria-checked={picked}
                 disabled={locked}
                 onClick={() => toggle(o.id)}
-                className={`flex w-full items-start gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-colors ${tone} ${locked ? "cursor-default" : ""}`}
+                className={`flex min-h-[52px] w-full items-start gap-3 rounded-[14px] border-2 px-4 py-3 text-left transition-colors duration-150 motion-reduce:transition-none ${tone} ${locked ? "cursor-default" : ""}`}
               >
                 <span
                   aria-hidden="true"
                   className={`mt-0.5 grid h-7 w-7 flex-none place-items-center ${multi ? "rounded-lg" : "rounded-full"} text-xs font-extrabold ${
-                    revealed && right ? "bg-correct text-white" : revealed && picked ? "bg-incorrect text-white" : picked ? "bg-violet text-white" : "bg-mist text-ink-muted"
+                    revealed && right ? "bg-success text-white" : revealed && picked ? "bg-danger text-white" : picked ? "bg-primary text-white" : "bg-mist text-text-muted"
                   }`}
                 >
                   {revealed && right ? <CheckIcon size={13} /> : revealed && picked ? <XIcon size={13} /> : LETTERS[i]}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] font-semibold text-ink">{o.text}</span>
-                  {revealed && (
-                    <span className={`mt-1 block text-sm ${right ? "text-mint-ink" : picked ? "text-rose-ink" : "text-ink-muted"}`}>
-                      <span className="font-bold">{right ? "Correct. " : picked ? "Not this one. " : ""}</span>
-                      {o.rationale}
+                  <span className="block text-[15px] font-semibold text-text">{o.text}</span>
+                  {tag && (
+                    <span className={`mt-1 block text-[12px] font-extrabold tracking-[.06em] uppercase ${right ? "text-success" : "text-danger"}`}>
+                      {right ? "✓" : "✕"} {tag}
                     </span>
                   )}
+                  {revealed && <span className={`mt-1 block text-sm ${right || picked ? "text-text-body" : "text-text-muted"}`}>{o.rationale}</span>}
                 </span>
               </button>
             </li>
           );
         })}
       </ul>
-      {revealed && (
-        <div className={`rounded-xl px-4 py-3 text-[14px] ${ok ? "bg-mint text-mint-ink" : "bg-rose text-rose-ink"}`} role="status">
-          <span className="font-bold">{ok ? "You got it." : picks.length ? "Not quite." : "Not answered."}</span> {q.takeaway}
-        </div>
-      )}
+      {/* Always mounted so screen readers announce the feedback when it appears. */}
+      <div aria-live="polite">
+        {revealed && (
+          <section aria-label="Feedback" className={`flex flex-col gap-2 rounded-[20px] p-5 ${ok ? "bg-success-tint" : "bg-danger-tint"}`}>
+            <h3 className={`font-display text-[17px] font-bold ${ok ? "text-success" : "text-danger"}`}>
+              {ok ? "Correct — here's why" : picks.length ? "Not quite — here's the reasoning" : "Not answered — here's the reasoning"}
+            </h3>
+            {q.takeaway && <p className="text-[14.5px] leading-relaxed text-text-body">{q.takeaway}</p>}
+            {next && <div className="mt-2">{next}</div>}
+          </section>
+        )}
+      </div>
     </fieldset>
   );
 }
@@ -114,7 +126,7 @@ export function LearningCheck({ q, pageId }: { q: Question; pageId: string }) {
       <QuestionCard q={q} picks={picks} onPick={setPicks} revealed={done} locked={done} />
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {!done ? (
-          <button onClick={submit} disabled={!picks.length} className="min-h-12 rounded-full bg-violet px-6 font-bold text-white disabled:opacity-40">
+          <button onClick={submit} disabled={!picks.length} className="min-h-12 rounded-full bg-primary px-6 font-bold text-white hover:bg-primary-hover disabled:opacity-40">
             Submit
           </button>
         ) : (

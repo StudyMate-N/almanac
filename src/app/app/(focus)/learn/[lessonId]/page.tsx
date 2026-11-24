@@ -11,10 +11,14 @@ import { FocusProgress } from "@/components/focus-bar";
 import { kindLabel, Outline } from "@/components/player/outline";
 import { VideoLedTopic, videoLedBlocks } from "@/components/player/video-led";
 import { ReportButton, TutorButton } from "@/components/tutor";
+import { StudyAsTabs } from "@/components/player/study-as-tabs";
 import { courseById, lessonById, lessons, modulesInCourse, moduleById, questionById } from "@/content/course";
 import type { Card, Lesson, Question } from "@/content/types";
 import { minutesFor } from "@/lib/minutes";
 import { useStudent } from "@/lib/store";
+import { formatOptions } from "@/lib/format-data";
+import { topicFormats } from "@/lib/study-formats";
+import { useCourse } from "@/lib/use-course";
 
 const SELF_COMPLETING = new Set(["reading", "activity", "summary", "video", "topic"]);
 
@@ -39,6 +43,8 @@ export default function Player() {
   const visibleQ = (q: Question) => isVisible(q.id, q);
   const visibleCards = (c: Card) => isVisible(c.id, c);
   const open = page ? isOpen(page) : false;
+  // Entitlement- and approval-filtered content for this course: the only source for "Study this topic as".
+  const scoped = useCourse(mod?.courseId);
 
   const markDone = () => {
     if (page && entitled && !state.lessons[page.id]) update("lessons", { ...state.lessons, [page.id]: { at: new Date().toISOString() } });
@@ -111,6 +117,11 @@ export default function Player() {
   const next = coursePages.slice(idx + 1).find(isOpen);
   const done = coursePages.filter((p) => isDone(p.id)).length;
   const approved = isApproved(page.id, page);
+  // One clear next step: while this page's quiz or test is unfinished, the page-end link stays quiet.
+  const quizPending = open && page.blocks.some((b) => b.t === "quiz") && !isDone(page.id);
+  const forwardCls = quizPending
+    ? "flex h-12 items-center gap-2 rounded-full border border-border bg-canvas px-5 text-[14px] font-semibold text-text-body transition-colors duration-150 hover:bg-studio"
+    : "flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-[15px] font-bold text-white transition-colors duration-150 hover:bg-primary-hover";
   // A topic page with a question-stop clip is video-led; without one (or without media) it reads.
   const videoClips = videoLedBlocks(page);
   const clipIds = page.blocks.filter((b) => b.t === "video").map((b) => b.t === "video" ? b.clip : "");
@@ -119,6 +130,10 @@ export default function Player() {
   const topicNum = page.kind === "topic" ? page.title.match(/^\d+\.\d+(?=\s)/)?.[0] : undefined;
   const sectionLabel = mod.kind === "section" ? `Section ${mod.number}` : mod.kind === "start" ? "Start here" : "Final review";
   const modules = modulesInCourse(course.id);
+  // Iteration 3: the same reviewed topic in its other available formats (Quizlet's "one set, many modes").
+  const studyAs = page.kind === "topic" && open
+    ? topicFormats(page, { lessons: scoped.lessons, questions: scoped.questions, cards: scoped.cards, modules: scoped.modules }, formatOptions)
+    : [];
 
   const outline = <Outline modules={modules} currentId={page.id} isDone={isDone} isOpen={isOpen} onNavigate={() => setDrawer(false)} />;
 
@@ -185,7 +200,7 @@ export default function Player() {
         {!videoFocus && <aside data-outline-scroll className="sticky top-[80px] hidden h-[calc(100dvh-96px)] overflow-y-auto pr-1 lg:block">{outline}</aside>}
 
         <main className="min-w-0">
-          <article className={`alm-lesson-content mx-auto w-full ${videoFocus ? "max-w-[900px]" : "max-w-[760px]"}`}>
+          <article className={`alm-lesson-content mx-auto w-full ${videoFocus ? "max-w-[900px]" : "max-w-[680px]"}`}>
             <nav aria-label="Breadcrumb" className="mb-1.5 text-[13px] font-medium text-ink-muted">
               {mod.kind !== "section" ? sectionLabel : topicNum ? `${sectionLabel} · Topic ${topicNum}` : page.groupTitle === page.title ? `${sectionLabel} · ${mod.title}` : `${sectionLabel} · ${page.groupTitle}`}
             </nav>
@@ -209,6 +224,8 @@ export default function Player() {
               )}
               {preview && <span className={`rounded-full px-3 py-1 ${approved ? "bg-mint text-correct" : "bg-[#FFE9DC] text-[#A8430A]"}`}>{approved ? "Approved for release (preview)" : "Awaiting content review (preview)"}</span>}
             </div>
+
+            {studyAs.length > 0 && <StudyAsTabs formats={studyAs} onWatch={scrollToVideo} />}
 
             {!open ? (
               <div className="rounded-[16px] border border-hairline bg-white p-6 text-ink-body">
@@ -253,18 +270,18 @@ export default function Player() {
 
             <div ref={endRef} className="mt-8 flex flex-wrap items-center gap-3 border-t border-hairline pt-5">
               {prev ? (
-                <Link href={`/app/learn/${prev.id}`} transitionTypes={["nav-back"]} aria-label={`Previous: ${prev.shortTitle ?? prev.title}`} className="flex h-12 max-w-[45%] min-w-0 items-center gap-1.5 rounded-[12px] border-[1.5px] border-[#D9D2F3] bg-white px-4 text-[14px] font-bold text-violet-deep hover:bg-mist">
+                <Link href={`/app/learn/${prev.id}`} transitionTypes={["nav-back"]} aria-label={`Previous: ${prev.shortTitle ?? prev.title}`} className="flex h-12 max-w-[45%] min-w-0 items-center gap-1.5 rounded-full px-3 text-[14px] font-semibold text-text-body hover:bg-studio">
                   <span aria-hidden="true">←</span><span className="truncate"><span className="sm:hidden">Back</span><span className="hidden sm:inline">{prev.shortTitle ?? prev.title}</span></span>
                 </Link>
               ) : null}
               <span className="hidden min-w-0 flex-1 truncate text-[13px] text-ink-muted sm:block">{next ? `Next: ${next.shortTitle ?? next.title} · ${minutesFor(next)} min` : ""}</span>
               <span className="flex-1 sm:hidden" />
               {next ? (
-                <Link href={`/app/learn/${next.id}`} transitionTypes={["nav-forward"]} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} aria-label={`Next: ${next.shortTitle ?? next.title}`} className="flex h-12 items-center gap-2 rounded-[12px] bg-violet px-5 text-[15px] font-bold text-white hover:bg-[#4A2DE6]">
+                <Link href={`/app/learn/${next.id}`} transitionTypes={["nav-forward"]} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} aria-label={`Next: ${next.shortTitle ?? next.title}`} className={forwardCls}>
                   {next.kind === "topic" ? "Next topic" : "Next page"} <ArrowRightIcon size={16} />
                 </Link>
               ) : (
-                <Link href={`/app/courses/${course.id}`} className="flex h-12 items-center gap-2 rounded-[12px] bg-violet px-5 text-[15px] font-bold text-white hover:bg-[#4A2DE6]">
+                <Link href={`/app/courses/${course.id}`} className={forwardCls}>
                   Back to the course <ArrowRightIcon size={16} />
                 </Link>
               )}

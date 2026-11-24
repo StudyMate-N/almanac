@@ -80,10 +80,11 @@ export const readinessLabel: Record<Readiness["level"], string> = {
 };
 
 export const readinessTone: Record<Readiness["level"], { bar: string; chip: string }> = {
-  "not-started": { bar: "bg-[#D9D2F3]", chip: "bg-mist text-ink-muted" },
-  building: { bar: "bg-[#F2711C]", chip: "bg-[#FFE9DC] text-[#A8430A]" },
-  nearly: { bar: "bg-violet", chip: "bg-lilac text-violet-deep" },
-  ready: { bar: "bg-correct", chip: "bg-mint text-correct" },
+  // Semantic tokens (Learning Studio); rendered values are unchanged.
+  "not-started": { bar: "bg-[#D9D2F3]", chip: "bg-mist text-text-muted" },
+  building: { bar: "bg-tangerine", chip: "bg-time-tint text-time" },
+  nearly: { bar: "bg-primary", chip: "bg-primary-tint text-primary-deep" },
+  ready: { bar: "bg-success", chip: "bg-success-tint text-success" },
 };
 
 export function topicStats(questions: Question[], latest: Map<string, Answer>) {

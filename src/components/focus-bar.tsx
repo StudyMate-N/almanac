@@ -25,7 +25,7 @@ export function FocusProgress({ value, label }: { value: number; label: string }
   return (
     <div className="hidden items-center gap-2.5 sm:flex">
       <div className="h-[5px] w-[120px] overflow-hidden rounded-full bg-[#EFEDF5]">
-        <div className="h-full bg-violet transition-[width] duration-300" style={{ width: `${Math.round(Math.min(1, Math.max(0, value)) * 100)}%` }} />
+        <div className="h-full bg-primary transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${Math.round(Math.min(1, Math.max(0, value)) * 100)}%` }} />
       </div>
       <span className="text-[12.5px] font-bold whitespace-nowrap text-ink-body">{label}</span>
     </div>

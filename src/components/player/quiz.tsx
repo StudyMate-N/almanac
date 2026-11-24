@@ -250,7 +250,7 @@ export function QuizBlock({ qs: pageQs, mode, pageId, onComplete }: Props) {
         {qs.map((x, i) => (
           <span
             key={x.id}
-            className={`h-2 flex-1 rounded-full ${checked[x.id] ? (isCorrect(x, picks[x.id] ?? []) ? "bg-correct" : "bg-incorrect") : i === index ? "bg-violet" : "bg-track"}`}
+            className={`h-2 flex-1 rounded-full ${checked[x.id] ? (isCorrect(x, picks[x.id] ?? []) ? "bg-success" : "bg-danger") : i === index ? "bg-primary" : "bg-track"}`}
           />
         ))}
       </div>
@@ -261,9 +261,14 @@ export function QuizBlock({ qs: pageQs, mode, pageId, onComplete }: Props) {
         onPick={(p) => setPicks((x) => ({ ...x, [q.id]: p }))}
         revealed={isChecked}
         locked={isChecked}
+        next={
+          <button onClick={() => setIndex(index + 1)} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-6 font-bold text-white hover:bg-primary-hover">
+            {index + 1 < qs.length ? "Next question" : "See your score"} <ArrowRightIcon size={16} />
+          </button>
+        }
       />
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        {!isChecked ? (
+        {!isChecked && (
           <button
             disabled={!(picks[q.id] ?? []).length}
             onClick={() => {
@@ -271,13 +276,9 @@ export function QuizBlock({ qs: pageQs, mode, pageId, onComplete }: Props) {
               record([q]);
               if (qs.every((x) => x.id === q.id || checked[x.id])) onComplete();
             }}
-            className="min-h-12 rounded-full bg-violet px-6 font-bold text-white disabled:opacity-40"
+            className="min-h-12 rounded-full bg-primary px-6 font-bold text-white hover:bg-primary-hover disabled:opacity-40"
           >
-            Submit
-          </button>
-        ) : (
-          <button onClick={() => setIndex(index + 1)} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-tangerine px-6 font-bold text-ink">
-            {index + 1 < qs.length ? "Next question" : "See your score"} <ArrowRightIcon size={16} />
+            Check answer
           </button>
         )}
         {isChecked && <TutorButton questionId={q.id} lessonId={pageId} selected={picks[q.id] ?? []} label="Ask the tutor" />}

@@ -63,7 +63,7 @@
 }
 
 /* Handoff refinements: intentional motion, consistent surfaces and tighter focus. */
-.alm-workspace .alm-desk-progress>span{transform-origin:left;animation:almFill 700ms cubic-bezier(.2,.7,.2,1) both}
+/* Progress bars render at their value; the 700 ms fill-in was decorative and over the 400 ms motion limit. */
 .alm-workspace .alm-desk-btn,.alm-focus .alm-desk-btn{transition:background-color .15s,transform .15s}
 .alm-workspace .alm-desk-btn:active,.alm-focus .alm-desk-btn:active{transform:scale(.98)}
 .alm-workspace .alm-cover{background-position:80% 55%;background-size:150% auto}
