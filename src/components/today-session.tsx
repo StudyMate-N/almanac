@@ -189,6 +189,12 @@ export function TodaySession({ course }: { course: Course }) {
                   <b className="font-semibold">{r.verb}:</b> {r.text}
                   <span className="sr-only">{r.done ? " (done)" : ""}</span>
                 </span>
+                {!r.done && next?.key === r.key && (
+                  // Fresh accent marks "now" only, always behind dark text (iteration 3).
+                  <span className="rounded-full bg-fresh px-2 py-0.5 text-[11px] font-extrabold text-text">
+                    Now<span className="sr-only"> (your next step)</span>
+                  </span>
+                )}
                 <span className="text-[12px] whitespace-nowrap text-text-muted">{r.done ? "Done" : r.minutes ? `${r.minutes} min` : ""}</span>
               </>
             );
