@@ -32,7 +32,7 @@ export function StudyAsTabs({ formats, onWatch }: { formats: readonly TopicForma
                 <FormatIcon icon={f.format.icon} size={14} />
               </span>
               {label}
-              {meta && <span className="font-semibold text-text-muted">{meta}</span>}
+              {meta && <span className="hidden font-semibold text-text-muted sm:inline">{meta}</span>}
             </>
           );
           if (id === "read")

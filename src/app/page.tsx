@@ -3,6 +3,7 @@ import { SiteHeader, SiteFooter } from "@/components/site/chrome";
 import { FORMAT_TINT, FormatGrid, FormatIcon } from "@/components/study-formats-view";
 import { TestimonialsSlot } from "@/components/site/testimonials-slot";
 import { cards, lessonById, lessons, modules, questions } from "@/content/course";
+import { BOOK } from "@/content/patho/author";
 import { ALMANAC_SUPPORT_EMAIL } from "@/lib/almanac-contact";
 import { formatOptions, publicCourseFormats } from "@/lib/format-data";
 import { minutesFor } from "@/lib/minutes";
@@ -57,7 +58,7 @@ function FactIcon({ kind }: { kind: (typeof facts)[number][1] }) {
 */
 type TrustLink = { href: string; label: string };
 const trust = (mail: string): { title: string; body: string; links: TrustLink[] }[] => [
-  { title: "Checked against the textbook", body: "Every lesson is reviewed against McCance & Huether, Pathophysiology, 10th ed., before it is published. Edits go back for review.", links: [{ href: "#how-made", label: "How lessons are made" }] },
+  { title: "Checked against the textbook", body: `Every lesson is reviewed against ${BOOK} before it is published. Edits go back for review.`, links: [{ href: "#how-made", label: "How lessons are made" }] },
   { title: "Independent", body: "Almanac is independent study support. It is not affiliated with any school or publisher, and it never promises a grade.", links: [] },
   { title: "A person answers", body: "Questions about access, studying or your workspace reach a person, not a bot.", links: [{ href: mail, label: "Email a person" }, { href: "/help", label: "Help centre" }] },
   { title: "See it before you start", body: "The course outline, its sections and the ways to study it are public.", links: [{ href: `/courses/${COURSE}`, label: "See what's in the course" }] },
@@ -75,9 +76,9 @@ function NextStepShot() {
     <figure className="w-full px-1 sm:px-0">
       {/* Paper stack (iteration 3): two offset sheets and a clip behind the answer. Decorative, static, public site only. */}
       <div className="relative">
-        <div aria-hidden="true" className="absolute inset-x-2 top-3 -bottom-2 -rotate-2 rounded-section border border-border bg-format-read sm:inset-x-3 sm:-bottom-3" />
-        <div aria-hidden="true" className="absolute inset-x-1 top-1.5 -bottom-1 rotate-[1.5deg] rounded-section border border-border bg-canvas shadow-[0_10px_24px_rgba(27,21,48,.06)] sm:-bottom-1.5" />
-        <svg aria-hidden="true" width="22" height="46" viewBox="0 0 22 46" className="absolute -top-4 left-8 z-20 text-primary sm:left-10" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+        <div aria-hidden="true" className="absolute inset-0 translate-x-2 translate-y-2.5 rotate-[2.5deg] rounded-section border border-border-strong bg-format-read sm:translate-x-4 sm:translate-y-4" />
+        <div aria-hidden="true" className="absolute inset-0 -translate-x-1.5 translate-y-1 -rotate-2 rounded-section border border-border bg-canvas shadow-[0_10px_24px_rgba(27,21,48,.07)] sm:-translate-x-3 sm:translate-y-2" />
+        <svg aria-hidden="true" width="18" height="38" viewBox="0 0 22 46" className="absolute -top-6 left-8 z-20 text-primary sm:left-10" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
           <path d="M15 14v20a5 5 0 0 1-10 0V9a3.5 3.5 0 0 1 7 0v23a1.5 1.5 0 0 1-3 0V13" />
         </svg>
       <div className="relative z-10 rounded-section border border-border bg-canvas p-5 shadow-[0_24px_48px_rgba(27,21,48,.10)] sm:p-6" aria-label="Illustrative example of the learner home">
@@ -104,7 +105,7 @@ function NextStepShot() {
         <p className="mt-4 border-t border-border pt-3 text-[12.5px] text-text-muted">0 of 3 done today · Midterm in 12 days</p>
       </div>
       </div>
-      <figcaption className="mt-5 text-center text-[11.5px] text-text-muted">Illustrative: the learner home answering that question. Example learner; real course topic.</figcaption>
+      <figcaption className="mt-7 text-center text-[11.5px] text-text-muted">Illustrative: the learner home answering that question. Example learner; real course topic.</figcaption>
     </figure>
   );
 }
