@@ -11,10 +11,14 @@ import { FocusProgress } from "@/components/focus-bar";
 import { kindLabel, Outline } from "@/components/player/outline";
 import { VideoLedTopic, videoLedBlocks } from "@/components/player/video-led";
 import { ReportButton, TutorButton } from "@/components/tutor";
+import { StudyAsTabs } from "@/components/player/study-as-tabs";
 import { courseById, lessonById, lessons, modulesInCourse, moduleById, questionById } from "@/content/course";
 import type { Card, Lesson, Question } from "@/content/types";
 import { minutesFor } from "@/lib/minutes";
 import { useStudent } from "@/lib/store";
+import { formatOptions } from "@/lib/format-data";
+import { topicFormats } from "@/lib/study-formats";
+import { useCourse } from "@/lib/use-course";
 
 const SELF_COMPLETING = new Set(["reading", "activity", "summary", "video", "topic"]);
 
@@ -39,6 +43,8 @@ export default function Player() {
   const visibleQ = (q: Question) => isVisible(q.id, q);
   const visibleCards = (c: Card) => isVisible(c.id, c);
   const open = page ? isOpen(page) : false;
+  // Entitlement- and approval-filtered content for this course: the only source for "Study this topic as".
+  const scoped = useCourse(mod?.courseId);
 
   const markDone = () => {
     if (page && entitled && !state.lessons[page.id]) update("lessons", { ...state.lessons, [page.id]: { at: new Date().toISOString() } });
@@ -124,6 +130,10 @@ export default function Player() {
   const topicNum = page.kind === "topic" ? page.title.match(/^\d+\.\d+(?=\s)/)?.[0] : undefined;
   const sectionLabel = mod.kind === "section" ? `Section ${mod.number}` : mod.kind === "start" ? "Start here" : "Final review";
   const modules = modulesInCourse(course.id);
+  // Iteration 3: the same reviewed topic in its other available formats (Quizlet's "one set, many modes").
+  const studyAs = page.kind === "topic" && open
+    ? topicFormats(page, { lessons: scoped.lessons, questions: scoped.questions, cards: scoped.cards, modules: scoped.modules }, formatOptions)
+    : [];
 
   const outline = <Outline modules={modules} currentId={page.id} isDone={isDone} isOpen={isOpen} onNavigate={() => setDrawer(false)} />;
 
@@ -214,6 +224,8 @@ export default function Player() {
               )}
               {preview && <span className={`rounded-full px-3 py-1 ${approved ? "bg-mint text-correct" : "bg-[#FFE9DC] text-[#A8430A]"}`}>{approved ? "Approved for release (preview)" : "Awaiting content review (preview)"}</span>}
             </div>
+
+            {studyAs.length > 0 && <StudyAsTabs formats={studyAs} onWatch={scrollToVideo} />}
 
             {!open ? (
               <div className="rounded-[16px] border border-hairline bg-white p-6 text-ink-body">
