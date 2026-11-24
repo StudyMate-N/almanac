@@ -111,6 +111,11 @@ export default function Player() {
   const next = coursePages.slice(idx + 1).find(isOpen);
   const done = coursePages.filter((p) => isDone(p.id)).length;
   const approved = isApproved(page.id, page);
+  // One clear next step: while this page's quiz or test is unfinished, the page-end link stays quiet.
+  const quizPending = open && page.blocks.some((b) => b.t === "quiz") && !isDone(page.id);
+  const forwardCls = quizPending
+    ? "flex h-12 items-center gap-2 rounded-full border border-border bg-canvas px-5 text-[14px] font-semibold text-text-body transition-colors duration-150 hover:bg-studio"
+    : "flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-[15px] font-bold text-white transition-colors duration-150 hover:bg-primary-hover";
   // A topic page with a question-stop clip is video-led; without one (or without media) it reads.
   const videoClips = videoLedBlocks(page);
   const clipIds = page.blocks.filter((b) => b.t === "video").map((b) => b.t === "video" ? b.clip : "");
@@ -260,11 +265,11 @@ export default function Player() {
               <span className="hidden min-w-0 flex-1 truncate text-[13px] text-ink-muted sm:block">{next ? `Next: ${next.shortTitle ?? next.title} · ${minutesFor(next)} min` : ""}</span>
               <span className="flex-1 sm:hidden" />
               {next ? (
-                <Link href={`/app/learn/${next.id}`} transitionTypes={["nav-forward"]} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} aria-label={`Next: ${next.shortTitle ?? next.title}`} className="flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-[15px] font-bold text-white transition-colors duration-150 hover:bg-primary-hover">
+                <Link href={`/app/learn/${next.id}`} transitionTypes={["nav-forward"]} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} aria-label={`Next: ${next.shortTitle ?? next.title}`} className={forwardCls}>
                   {next.kind === "topic" ? "Next topic" : "Next page"} <ArrowRightIcon size={16} />
                 </Link>
               ) : (
-                <Link href={`/app/courses/${course.id}`} className="flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-[15px] font-bold text-white transition-colors duration-150 hover:bg-primary-hover">
+                <Link href={`/app/courses/${course.id}`} className={forwardCls}>
                   Back to the course <ArrowRightIcon size={16} />
                 </Link>
               )}
