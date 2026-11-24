@@ -2,6 +2,8 @@ import Link from "next/link";
 import {SiteHeader,SiteFooter} from "@/components/site/chrome";
 import {modulesInCourse} from "@/content/course";
 import {ALMANAC_SUPPORT_EMAIL} from "@/lib/almanac-contact";
+import {FormatGrid} from "@/components/study-formats-view";
+import {publicCourseFormats} from "@/lib/format-data";
 const ID="advanced-pathophysiology";
 
 const included=[
@@ -15,6 +17,7 @@ const included=[
 
 export function PathoPage() {
  const modules=modulesInCourse(ID).filter(m=>m.kind==="section");
+ const formats=publicCourseFormats(ID);
  return <div className="alm-public min-h-screen">
   <SiteHeader/>
   <main>
@@ -34,6 +37,14 @@ export function PathoPage() {
        <div className="absolute bottom-5 left-5 flex items-center gap-3 rounded-full bg-white/95 py-2 pl-3 pr-5 shadow-sm"><span className="alm-play !h-[34px] !w-[34px]"/></div>
       </div>
      </div>
+    </div>
+   </section>
+   <section id="formats" className="alm-section scroll-mt-6 border-b border-[#EEEBF7] bg-studio" aria-labelledby="formats-title">
+    <div className="alm-wrap">
+     <p className="alm-eyebrow">Ways to study this course</p>
+     <h2 id="formats-title" className="alm-section-title mt-2">Every topic, several ways in.</h2>
+     <p className="mt-3 max-w-[660px] text-[14px] text-text-body">What exists today for Advanced Pathophysiology. &ldquo;In production&rdquo; means it is being made and reviewed; nothing is shown to learners before a reviewer approves it.</p>
+     <div className="mt-6"><FormatGrid states={formats} compact/></div>
     </div>
    </section>
    <section className="alm-section">
