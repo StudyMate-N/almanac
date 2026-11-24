@@ -471,18 +471,19 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
               const picked = sel.includes(o.id);
               const right = q.correct.includes(o.id);
               const c = isChecked;
-              const border = c && right ? "border-correct" : c && picked ? "border-[#C2410C]" : picked ? "border-violet" : "border-hairline hover:border-[#B9ABF5]";
-              const bg = c && right ? "bg-[#F1FBF6]" : c && picked ? "bg-[#FFF6F0]" : picked ? "bg-mist" : "bg-white";
-              const mark = c && right ? "border-transparent bg-correct text-white" : c && picked ? "border-transparent bg-[#C2410C] text-white" : picked ? "border-transparent bg-violet text-white" : "border-[#D6CFF0] bg-white text-ink-muted";
+              // Answer option states (Figma "Answer option"): 14px radius, 2px state border, semantic tokens.
+              const border = c && right ? "border-success" : c && picked ? "border-danger" : picked ? "border-primary" : "border-border hover:border-border-strong";
+              const bg = c && right ? "bg-success-tint" : c && picked ? "bg-danger-tint" : picked ? "bg-primary-tint" : "bg-canvas";
+              const mark = c && right ? "border-transparent bg-success text-white" : c && picked ? "border-transparent bg-danger text-white" : picked ? "border-transparent bg-primary text-white" : "border-[#D6CFF0] bg-white text-ink-muted";
               return (
-                <label key={o.id} className={`flex flex-col overflow-hidden rounded-[14px] border-[1.5px] ${border} ${bg} ${c ? "" : "cursor-pointer"}`}>
+                <label key={o.id} className={`flex flex-col overflow-hidden rounded-[14px] border-2 ${border} ${bg} ${c ? "" : "cursor-pointer"} has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus`}>
                   <span className="flex min-h-[52px] items-center gap-2.5 px-3 py-2 sm:gap-3 sm:px-3.5">
                     <input type={q.type === "single" ? "radio" : "checkbox"} name={q.id} checked={picked} onChange={() => toggle(o.id)} disabled={c} className="sr-only" />
                     <span className={`grid h-7 w-7 flex-none place-items-center rounded-full border-[1.5px] text-[12px] font-extrabold ${mark}`} aria-hidden="true">
-                      {String.fromCharCode(65 + i)}
+                      {c && right ? "✓" : c && picked ? "✕" : String.fromCharCode(65 + i)}
                     </span>
                     <span className="flex-1 text-[14.5px] leading-[1.4] font-semibold sm:text-[15px]">{o.text}</span>
-                    {c && (right || picked) && <span className={`text-[12px] font-extrabold ${right ? "text-correct" : "text-[#A8430A]"}`}>{right ? "CORRECT" : "YOUR ANSWER"}</span>}
+                    {c && (right || picked) && <span className={`text-[12px] font-extrabold ${right ? "text-success" : "text-danger"}`}>{right ? "CORRECT" : "YOUR ANSWER"}</span>}
                   </span>
                   {c && (right || picked) && <span className="pr-3.5 pb-3 pl-[54px] text-[13.5px] leading-[1.55] text-ink-body">{o.rationale}</span>}
                 </label>
@@ -498,12 +499,17 @@ export function Runner({ eyebrow, title, questions: initial, mode, kind, minutes
               </button>
             </div>
           )}
-          {isChecked && q.takeaway && (
-            <p className="rounded-[14px] bg-lilac px-4 py-3 text-[14px] leading-relaxed text-ink" role="status">
-              <b className="text-violet-deep">Takeaway. </b>
-              {q.takeaway}
-            </p>
-          )}
+          {/* Feedback panel (Figma "Feedback panel"): always mounted so the result is announced. The one next step is the primary button below. */}
+          <div aria-live="polite">
+            {isChecked && (
+              <section aria-label="Feedback" className={`flex flex-col gap-1.5 rounded-[20px] p-5 ${isCorrect(q, sel) ? "bg-success-tint" : "bg-danger-tint"}`}>
+                <h2 className={`font-display text-[17px] font-bold ${isCorrect(q, sel) ? "text-success" : "text-danger"}`}>
+                  {isCorrect(q, sel) ? "Correct — here's why" : "Not quite — here's the reasoning"}
+                </h2>
+                {q.takeaway && <p className="text-[14.5px] leading-relaxed text-text-body">{q.takeaway}</p>}
+              </section>
+            )}
+          </div>
 
           <div className="hidden items-center justify-between gap-3 sm:flex">
             <button
