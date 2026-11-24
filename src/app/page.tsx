@@ -13,10 +13,10 @@ const resources=[
  ["Study plans","Know what to cover and what comes next.","06"]
 ] as const;
 const steps=[
- ["01","Choose","Start with an available course or request exactly what you need.","/almanac-art/step-1-choose.png"],
- ["02","Your invoice","See the package, delivery choice, and payable amount before transferring.","/almanac-art/step-invoice.png"],
- ["03","Your plan","Share your syllabus if you have one, then review your proposed modules.","/almanac-art/step-2-plan.png"],
- ["04","Your workspace","Find released lessons, practice, flashcards and progress in one place.","/almanac-art/step-3-workspace.png"]
+ ["01","Explore","Discover current learning subjects and what Almanac is developing.","/almanac-art/step-1-choose.png"],
+ ["02","Clarify your goal","Begin from what you want to understand or practise. The new guided journey is in development.","/almanac-art/step-2-plan.png"],
+ ["03","Learn actively","Study using approved explanations, authentic practice and useful feedback.","/almanac-art/step-3-workspace.png"],
+ ["04","Continue and review","Existing learners can return to their course materials and saved progress.","/almanac-art/step-3-workspace.png"]
 ] as const;
 
 function DeskArt(){
@@ -43,10 +43,10 @@ export default function Home(){
      <div>
       <p className="alm-eyebrow">Learning, organized around you</p>
       <h1 className="mt-4 max-w-[590px] text-[35px] leading-[1.05] sm:text-[45px] lg:text-[52px]">Everything you need to make sense of your course &amp; exams.</h1>
-      <p className="mt-4 max-w-[490px] text-[15.5px] leading-[1.65] text-ink-body">Almanac brings your study materials, learning plan, and progress together in one organized experience. Start with a ready-made course or resource, shape it around your goals, or request something built for what you want to learn.</p>
+      <p className="mt-4 max-w-[490px] text-[15.5px] leading-[1.65] text-ink-body">Almanac brings your study materials, learning plan, and progress together in one organized experience. Start with a ready-made course or resource, shape it around your goals, while the new learning and request experience is being rebuilt.</p>
       <div className="mt-6 flex flex-wrap gap-2">
        <Link href="/courses" className={action}>Browse courses &amp; resources <span aria-hidden="true">→</span></Link>
-       <Link href="/request" className={secondary}>Request a course or resource</Link>
+       <Link href="/request" className={secondary}>Read product update</Link>
       </div>
       <p className="mt-4 text-[12.5px] text-ink-muted">For coursework, exam preparation, independent study, and more.</p>
      </div>
@@ -80,10 +80,10 @@ export default function Home(){
         <div className="bg-[#F6F4FB] p-4"><CourseVisual variant="request"/></div>
         <div className="p-5"><p className="alm-eyebrow">Custom learning</p><h3 className="mt-2 text-[23px] font-bold">Don&apos;t see what you need?</h3>
          <p className="mt-2 text-[14px] text-ink-body">Tell us what you&apos;re studying and what you&apos;d like us to create. Choose your materials and timeline to get started.</p>
-         <Link href="/request" className="mt-4 inline-flex text-[13px] font-bold text-violet-700">Request a course or resource →</Link></div>
+         <Link href="/request" className="mt-4 inline-flex text-[13px] font-bold text-violet-700">Read product update →</Link></div>
        </article>
       </div>
-      <p className="mt-4 text-[12px] text-ink-muted">Also available on request: Advanced Pharmacology · Practical AI Skills · Editing &amp; Proofreading</p>
+      <p className="mt-4 text-[12px] text-ink-muted">Other topics being developed: Advanced Pharmacology · Practical AI Skills · Editing &amp; Proofreading</p>
     </div>
    </section>
    <section className="alm-section border-y border-[#EEEBF7] bg-[#FBFAFE]">
@@ -122,8 +122,8 @@ export default function Home(){
     <div className="alm-wrap grid items-center gap-8 md:grid-cols-[1fr_.9fr]">
      <div><p className="alm-eyebrow">Custom learning requests</p><h2 className="alm-section-title mt-2">Your needs don&apos;t have to fit our catalog.</h2>
       <p className="mt-4 text-[15px] text-ink-body">A course we haven&apos;t covered. An exam you&apos;re preparing for. A complete study module for a particular part of your course. Tell us what you&apos;re working toward, and we&apos;ll see what we can create for you.</p>
-      <Link href="/request" className={`${action} mt-5`}>Request a course or resource →</Link>
-      <p className="mt-3 text-[12px] text-ink-muted">We&apos;ll review your request and explain what&apos;s possible and what happens next.</p>
+      <Link href="/request" className={`${action} mt-5`}>Read product update →</Link>
+      <p className="mt-3 text-[12px] text-ink-muted">New custom-learning orders are paused while we redesign the experience.</p>
      </div>
      <div className="alm-plum-panel p-6">
       <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#CFC7FF]">Your request, your goals</p><h3 className="mt-3 text-[23px] font-bold">A few details help us get started.</h3>
@@ -135,7 +135,7 @@ export default function Home(){
     <div className="alm-wrap rounded-[20px] bg-[#ECE7FF] px-6 py-10 text-center sm:px-10">
      <p className="alm-eyebrow">Your next step</p><h2 className="alm-section-title mt-3">There&apos;s more than one way to begin.</h2>
      <p className="mx-auto mt-3 max-w-[570px] text-[15px] text-ink-body">Find something ready to use, or tell us what you&apos;d like to learn. We&apos;ll help you take it from there.</p>
-     <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/courses" className={action}>Browse courses &amp; resources →</Link><Link href="/request" className={secondary}>Request a course or resource</Link></div>
+     <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/courses" className={action}>Browse courses &amp; resources →</Link><Link href="/request" className={secondary}>Read product update</Link></div>
     </div>
    </section>
   </main>

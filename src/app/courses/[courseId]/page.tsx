@@ -35,16 +35,16 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
         <section className="alm-gradient-lilac mt-5 overflow-hidden rounded-[20px] border border-hairline">
           <div className="grid gap-6 p-6 sm:p-9 lg:grid-cols-[minmax(0,1fr)_minmax(290px,.9fr)] lg:items-center">
             <div>
-              <span className="alm-pill">Now accepting enrollments</span>
+              <span className="alm-pill">Learning pilot in review</span>
               <p className="alm-eyebrow mt-5">Nursing · Graduate</p>
               <h1 className="mt-2 font-display text-[36px] font-bold leading-[1.05] sm:text-[48px]">Advanced Pharmacology</h1>
               <p className="mt-4 max-w-[570px] text-[15px] leading-7 text-ink-body">Learn how medicines work, why patients respond differently and how to reason through prescribing and monitoring decisions.</p>
               <p className="mt-4 max-w-[540px] text-sm leading-6 text-ink-body">Our first prepared learning sequence focuses on <strong>NUR-635 midterm Topics 1–8</strong>. Structured lessons and practice are in final review; narrated videos and remaining supporting resources are still being prepared.</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href="/request?course=advanced-pharmacology" className="alm-action">Choose a learning package →</Link>
+                <Link href="/request?course=advanced-pharmacology" className="alm-action">What is changing →</Link>
                 <a href="#midterm-outline" className="alm-action alm-action-secondary">See midterm topics ↓</a>
               </div>
-              <p className="mt-4 text-xs text-ink-muted">Packages and delivery times are quoted before payment. Learning access begins after payment verification; materials are released as they are completed and approved.</p>
+              <p className="mt-4 text-xs text-ink-muted">New learning-package orders are paused during Almanac's redesign. Existing approved learners may continue using available course materials.</p>
             </div>
             <img src="/almanac-art/cover-pharmacology.png" alt="Advanced Pharmacology course artwork" className="aspect-[16/10] h-full w-full rounded-[16px] object-cover" />
           </div>
@@ -64,9 +64,9 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-white/70">Prepared around your assessment</p>
             <h2 className="mt-2 font-display text-[27px] font-bold">Choose the support you need.</h2>
-            <p className="mt-3 max-w-[650px] text-sm leading-6 text-white/80">Request a focused module, exam-preparation package or an eight-module learning package. For the full 16-topic semester, describe your additional coverage needs in your request.</p>
+            <p className="mt-3 max-w-[650px] text-sm leading-6 text-white/80">This course is being developed into a more guided learning experience. Explore the topics shown here; new orders are currently paused.</p>
           </div>
-          <Link href="/request?course=advanced-pharmacology" className="alm-action border-white bg-white text-[#2A1B78] hover:bg-[#F6F4FB]">View packages & prices →</Link>
+          <Link href="/request?course=advanced-pharmacology" className="alm-action border-white bg-white text-[#2A1B78] hover:bg-[#F6F4FB]">Read product update →</Link>
         </section>
         <p className="mt-6 text-xs text-ink-muted">Almanac provides independent study support. It is not affiliated with or endorsed by Grand Canyon University.</p>
       </main>
@@ -88,12 +88,12 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
         <section className="alm-gradient-lilac mt-4 overflow-hidden rounded-[20px] border border-hairline">
           <div className="grid gap-6 p-6 sm:p-9 lg:grid-cols-[minmax(0,1fr)_minmax(290px,.9fr)] lg:items-center">
             <div>
-              <span className="alm-pill">Prepared on request</span>
+              <span className="alm-pill">Learning concept in development</span>
               <h1 className="mt-4 text-[35px] leading-[1.05] sm:text-[46px]">{c.title}</h1>
               <p className="mt-4 max-w-[530px] text-[15px] leading-relaxed text-ink-body">{c.blurb}</p>
-              <p className="mt-4 max-w-[530px] text-[14px] text-ink-body">Choose the material formats, delivery method and timeline that work for you. See the price before placing your request.</p>
-              <Link href={`/request?course=${encodeURIComponent(c.id)}`} className="alm-action mt-6">Request this course →</Link>
-              <p className="mt-4 text-[12px] text-ink-muted">Access is issued after approval of a verified payment. Courses are prepared around the learner's request.</p>
+              <p className="mt-4 max-w-[530px] text-[14px] text-ink-body">New custom learning orders are paused. Almanac is reviewing how to guide learning from a clear goal through appropriate lessons, practice and feedback.</p>
+              <Link href={`/request?course=${encodeURIComponent(c.id)}`} className="alm-action mt-6">Read product update →</Link>
+              <p className="mt-4 text-[12px] text-ink-muted">Existing approved learners retain their access. No new payment or order can be initiated through the retired checkout.</p>
             </div>
             <div className="alm-course-media relative aspect-[16/10] border border-hairline">
               <img src={`/almanac-art/${cover}`} alt={`${c.title} course artwork`} className="h-full w-full object-cover" />
