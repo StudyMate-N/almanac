@@ -1,0 +1,40 @@
+name: Almanac Content Studio — draft-only validation
+
+on:
+  pull_request:
+    paths:
+      - "product-studio/content-production/**"
+      - "scripts/check-content-studio.mjs"
+      - ".github/workflows/content-studio.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-content-system:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install exact source dependencies
+        run: npm ci
+      - name: Validate SHA-256, rights, citations, source identity and fail-closed publication
+        run: node --test scripts/check-content-studio.mjs
+      - name: Check Product Studio no-checkout and contact isolation gates
+        run: |
+          node scripts/check-product-system.mjs
+          node scripts/check-almanac-contact-isolation.mjs
+      - name: Typecheck and build refined Almanac
+        run: |
+          npm run typecheck
+          npm run build
