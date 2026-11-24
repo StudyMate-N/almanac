@@ -185,7 +185,7 @@ export default function Player() {
         {!videoFocus && <aside data-outline-scroll className="sticky top-[80px] hidden h-[calc(100dvh-96px)] overflow-y-auto pr-1 lg:block">{outline}</aside>}
 
         <main className="min-w-0">
-          <article className={`alm-lesson-content mx-auto w-full ${videoFocus ? "max-w-[900px]" : "max-w-[760px]"}`}>
+          <article className={`alm-lesson-content mx-auto w-full ${videoFocus ? "max-w-[900px]" : "max-w-[680px]"}`}>
             <nav aria-label="Breadcrumb" className="mb-1.5 text-[13px] font-medium text-ink-muted">
               {mod.kind !== "section" ? sectionLabel : topicNum ? `${sectionLabel} · Topic ${topicNum}` : page.groupTitle === page.title ? `${sectionLabel} · ${mod.title}` : `${sectionLabel} · ${page.groupTitle}`}
             </nav>
@@ -253,18 +253,18 @@ export default function Player() {
 
             <div ref={endRef} className="mt-8 flex flex-wrap items-center gap-3 border-t border-hairline pt-5">
               {prev ? (
-                <Link href={`/app/learn/${prev.id}`} transitionTypes={["nav-back"]} aria-label={`Previous: ${prev.shortTitle ?? prev.title}`} className="flex h-12 max-w-[45%] min-w-0 items-center gap-1.5 rounded-[12px] border-[1.5px] border-[#D9D2F3] bg-white px-4 text-[14px] font-bold text-violet-deep hover:bg-mist">
+                <Link href={`/app/learn/${prev.id}`} transitionTypes={["nav-back"]} aria-label={`Previous: ${prev.shortTitle ?? prev.title}`} className="flex h-12 max-w-[45%] min-w-0 items-center gap-1.5 rounded-full px-3 text-[14px] font-semibold text-text-body hover:bg-studio">
                   <span aria-hidden="true">←</span><span className="truncate"><span className="sm:hidden">Back</span><span className="hidden sm:inline">{prev.shortTitle ?? prev.title}</span></span>
                 </Link>
               ) : null}
               <span className="hidden min-w-0 flex-1 truncate text-[13px] text-ink-muted sm:block">{next ? `Next: ${next.shortTitle ?? next.title} · ${minutesFor(next)} min` : ""}</span>
               <span className="flex-1 sm:hidden" />
               {next ? (
-                <Link href={`/app/learn/${next.id}`} transitionTypes={["nav-forward"]} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} aria-label={`Next: ${next.shortTitle ?? next.title}`} className="flex h-12 items-center gap-2 rounded-[12px] bg-violet px-5 text-[15px] font-bold text-white hover:bg-[#4A2DE6]">
+                <Link href={`/app/learn/${next.id}`} transitionTypes={["nav-forward"]} onClick={() => SELF_COMPLETING.has(page.kind) && checksAnswered && markDone()} aria-label={`Next: ${next.shortTitle ?? next.title}`} className="flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-[15px] font-bold text-white transition-colors duration-150 hover:bg-primary-hover">
                   {next.kind === "topic" ? "Next topic" : "Next page"} <ArrowRightIcon size={16} />
                 </Link>
               ) : (
-                <Link href={`/app/courses/${course.id}`} className="flex h-12 items-center gap-2 rounded-[12px] bg-violet px-5 text-[15px] font-bold text-white hover:bg-[#4A2DE6]">
+                <Link href={`/app/courses/${course.id}`} className="flex h-12 items-center gap-2 rounded-full bg-primary px-6 text-[15px] font-bold text-white transition-colors duration-150 hover:bg-primary-hover">
                   Back to the course <ArrowRightIcon size={16} />
                 </Link>
               )}
