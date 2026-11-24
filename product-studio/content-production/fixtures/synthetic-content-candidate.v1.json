@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "synthetic-concept-lesson",
+  "courseId": "advanced-pathophysiology",
+  "stage": "ai_draft",
+  "objective": {
+    "id": "synthetic-objective",
+    "statement": "Explain a deliberately fictional demonstration concept using a cited sample."
+  },
+  "sources": [{
+    "id": "synthetic-source",
+    "title": "Synthetic internal fixture, not an educational reference",
+    "locator": "fixtures/synthetic-content-candidate.v1.json",
+    "rights": "permission-granted",
+    "rightsEvidence": "Almanac test fixture authored only for pipeline validation; not for distribution",
+    "editionOrVersion": "fixture-v1",
+    "checkedAt": "2026-11-24T00:00:00Z"
+  }],
+  "asset": {
+    "type": "lesson",
+    "title": "Synthetic test-only lesson",
+    "body": "The fictional concept in this fixture is not intended for learners.",
+    "claims": [{
+      "text": "The sample is purely synthetic and must never be published.",
+      "sourceIds": ["synthetic-source"]
+    }]
+  },
+  "provenance": {
+    "workflowVersion": "content-studio-v0.1",
+    "promptVersion": "fixture-only",
+    "modelId": "none-synthetic-fixture",
+    "sourceSnapshotId": "fixture-2026-11-24",
+    "generatedByAI": false,
+    "authorId": "test-fixture-author"
+  },
+  "review": {
+    "status": "not_requested"
+  }
+}
