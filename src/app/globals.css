@@ -82,6 +82,12 @@
   --color-time-tint: #ffe9dc;
   --color-danger: #a3173a;
   --color-danger-tint: #fdebef;
+  --color-primary-on: #ffffff;
+  --color-border-strong: #c9bef7;
+  --color-focus: #5b3df5;
+  --color-highlight: #ece7ff;
+  /* Figma also maps color/bg/surface, color/bg/subtle, color/text/link and color/accent
+     onto the existing --color-surface, --color-mist, --color-violet-700 and --color-tangerine. */
 
   /* Radius: controls, panels, sections (Figma radius/sm, radius/md, radius/lg).
      Named by role so Tailwind's own rounded-sm/md/lg, already used in 10 places, keep their values.
@@ -89,6 +95,7 @@
   --radius-control: 10px;
   --radius-panel: 14px;
   --radius-section: 20px;
+  --radius-full: 999px;
 
   /* Motion: calm ease-out; exits 120 ms, entrances 220 ms, panels 300 ms (nothing over 400 ms). */
   --ease-calm: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -126,7 +133,7 @@
     text-decoration: none;
   }
   :focus-visible {
-    outline: 3px solid var(--color-violet);
+    outline: 3px solid var(--color-focus);
     outline-offset: 2px;
     border-radius: 8px;
   }
