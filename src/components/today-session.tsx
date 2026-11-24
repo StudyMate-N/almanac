@@ -7,10 +7,13 @@ import { lessons as allLessons, moduleById } from "@/content/course";
 import type { Course, Lesson } from "@/content/types";
 import { dayKey } from "@/lib/deck";
 import { minutesFor } from "@/lib/minutes";
+import { formatOptions } from "@/lib/format-data";
 import { daysUntil, moduleWeeks, planFor, weekToday } from "@/lib/plan";
 import { topicStats } from "@/lib/progress";
 import { useStudent } from "@/lib/store";
+import { alternativeFormats, type FormatId, topicFormats } from "@/lib/study-formats";
 import { useCourse } from "@/lib/use-course";
+import { FormatIcon } from "@/components/study-formats-view";
 
 type Row = { key: string; verb: string; text: string; minutes: number; href?: string; done: boolean };
 
@@ -22,7 +25,7 @@ const isToday = (iso: string | undefined) => Boolean(iso) && dayKey(new Date(iso
  */
 export function useTodaySession(course: Course) {
   const { state, answers } = useStudent();
-  const { modules, questions, latest, lessonOpen } = useCourse(course.id);
+  const { modules, lessons, questions, cards, latest, lessonOpen } = useCourse(course.id);
   const due = useDueCount();
   const plan = planFor(state, course.id);
   const week = plan ? weekToday(plan) : null;
@@ -85,7 +88,15 @@ export function useTodaySession(course: Course) {
         ? { label: "Final", days: toFinal, href: `/app/exam/final?course=${course.id}` }
         : null;
 
-  return { rows, left, minutes, next, plan, week, here, exam };
+  // Other ways into the same next topic (iteration 2): only formats this learner can open,
+  // never the primary action's own format or link. Cards and questions cover the topic's section.
+  const primaryFormat: Record<string, FormatId> = { read: "read", answer: "practise", review: "remember" };
+  const alternatives =
+    nextTopic && next
+      ? alternativeFormats(topicFormats(nextTopic, { lessons, questions, cards, modules }, formatOptions), { href: next.href, format: primaryFormat[next.key] })
+      : [];
+
+  return { rows, left, minutes, next, plan, week, here, exam, alternatives };
 }
 
 const verbLabel: Record<string, string> = { read: "Read the next topic", answer: "Answer practice questions", review: "Review your due cards" };
@@ -111,7 +122,7 @@ export function TodaySession({ course }: { course: Course }) {
         </Link>
       </section>
     );
-  const { rows, left, minutes, next, plan, week, here, exam } = s;
+  const { rows, left, minutes, next, plan, week, here, exam, alternatives } = s;
   const doneCount = rows.length - left.length;
   const where = [course.title, here && here.kind === "section" ? `Section ${here.number} · ${here.title}` : here?.title, plan && week ? `Week ${week} of ${plan.courseWeeks}` : null].filter(Boolean);
   return (
@@ -143,6 +154,25 @@ export function TodaySession({ course }: { course: Course }) {
           </span>
         )}
       </div>
+
+      {alternatives.length > 0 && (
+        <div className="-mt-1 flex flex-wrap items-center gap-2">
+          <span className="text-[12.5px] text-text-muted">Or study it another way:</span>
+          <ul className="flex flex-wrap gap-2">
+            {alternatives.map((f) => (
+              <li key={f.format.id}>
+                <Link href={f.href!} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-border bg-canvas px-3.5 text-[13px] font-semibold text-text-body transition-colors duration-150 hover:border-border-strong hover:bg-studio">
+                  <FormatIcon icon={f.format.icon} size={16} />
+                  <span>
+                    <span className="sr-only">{f.format.verb}: </span>
+                    {f.chip}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 border-t border-border pt-4">
         <h3 className="text-[12px] font-bold text-text-muted">Today&apos;s plan</h3>
