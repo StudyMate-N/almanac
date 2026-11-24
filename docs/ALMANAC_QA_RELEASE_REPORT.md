@@ -18,7 +18,7 @@
 | Resource fulfillment | Private uploads, staff QC/release, per-module lessons/videos/slides plus packages and enhancements | Dedicated release guard and rolled-back 8-module test |
 | Interactive learning | Subject-agnostic lesson, explained practice question, flashcard and timed simulation engine; per-learner progress | Rolled-back answer/flashcard persistence tests, TS/build |
 | Student access | Assigned paid orders and authorized resources only; returning learner can link further paid orders | Rolled-back cross-order isolation/account linking tests |
-| Support | Configured WhatsApp +1 (205) 727-9363, working contact inbox support@unemployedproff.com, help and recovery pages | Source review |
+| Support | Contact inbox almanacstudy.support@gmail.com; WhatsApp hidden until a dedicated Almanac number is approved; help and recovery pages | Source review |
 | Legal | Draft Privacy and Terms pages linked in footer; explicit pre-launch warnings | Source review; **legal approval outstanding** |
 
 ## Recorded verification
@@ -36,7 +36,7 @@
 - **Vercel fresh preview:** Vercel API returned 402 `api-deployments-free-per-day`, limit exceeded (over 100 API deployments/day). Available CLI fallback is unavailable in this execution environment (no CLI/source/auth). Code is committed and builds in GitHub; the newest build is **not guaranteed to be on the older preview URL**. Retry after the Vercel quota window or address team billing limits. **Do not publish production as a workaround.**
 - **Actual upload/download of real customer materials:** private-file metadata/auth tests pass; complete browser PDF/PPTX/MP4 upload and authorized download require a person to test the deployed preview when available. Malware scanning and retention/deletion control need operational/legal decisions.
 - **Bank settlement:** confirmed support for CAD quotes is not evidence that funds can be received via the specified international banking instructions. Beneficiary, routing, fees, refund handling and actual receipt must be independently verified.
-- **Email:** `support@unemployedproff.com` is the temporary support contact. Automatic email code exists but provider credentials and verified sender address are **not configured**. Until configured, staff must send/recover links and codes manually from the staff dashboard.
+- **Email:** almanacstudy.support@gmail.com is the support contact. Automatic email code exists but provider credentials and verified sender address are **not configured**. Until configured, staff must send/recover links and codes manually from the staff dashboard.
 - **Legal:** service identity, governing law, cancellation/refund terms, record retention periods and final Privacy/Terms approval are unconfirmed.
 - **Learning delivery:** actual authored videos, study guides, quiz rationales and clinical accuracy require professional QA. Automated checks validate format/quantity, **not subject-matter truth** or production capacity.
 - **CAD re-quote test:** a rollback-only test call was blocked by the execution tool's safety checks; owner re-quote should be tested in a controlled staging environment before paid launch.

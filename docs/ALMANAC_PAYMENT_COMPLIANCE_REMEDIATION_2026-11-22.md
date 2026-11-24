@@ -2,16 +2,16 @@
 **Date:** 22 Nov 2026 | **Status:** urgent code hotfix in review; provider approval NOT restored.
 
 ## The user-provided rejection
-An email screenshot dated **10 Nov 2026**, from **compliance@agentaos.ai** to **almanacstudy.support@gmail.com**, says AgentaOS cannot approve Almanac because it uses the same WhatsApp as `unemployedproff.com`. The reviewer characterizes the related site's services as research papers, dissertations and student discussion posts, and says it cannot work with a seller running an essay-writing service. The screenshot says `Fix that and apply again from 8 February`; the year is clipped. Since the email is from Nov 2026, **8 Feb 2027 is the likely next occurrence, not a verified date from the screenshot**.
+An email screenshot dated **10 Nov 2026**, from **compliance@agentaos.ai** to **almanacstudy.support@gmail.com**, says AgentaOS cannot approve Almanac because it uses the same WhatsApp number as a related business's website (named in the provider's email). The reviewer characterizes the related site's services as research papers, dissertations and student discussion posts, and says it cannot work with a seller running an essay-writing service. The screenshot says `Fix that and apply again from 8 February`; the year is clipped. Since the email is from Nov 2026, **8 Feb 2027 is the likely next occurrence, not a verified date from the screenshot**.
 
 The message is evidence of the provider's decision/reason, not independent proof of the unrelated site's current offerings. Any explanation back to the provider must be factual and provide honest ownership/control disclosures.
 
 ## Root causes confirmed in the 22 Nov repo review
-- `src/components/site/request-builder.tsx`: lost-invoice notice used `support@unemployedproff.com`.
+- `src/components/site/request-builder.tsx`: lost-invoice notice used the related business's support address.
 - `src/components/site/printable-invoice.tsx`: two invoice support destinations used the same unrelated brand.
 - `src/components/site/payment-steps.tsx`: updated-invoice and support mailto destinations used that address.
 - `src/lib/learning-mail.ts`: outbound transactional support reply-to and default operations routing used that unrelated address.
-- `src/app/contact/page.tsx` and `src/app/api/learning-invoices/route.ts`: WhatsApp number fell back to `+1 205 727 9363`, previously used by Unemployed Professor, even if no Almanac-specific WhatsApp env setting existed.
+- `src/app/contact/page.tsx` and `src/app/api/learning-invoices/route.ts`: WhatsApp number fell back to the related business's WhatsApp number even if no Almanac-specific WhatsApp env setting existed.
 - Other known public pages (`/contact`, footer, privacy and terms) already use `almanacstudy.support@gmail.com`, making the cross-brand fallback internally inconsistent.
 
 ## Hotfix changes
@@ -29,7 +29,7 @@ Official [AgentaOS merchant terms](https://agentaos.ai/terms) last updated 30 Oc
 **Potentially eligible line (subject to provider approval):** separately released and rights-cleared prebuilt courses, original practice and flashcard libraries, verified self-study access, downloadable ready-made digital study products. **Not to route via AgentaOS on present terms:** commissioned packs created after individual subject/syllabus uploads, bespoke one-off materials, or unapproved coaching/essay-writing work. Ask provider to confirm permitted offer IDs/URLs in writing before sale.
 
 ## Substantive resolution before reapplication
-- [ ] Owner confirms business/legal ownership and any affiliation to `unemployedproff.com`; disclose links truthfully to the provider. Separate contact channels are good operational practice, **not a way to conceal common ownership**.
+- [ ] Owner confirms business/legal ownership and any affiliation to the related business named in the provider's rejection; disclose links truthfully to the provider. Separate contact channels are good operational practice, **not a way to conceal common ownership**.
 - [ ] Independent support address `almanacstudy.support@gmail.com` is actively monitored and mail sending/reply-to has been tested without unrelated-brand env settings.
 - [ ] Remove the shared WhatsApp channel from Almanac now; if providing WhatsApp later, provision a real dedicated number and separate account/business operations, then seek provider advice about associated-merchant policy.
 - [ ] Audit the other site's actual services and discontinue or correct any contract-cheating/ghostwriting services if present; truthful public policy must match practice.
