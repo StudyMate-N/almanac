@@ -66,3 +66,11 @@ Corrective operator actions on 22 Nov 2026:
 **Blocked:** Rendered page/invoice inspection, actual monitored inbox and dedicated verified sender, diagnostic recipient authorization, controlled entitlement and payment settlement, privileged RPC review (Issue #11), merchant written approval and ownership/beneficiary disclosure. Backend health and CI do not authorize collections.
 
 **Next:** QA lane to complete controlled end-to-end and RPC authorization checks; contact lane to verify rendered pages and dedicated sender/diagnostic recipient before any email activation. No external correspondence or customer/payment data changes.
+
+## Follow-up verification — 25 Nov 2026
+
+**Changed:** Read-only sender inventory and deployment recheck; audit documentation only.
+
+**Verified:** Connected Resend account lists four domains, three verified, none Almanac-branded. Do not repurpose another brand's domain or credentials. Netlify operations address still matches the Almanac support inbox in all four contexts; no sender/key/WhatsApp or SMTP configuration was returned by the mail-related environment inventory. The diagnostic recipient remains configured globally and differs from the support inbox; authorization remains unverified. No recipient or secret value recorded. Supabase reports ACTIVE_HEALTHY; production deploy remains 6b04b2a5555f3d183d90f22d ready; exact deployed commit's existing CI run 45271965649 remains successful (not a new execution).
+
+**Blocked / Next:** Owner must establish control of an Almanac sending domain, verify DNS and provision a domain-scoped sending-only key through a secure operator channel; confirm the diagnostic recipient before any test delivery. Keep automated mail and commercial activation gated. Rendered authenticated pages and settlement remain unverified. No email sent, no runtime or customer data changed.
