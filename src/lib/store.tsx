@@ -102,6 +102,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const [preview, setPreview] = useState(false);
   const [offline, setOffline] = useState(false);
   const cache = useRef<Cache | null>(null);
+  const activeToken = useRef<string | null>(null);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   // Only one write per key at a time: a slow earlier response must not
   // acknowledge (or overwrite after) a newer offline/local edit.
@@ -111,31 +112,40 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     if (cache.current) write(CACHE_KEY, cache.current);
   }, []);
 
+  // One drain per cache instance. A late response from an old account
+  // must never acknowledge or persist the current account's queue.
+  const answerDrains = useRef(new WeakSet<Cache>());
   const flushAnswers = useCallback(async (tok: string) => {
     const c = cache.current;
-    if (!c || c.pending.length === 0) return;
-    const batch = c.pending.slice(0, 200);
+    if (!c || answerDrains.current.has(c) || activeToken.current !== tok) return;
+    answerDrains.current.add(c);
     try {
-      await rpc("answers_add", {
-        p_token: tok,
-        p_rows: batch.map((a) => ({
-          question_id: a.questionId,
-          module_id: a.moduleId,
-          lesson_id: a.lessonId,
-          selected: a.selected,
-          correct: a.correct,
-          seconds: Math.round(a.seconds),
-          mode: a.mode,
-          session_id: a.sessionId,
-          answered_at: a.at,
-        })),
-      });
-      c.pending = c.pending.slice(batch.length);
-      persist();
-      setOffline(false);
-      if (c.pending.length) void flushAnswers(tok);
+      while (cache.current === c && activeToken.current === tok && c.pending.length) {
+        const batch = c.pending.slice(0, 200);
+        await rpc("answers_add", {
+          p_token: tok,
+          p_rows: batch.map((a) => ({
+            question_id: a.questionId,
+            module_id: a.moduleId,
+            lesson_id: a.lessonId,
+            selected: a.selected,
+            correct: a.correct,
+            seconds: Math.round(a.seconds),
+            mode: a.mode,
+            session_id: a.sessionId,
+            answered_at: a.at,
+          })),
+        });
+        if (cache.current !== c || activeToken.current !== tok) return;
+        c.pending = c.pending.slice(batch.length);
+        persist();
+        setOffline(false);
+      }
     } catch (e) {
-      if (e instanceof ApiError && e.message === "offline") setOffline(true);
+      if (cache.current === c && activeToken.current === tok &&
+          e instanceof ApiError && e.message === "offline") setOffline(true);
+    } finally {
+      answerDrains.current.delete(c);
     }
   }, [persist]);
 
@@ -198,7 +208,8 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       if (e instanceof ApiError && e.unauthorized) {
         write(TOKEN_KEY, null);
-        setToken(null);
+        activeToken.current = null;
+    setToken(null);
         setAuthorizedCourses([]);
         setStatus("signed-out");
         return;
@@ -238,6 +249,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       })
       .finally(() => setApprovalsLoaded(true));
     if (tok) {
+      activeToken.current = tok;
       setToken(tok);
       const local = read<Cache>(CACHE_KEY);
       const prof = read<Profile>("almanac.profile");
@@ -272,6 +284,8 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const signIn = useCallback(async (code: string, name?: string, email?: string) => {
     const res = await rpc<{ token: string; student: Profile }>("pilot_sign_in", { p_code: code, p_name: name ?? null, p_email: email ?? null });
     write(TOKEN_KEY, res.token);
+    activeToken.current = res.token;
+    cache.current = null;
     setToken(res.token);
     setStatus("loading");
     await load(res.token);
@@ -284,6 +298,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     write("almanac.profile", null);
     write(APPROVALS_KEY, null);
     cache.current = null;
+    activeToken.current = null;
     setToken(null);
     setProfile(null);
     setAuthorizedCourses([]);
