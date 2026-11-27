@@ -1,6 +1,7 @@
 // Review-only synthetic media gate. NOT an authorization service or live catalog.
 // Inputs must originate from trusted server records, never client assertions.
 const digest = x => typeof x === "string" && /^[a-f0-9]{64}$/.test(x);
+const reviewHash = x => typeof x === "string" && /^[a-f0-9]{16}$/.test(x);
 const id = x => typeof x === "string" && x.trim().length > 0;
 const kinds = ["text","video","audio","slides","quiz","flashcards","story","game","music"];
 function eligible(a, c) {
@@ -11,7 +12,8 @@ function eligible(a, c) {
     kinds.includes(a.kind) && a.status === "released" && a.retrievable === true && a.accessible === true &&
     ["owned_original","permission_confirmed","open_licensed"].includes(a.rightsStatus) &&
     Array.isArray(a.rightsScope) && a.rightsScope.includes("private") &&
-    digest(a.sourceDigest) && digest(a.mediaDigest) &&
+    reviewHash(a.educationalHash) && digest(a.sourceDigest) && digest(a.mediaDigest) &&
+    a.approval?.educationalHash === a.educationalHash &&
     a.approval?.sourceId === a.sourceId && a.approval?.sourceVersion === a.sourceVersion &&
     a.approval?.sourceDigest === a.sourceDigest && a.approval?.mediaDigest === a.mediaDigest &&
     a.approval?.assetId === a.id && a.approval?.courseId === a.courseId && a.approval?.objectiveId === a.objectiveId;
@@ -24,8 +26,9 @@ function available(a, records, context) {
 }
 // Synthetic fixtures only. Digests are placeholders, not computed asset hashes.
 const d = "a".repeat(64), m = "b".repeat(64);
-const base = {courseId:"course",objectiveId:"objective",sourceId:"source",sourceVersion:"1",sourceDigest:d,mediaDigest:m,status:"released",retrievable:true,accessible:true,rightsStatus:"owned_original",rightsScope:["private"]};
-const asset = (id,kind) => ({...base,id,kind,approval:{assetId:id,courseId:base.courseId,objectiveId:base.objectiveId,sourceId:base.sourceId,sourceVersion:base.sourceVersion,sourceDigest:d,mediaDigest:m}});
+const educationalHash = "0123456789abcdef";
+const base = {educationalHash,courseId:"course",objectiveId:"objective",sourceId:"source",sourceVersion:"1",sourceDigest:d,mediaDigest:m,status:"released",retrievable:true,accessible:true,rightsStatus:"owned_original",rightsScope:["private"]};
+const asset = (id,kind) => ({...base,id,kind,approval:{educationalHash,assetId:id,courseId:base.courseId,objectiveId:base.objectiveId,sourceId:base.sourceId,sourceVersion:base.sourceVersion,sourceDigest:d,mediaDigest:m}});
 const textAsset = asset("text","text"), video = {...asset("video","video"),alternativeId:"text"};
 const context = {backendVerified:true,learnerId:"learner",courseId:"course",objectiveId:"objective",entitlements:["text","video"].map(assetId=>({assetId,learnerId:"learner",courseId:"course",active:true}))};
 const check = (a=video, records=[textAsset,video], c=context) => available(a,records,c);
@@ -48,6 +51,9 @@ const cases = [
  ["changed source digest",check({...video,sourceDigest:"c".repeat(64)}),false],
  ["inaccessible",check({...video,accessible:false}),false],
  ["missing approval",check({...video,approval:null}),false],
+ ["changed educational content",check({...video,educationalHash:"fedcba9876543210"}),false],
+ ["missing educational approval",check({...video,approval:{...video.approval,educationalHash:undefined}}),false],
+ ["digest cannot replace educational hash",check({...video,educationalHash:d,approval:{...video.approval,educationalHash:d}}),false],
  ["preference invariance",check(video,[textAsset,video],{...context,startMode:"reading",lowBandwidth:true}),true]
 ];
 for (const [name,actual,expected] of cases) if(actual!==expected) throw new Error(name);
