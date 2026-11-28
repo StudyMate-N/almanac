@@ -102,50 +102,82 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const [preview, setPreview] = useState(false);
   const [offline, setOffline] = useState(false);
   const cache = useRef<Cache | null>(null);
+  const activeToken = useRef<string | null>(null);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  // Only one write per key at a time: a slow earlier response must not
+  // acknowledge (or overwrite after) a newer offline/local edit.
+  const writesInFlight = useRef(new WeakMap<Cache, Set<keyof StudentState>>());
 
   const persist = useCallback(() => {
     if (cache.current) write(CACHE_KEY, cache.current);
   }, []);
 
+  // One drain per cache instance. A late response from an old account
+  // must never acknowledge or persist the current account's queue.
+  const answerDrains = useRef(new WeakSet<Cache>());
   const flushAnswers = useCallback(async (tok: string) => {
     const c = cache.current;
-    if (!c || c.pending.length === 0) return;
-    const batch = c.pending.slice(0, 200);
+    if (!c || answerDrains.current.has(c) || activeToken.current !== tok) return;
+    answerDrains.current.add(c);
     try {
-      await rpc("answers_add", {
-        p_token: tok,
-        p_rows: batch.map((a) => ({
-          question_id: a.questionId,
-          module_id: a.moduleId,
-          lesson_id: a.lessonId,
-          selected: a.selected,
-          correct: a.correct,
-          seconds: Math.round(a.seconds),
-          mode: a.mode,
-          session_id: a.sessionId,
-          answered_at: a.at,
-        })),
-      });
-      c.pending = c.pending.slice(batch.length);
-      persist();
-      setOffline(false);
-      if (c.pending.length) void flushAnswers(tok);
+      while (cache.current === c && activeToken.current === tok && c.pending.length) {
+        const batch = c.pending.slice(0, 200);
+        await rpc("answers_add", {
+          p_token: tok,
+          p_rows: batch.map((a) => ({
+            question_id: a.questionId,
+            module_id: a.moduleId,
+            lesson_id: a.lessonId,
+            selected: a.selected,
+            correct: a.correct,
+            seconds: Math.round(a.seconds),
+            mode: a.mode,
+            session_id: a.sessionId,
+            answered_at: a.at,
+          })),
+        });
+        if (cache.current !== c || activeToken.current !== tok) return;
+        c.pending = c.pending.slice(batch.length);
+        persist();
+        setOffline(false);
+      }
     } catch (e) {
-      if (e instanceof ApiError && e.message === "offline") setOffline(true);
+      if (cache.current === c && activeToken.current === tok &&
+          e instanceof ApiError && e.message === "offline") setOffline(true);
+    } finally {
+      answerDrains.current.delete(c);
     }
   }, [persist]);
 
   const pushKey = useCallback(async (tok: string, key: keyof StudentState) => {
     const c = cache.current;
-    if (!c) return;
+    if (!c || activeToken.current !== tok) return;
+    let keys = writesInFlight.current.get(c);
+    if (!keys) { keys = new Set(); writesInFlight.current.set(c, keys); }
+    if (keys.has(key)) return;
+    keys.add(key);
     try {
-      await rpc("state_put", { p_token: tok, p_key: key, p_value: c.state[key] ?? null });
-      c.dirty = c.dirty.filter((k) => k !== key);
-      persist();
-      setOffline(false);
-    } catch (e) {
-      if (e instanceof ApiError && e.message === "offline") setOffline(true);
+      // Serialize writes and re-send the latest value if an edit arrived
+      // while a previous request was pending.
+      while (cache.current === c && activeToken.current === tok) {
+        if (!c.dirty.includes(key)) return;
+        const value = c.state[key] ?? null;
+        try {
+          await rpc("state_put", { p_token: tok, p_key: key, p_value: value });
+        } catch (e) {
+          if (cache.current === c && activeToken.current === tok && e instanceof ApiError && e.message === "offline") setOffline(true);
+          return; // Leave the dirty key for the next reconnect/retry.
+        }
+        // A sign-out or account switch invalidates the pending response.
+        if (cache.current !== c || activeToken.current !== tok) return;
+        if (c.state[key] !== value) continue;
+        c.dirty = c.dirty.filter((k) => k !== key);
+        persist();
+        setOffline(false);
+        return;
+      }
+    } finally {
+      keys.delete(key);
     }
   }, [persist]);
 
@@ -157,6 +189,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
         rpc<Answer[]>("answers_list", { p_token: tok }),
         rpc<string[]>("learning_authorized_courses", { p_token: tok }),
       ]);
+      if (activeToken.current !== tok) return;
       const local = read<Cache>(CACHE_KEY);
       const sameStudent = local?.profileId === me.id;
       const merged: StudentState = { ...EMPTY };
@@ -177,9 +210,11 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       for (const k of cache.current.dirty) void pushKey(tok, k);
       void flushAnswers(tok);
     } catch (e) {
+      if (activeToken.current !== tok) return;
       if (e instanceof ApiError && e.unauthorized) {
         write(TOKEN_KEY, null);
-        setToken(null);
+        activeToken.current = null;
+    setToken(null);
         setAuthorizedCourses([]);
         setStatus("signed-out");
         return;
@@ -219,6 +254,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       })
       .finally(() => setApprovalsLoaded(true));
     if (tok) {
+      activeToken.current = tok;
       setToken(tok);
       const local = read<Cache>(CACHE_KEY);
       const prof = read<Profile>("almanac.profile");
@@ -253,6 +289,8 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const signIn = useCallback(async (code: string, name?: string, email?: string) => {
     const res = await rpc<{ token: string; student: Profile }>("pilot_sign_in", { p_code: code, p_name: name ?? null, p_email: email ?? null });
     write(TOKEN_KEY, res.token);
+    activeToken.current = res.token;
+    cache.current = null;
     setToken(res.token);
     setStatus("loading");
     await load(res.token);
@@ -265,6 +303,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     write("almanac.profile", null);
     write(APPROVALS_KEY, null);
     cache.current = null;
+    activeToken.current = null;
     setToken(null);
     setProfile(null);
     setAuthorizedCourses([]);
@@ -282,7 +321,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     if (!c.dirty.includes(key)) c.dirty.push(key);
     persist();
     clearTimeout(timers.current[key]);
-    timers.current[key] = setTimeout(() => void pushKey(token, key), 700);
+    timers.current[key] = setTimeout(() => { if (cache.current === c && activeToken.current === token) void pushKey(token, key); }, 700);
   }, [persist, pushKey, token]);
 
   const addAnswers = useCallback((rows: Answer[]) => {
