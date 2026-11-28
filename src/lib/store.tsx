@@ -106,7 +106,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   // Only one write per key at a time: a slow earlier response must not
   // acknowledge (or overwrite after) a newer offline/local edit.
-  const writesInFlight = useRef<Set<keyof StudentState>>(new Set());
+  const writesInFlight = useRef(new WeakMap<Cache, Set<keyof StudentState>>());
 
   const persist = useCallback(() => {
     if (cache.current) write(CACHE_KEY, cache.current);
@@ -150,23 +150,26 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   }, [persist]);
 
   const pushKey = useCallback(async (tok: string, key: keyof StudentState) => {
-    if (writesInFlight.current.has(key)) return;
-    writesInFlight.current.add(key);
+    const c = cache.current;
+    if (!c || activeToken.current !== tok) return;
+    let keys = writesInFlight.current.get(c);
+    if (!keys) { keys = new Set(); writesInFlight.current.set(c, keys); }
+    if (keys.has(key)) return;
+    keys.add(key);
     try {
       // Serialize writes and re-send the latest value if an edit arrived
       // while a previous request was pending.
-      while (true) {
-        const c = cache.current;
-        if (!c || !c.dirty.includes(key)) return;
+      while (cache.current === c && activeToken.current === tok) {
+        if (!c.dirty.includes(key)) return;
         const value = c.state[key] ?? null;
         try {
           await rpc("state_put", { p_token: tok, p_key: key, p_value: value });
         } catch (e) {
-          if (e instanceof ApiError && e.message === "offline") setOffline(true);
+          if (cache.current === c && activeToken.current === tok && e instanceof ApiError && e.message === "offline") setOffline(true);
           return; // Leave the dirty key for the next reconnect/retry.
         }
         // A sign-out or account switch invalidates the pending response.
-        if (cache.current !== c) return;
+        if (cache.current !== c || activeToken.current !== tok) return;
         if (c.state[key] !== value) continue;
         c.dirty = c.dirty.filter((k) => k !== key);
         persist();
@@ -174,7 +177,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
         return;
       }
     } finally {
-      writesInFlight.current.delete(key);
+      keys.delete(key);
     }
   }, [persist]);
 
@@ -186,6 +189,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
         rpc<Answer[]>("answers_list", { p_token: tok }),
         rpc<string[]>("learning_authorized_courses", { p_token: tok }),
       ]);
+      if (activeToken.current !== tok) return;
       const local = read<Cache>(CACHE_KEY);
       const sameStudent = local?.profileId === me.id;
       const merged: StudentState = { ...EMPTY };
@@ -206,6 +210,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       for (const k of cache.current.dirty) void pushKey(tok, k);
       void flushAnswers(tok);
     } catch (e) {
+      if (activeToken.current !== tok) return;
       if (e instanceof ApiError && e.unauthorized) {
         write(TOKEN_KEY, null);
         activeToken.current = null;
@@ -316,7 +321,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     if (!c.dirty.includes(key)) c.dirty.push(key);
     persist();
     clearTimeout(timers.current[key]);
-    timers.current[key] = setTimeout(() => void pushKey(token, key), 700);
+    timers.current[key] = setTimeout(() => { if (cache.current === c && activeToken.current === token) void pushKey(token, key); }, 700);
   }, [persist, pushKey, token]);
 
   const addAnswers = useCallback((rows: Answer[]) => {
