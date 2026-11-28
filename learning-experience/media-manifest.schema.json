@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://almanac-study.example/schemas/media-manifest-v0.1.json",
+  "$id": "https://almanac-study.example/schemas/media-manifest-v0.2.json",
   "title": "Almanac multimodal learning object manifest (proposal)",
-  "description": "Experimental versioned content contract. NOT current database schema or an implemented media service.",
+  "description": "Experimental versioned content contract. NOT current database schema or an implemented media service. Shape validation only; trusted server must verify exact approval bindings, actual bytes, rights, fallback and entitlement independently.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -134,6 +134,14 @@
               "string",
               "null"
             ]
+          },
+          "source_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
           }
         }
       }
@@ -146,7 +154,7 @@
         "media_status",
         "accessibility_status",
         "rights_status",
-        "approved_hash"
+        "educational_hash"
       ],
       "properties": {
         "subject_status": {
@@ -187,16 +195,21 @@
             "rejected"
           ]
         },
-        "approved_hash": {
+        "approved_at": {
           "type": [
             "string",
             "null"
           ]
         },
-        "approved_at": {
-          "type": [
-            "string",
-            "null"
+        "educational_hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{16}$"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       }
@@ -306,13 +319,96 @@
               "null"
             ]
           },
-          "reviewed_hash": {
-            "type": [
-              "string",
-              "null"
-            ]
+          "educational_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{16}$"
+          },
+          "media_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "source_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "approval": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "asset_id",
+              "course_id",
+              "objective_id",
+              "educational_hash",
+              "source_id",
+              "source_version",
+              "source_digest",
+              "media_digest"
+            ],
+            "properties": {
+              "asset_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "course_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "objective_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "educational_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{16}$"
+              },
+              "source_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "media_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "released"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "educational_hash",
+                "media_digest",
+                "source_id",
+                "source_version",
+                "source_digest",
+                "approval"
+              ]
+            }
+          }
+        ]
       }
     },
     "assessments": {
@@ -381,5 +477,40 @@
       "type": "string",
       "format": "date-time"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "released"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "review": {
+            "properties": {
+              "educational_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{16}$"
+              },
+              "subject_status": {
+                "const": "approved"
+              },
+              "media_status": {
+                "const": "approved"
+              },
+              "accessibility_status": {
+                "const": "approved"
+              },
+              "rights_status": {
+                "const": "approved"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }
