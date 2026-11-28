@@ -58,8 +58,8 @@ Footer: `No perfect answer. Just the next useful step.`
 
 ## Recommended release order
 1. S01 educational carousel — highest immediate value, no outstanding source-file dependency.
-2. S03 needs prompt — captures learner-friction information without asserting product readiness.
-3. S02 original quote — tests whether an editorial statement with actionable caption generates return behavior.
+2. S02 original quote — tests whether an editorial statement with actionable caption generates return behavior.
+3. S03 needs prompt — captures learner-friction information without asserting product readiness.
 4. S04 genuine NR 601 preview — only once resources, rights and exact contents are verified.
 5. S05 reviewed question-and-rationale sequence — once ready.
 
