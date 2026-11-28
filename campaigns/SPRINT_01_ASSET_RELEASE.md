@@ -23,7 +23,7 @@
 Do NOT equate views or comments with learning gains or paid conversions.
 
 ## Release order recommendation, not a scheduled publication action
-S01 teaching carousel → S03 learner-needs post → S02 reflective quote.
+S01 teaching carousel → S02 reflective quote → S03 learner-needs post.
 Experiment on age-matched distribution and substantive responses (24h, 72h and 7d if measurable).
 For future genuine resource previews, require verified original NotebookLM assets, accurate 4-topic titles, source/rights checks and authorized delivery terms.
 
