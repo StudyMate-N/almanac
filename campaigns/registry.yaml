@@ -1,0 +1,59 @@
+schema_version: 1
+program:
+  id: ALMANAC-CAMPAIGNS
+  name: Almanac Study Campaign Mode
+  version: 1.2.0
+  created_on: 2026-11-22
+  mode: draft_and_review
+  marketing_publication_autonomy: false
+  paid_spend_autonomy: false
+  payment_collection_status: unverified_after_2026-10-23_request_only_review
+  first_party_sources:
+    - product_repo_StudyMate-N/almanac
+    - user_supplied_facebook_post_screenshots_2026-11-22
+    - Almanac_Payment_Dependency_Review_2026-10-23.md
+  north_star: qualified_learning_resource_inquiries
+campaigns:
+  - id: NR601-001
+    title: NR 601 Midterm — Four-Topic Learning Pack
+    audience: NR 601 geriatric assessment learners
+    platform: Facebook
+    stage: published_first_post_awaiting_source_pack_inventory_and_measurement
+    product_origin:
+      origin: learner_midterm_preparation
+      source_count_user_reported_approx: 17
+      source_status: not_inspected
+      organization: four_topics_user_reported_titles_unknown
+      production_tool: NotebookLM_user_reported
+      media_formats_user_reported: [study_notes, questions, quizzes, flashcards, audio]
+      first_video_role: opening_excerpt_not_full_course_theme
+      context_path: campaigns/NR601-001/product-origin.md
+    first_post:
+      identifier: FB-NR601-001-P01
+      status: user_reported_published
+      url: null
+      posted_at: null
+      age_at_screenshot: approximately_4_hours
+      exact_caption:
+        hook: "Katz or Lawton? Know which one slips first."
+        lead: "Want the full NR 601 midterm video? Email Almanacstudy.support@gmail.com with the subject: NR 601 midterm"
+        discovery: "Studying for something else? Put your course or exam in the subject line."
+      snapshot:
+        captured_on: 2026-11-22
+        captured_local_time: "03:02 Africa/Nairobi (phone screenshot)"
+        views: 360
+        shares: 4
+        organic_or_paid: unknown
+        qualified_inquiries: unknown
+        paying_customers: unknown
+      source: user_supplied_facebook_screenshot_full_post
+    resource_readiness:
+      full_video_exists: unverified
+      ownership_or_distribution_rights: unverified
+      clinical_review: unverified
+      availability_and_price: unverified
+    next_output: source_grounded_four_topic_midterm_pack_overview_then_selected_snippets
+    next_review_gate: clinical_and_owner_review
+    scorecard_path: campaigns/metrics/NR601-001.csv
+    experiment_log_path: campaigns/NR601-001/experiments.md
+    updated_on: 2026-11-22
