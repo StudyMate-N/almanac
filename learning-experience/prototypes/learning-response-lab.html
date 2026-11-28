@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Almanac Study — Response Lab Prototype</title>
+<style>
+:root{--navy:#162e57;--cobalt:#2357d9;--coral:#ed7455;--ivory:#f4f0e8}
+*{box-sizing:border-box}body{margin:0;background:var(--ivory);color:var(--navy);font:16px/1.5 system-ui,-apple-system,sans-serif}
+main{max-width:780px;margin:auto;padding:30px 18px 80px}.brand{color:var(--cobalt);font-weight:800;font-size:21px}
+h1{font-size:clamp(36px,7vw,60px);line-height:1.04;letter-spacing:-.04em;margin:42px 0 15px}
+.lead{font-size:19px;max-width:640px}h2{font-size:27px}
+section{background:white;border:1px solid #ddd;border-radius:17px;padding:24px;margin:23px 0;box-shadow:0 4px 20px #1423440a}
+label{font-weight:700}.options{display:grid;gap:10px;margin:16px 0}button{background:#fff;border:1px solid #9faac6;border-radius:9px;color:var(--navy);text-align:left;padding:12px 14px;font:inherit;cursor:pointer}
+button:hover,button:focus-visible{outline:3px solid #adc7ff;outline-offset:2px}button:disabled{opacity:.6;cursor:default}
+.feedback{background:#fff1e9;border-left:5px solid var(--coral);padding:14px;border-radius:5px;margin:15px 0}
+.note{color:#51627f;font-size:13px}.tag{font-size:12px;letter-spacing:.14em;font-weight:800;color:var(--cobalt)}
+</style></head><body><main>
+<header><div class="brand">✦ Almanac Study</div><p class="note">Independent low-fi learning prototype · No student data collected</p></header>
+<h1>Learning that responds.</h1>
+<p class="lead">Two small activities test what you can explain, not how fast you can click. This is a demonstration of a future learning format, not a live Almanac course feature.</p>
+<section><p class="tag">01 / A SHORT STORY</p><h2>Sam chose the right answer. But why?</h2>
+<p>Sam answers a practice question correctly but cannot say why another plausible option was wrong. What should Sam do next?</p>
+<div class="options">
+<button onclick="choose(0)">A · Move on: the answer was right.</button>
+<button onclick="choose(1)">B · Reread the whole chapter immediately.</button>
+<button onclick="choose(2)">C · Identify the missing explanation, review it, and try a fresh question.</button>
+</div>
+<div id="storyResult" role="status" aria-live="polite" class="feedback" hidden></div></section>
+<section><p class="tag">02 / A MINI-GAME</p><h2>What really checks understanding?</h2>
+<p>Classify each study action. Some expose you to information; others ask you to produce or apply it. Both can have a purpose.</p>
+<p class="note" id="counter">Example 1 of 4</p><p id="prompt" style="font-size:24px;font-weight:700"></p>
+<div class="options"><button id="check" onclick="answer('check')">Checks understanding</button><button id="reexpose" onclick="answer('expose')">Mainly re-exposes information</button></div>
+<div id="gameResult" role="status" aria-live="polite" class="feedback" hidden></div>
+<button id="next" hidden onclick="advance()">Next example</button> <button onclick="restart()">Restart mini-game</button>
+</section>
+<section><p class="tag">03 / TRANSFER TO YOUR OWN STUDIES</p><h2>Choose your next step.</h2>
+<p>Take an actual question from your current subject. Explain a choice from memory, contrast another and identify what you still cannot explain. Choose a new question after revisiting that gap.</p></section>
+<footer class="note">Local demonstration only. No tracking, uploads, networking or medical advice. Real public/paid release would require subject, rights, design and accessibility review.</footer>
+</main><script>
+var choices=[
+"One correct selection does not necessarily demonstrate transferable understanding. A brief rationale check can reveal what remains uncertain.",
+"Rereading may help, but first finding the exact uncertainty makes the review more focused.",
+"Useful next step: identify the gap, check a trustworthy explanation, then apply it in a new question."
+];
+function choose(n){var el=document.getElementById('storyResult');el.textContent=choices[n];el.hidden=false}
+var data=[
+["Explain a selected answer without looking at your notes","check","Producing an explanation from memory checks whether the reasoning can be retrieved."],
+["Replay the entire lecture without pausing","expose","Replay may help build understanding, but listening alone does not show independent recall."],
+["Solve a new, similar problem and justify the solution","check","Using a new example checks application beyond the original question."],
+["Reread highlighted notes with all answers visible","expose","Rereading presents information again. You can then follow it with an independent recall check."]
+];var at=0,score=0,answered=false;
+function render(){document.getElementById('counter').textContent=at<data.length?"Example "+(at+1)+" of "+data.length:"Complete";document.getElementById('prompt').textContent=at<data.length?data[at][0]:"Now apply the idea to your own subject.";document.getElementById('check').disabled=at>=data.length;document.getElementById('reexpose').disabled=at>=data.length;document.getElementById('gameResult').hidden=true;document.getElementById('next').hidden=true;answered=false}
+function answer(val){if(answered||at>=data.length)return;answered=true;if(val===data[at][1])score++;var r=document.getElementById('gameResult');r.textContent=(val===data[at][1]?"Good distinction. ":"Try a different classification next time. ")+data[at][2];r.hidden=false;document.getElementById('next').hidden=false;document.getElementById('next').textContent=at===data.length-1?"Finish":"Next example"}
+function advance(){at++;render();if(at>=data.length){var r=document.getElementById('gameResult');r.textContent="Your classifications matched "+score+" of "+data.length+" intended examples. This is not a validated assessment of learning. Try explaining a new idea independently.";r.hidden=false}}
+function restart(){at=0;score=0;render()}
+render();
+</script></body></html>
